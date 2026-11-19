@@ -56,9 +56,18 @@ A value pushed to be popped later isn't taken to be one. A return address that's
 
 ## What py8dis knows about the registers
 
-As it goes through the code, py8dis keeps track of what it knows for certain about the registers and flags after each instruction, from the code before it, back to a label (where the code can come from somewhere else). This is the CPU state. It's used for comments, e.g. on an OS call when A is known, and `config.set_show_cpu_state(True)` shows it after each instruction.
+As it goes through the code, py8dis keeps track of what it knows for certain about the registers and flags after each instruction, from the code before it, back to a label (where the code can come from somewhere else; on the 6502, from the ways into the label, as below). This is the CPU state. It's used for comments, e.g. on an OS call when A is known, and `config.set_show_cpu_state(True)` shows it after each instruction.
 
-For the 6502:
+For the 6502, what's known at a label is what all the ways into it agree on, where they're all known: the instruction before it (if the code runs on into it) and the branches to it. On a branch's way in, the branch's flag is as it is when the branch is taken, with what follows from that: e.g. A is less than 7 at `ok` after `cmp #7 : bcc ok`, and A is 0 at `zero` after `lda $70 : beq zero`. Loops are worked out until what's known at their labels settles, so e.g. a counter that goes from 0 to 3 round a loop is known to be 0 to 3 at the labels in it and after it (a range that's still growing after 32 times round is taken to the end it's growing towards). Nothing is known at a label where code could come from somewhere else:
+
+- an entry point (from `entry()`, a vector, `code_ptr()`, a jump table, etc.);
+- the target of a JSR or JMP (a subroutine could be called from code that py8dis doesn't see, e.g. through a vector, and a JMP's target is often a routine of its own);
+- a label that an expression names (e.g. a word in a table written as its name), or that anything other than a branch refers to (e.g. an instruction that reads it), or that nothing refers to (e.g. one given with `label()`), or a label reached from another move;
+- an instruction after data (e.g. after a string that a subroutine's hook skips).
+
+`config.set_join_states_at_labels(False)` makes py8dis forget everything at every label instead, as it did before.
+
+Also, for the 6502:
 
 - A, X and Y are known bit by bit, so a register can be partly known: e.g. after `and #$0f` its top four bits are 0, after `ora #$80` bit 7 is 1, and after `asl` bit 0 is 0. AND, ORA and EOR with an immediate value, the shifts and rotates of A, INX, DEX, INY, DEY (and the 65C02's INC A and DEC A) and the transfers work on the bits that are known, and the flags they set are known where the bits say what they are: e.g. N is clear after `lsr`, Z is clear after `ora #1`, and C is clear after `and #$7f : asl`;
 - each register's range (the least and greatest value it could be) is known as well, which can say more than its bits: e.g. after `cmp #7 : bcs skip` A is 0 to 6 (C clear means it's less than 7, and C set after `cmp #2 : bcc skip` means it's at least 2), and after `asl` it's 0 to 12. The bits that every value in the range shares are known too, e.g. the top five for 0 to 6. What a compare says is forgotten once the register changes, e.g. after `cmp #7 : lda $70 : bcs skip`;
@@ -110,7 +119,7 @@ X is 0, 2, ... or 12, so the table has 7 entries (each the address minus 1, for 
 - storing the address in the operand of a JSR or JMP that follows (self-modifying code);
 - the 65C02's `jmp (table,x)`.
 
-The low and high bytes can be in two tables, or together as words. A table isn't marked if any of its bytes is already classified or has an expression (so a control file can mark it itself, e.g. with [`rts_code_ptr()`](commands.md#rts_code_ptr)), if its entries overlap, if an entry points into the table or into an instruction or data, or if the index has more than 64 possible values. The index must be bounded by code in the same straight run: a guard before a label (where code can come from elsewhere), e.g. `cpx #10 : bcc ok : ... ok: lda table,x`, isn't seen, nor is one in a subroutine's caller. `config.set_find_jump_tables(False)` turns it off.
+The low and high bytes can be in two tables, or together as words. A table isn't marked if any of its bytes is already classified or has an expression (so a control file can mark it itself, e.g. with [`rts_code_ptr()`](commands.md#rts_code_ptr)), if its entries overlap, if an entry points into the table or into an instruction or data, or if the index has more than 64 possible values. The index must be bounded by code that py8dis can follow to the table, including through the branches to labels on the way (see above), e.g. `cpx #10 : bcc ok : ... ok: lda table,x`, or a loop's counter; a bound in a subroutine's caller isn't seen. `config.set_find_jump_tables(False)` turns it off.
 
 ## Redundant instructions
 

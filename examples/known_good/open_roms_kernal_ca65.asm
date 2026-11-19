@@ -1970,7 +1970,8 @@ sub_cee84:
 ; $ee8c referenced 1 time by $ee95
 loop_cee8c:
     and #$df                                                          ; ee8c: 29 df       ).
-    bne ceeca                                                         ; ee8e: d0 3a       P:
+    bne ceeca                                                         ; ee8e: d0 3a       P: ; ALWAYS branch
+
 ; $ee90 referenced 3 times by $f0f8, $f0fe, $f122
 sub_cee90:
     lda cia2_port_a                                                   ; ee90: ad 00 dd    ...

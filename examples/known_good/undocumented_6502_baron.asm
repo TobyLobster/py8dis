@@ -121,57 +121,68 @@ section pydis, org = &2000, filename = "undocumented_6502_baron"
 
 ; &20e9 referenced 1 time by &20e6
 .c20e9
-    beq c20ec                                                         ; 20e9: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20ec                                                         ; 20e9: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &12 ; jam (undocumented)                                     ; 20eb: 12          .   halts         A:-- X:-- Y:-- ------
 
 ; &20ec referenced 1 time by &20e9
 .c20ec
-    beq c20ef                                                         ; 20ec: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20ef                                                         ; 20ec: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &22 ; jam (undocumented)                                     ; 20ee: 22          "   halts         A:-- X:-- Y:-- ------
 
 ; &20ef referenced 1 time by &20ec
 .c20ef
-    beq c20f2                                                         ; 20ef: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20f2                                                         ; 20ef: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &32 ; jam (undocumented)                                     ; 20f1: 32          2   halts         A:-- X:-- Y:-- ------
 
 ; &20f2 referenced 1 time by &20ef
 .c20f2
-    beq c20f5                                                         ; 20f2: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20f5                                                         ; 20f2: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &42 ; jam (undocumented)                                     ; 20f4: 42          B   halts         A:-- X:-- Y:-- ------
 
 ; &20f5 referenced 1 time by &20f2
 .c20f5
-    beq c20f8                                                         ; 20f5: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20f8                                                         ; 20f5: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &52 ; jam (undocumented)                                     ; 20f7: 52          R   halts         A:-- X:-- Y:-- ------
 
 ; &20f8 referenced 1 time by &20f5
 .c20f8
-    beq c20fb                                                         ; 20f8: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20fb                                                         ; 20f8: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &62 ; jam (undocumented)                                     ; 20fa: 62          b   halts         A:-- X:-- Y:-- ------
 
 ; &20fb referenced 1 time by &20f8
 .c20fb
-    beq c20fe                                                         ; 20fb: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c20fe                                                         ; 20fb: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &72 ; jam (undocumented)                                     ; 20fd: 72          r   halts         A:-- X:-- Y:-- ------
 
 ; &20fe referenced 1 time by &20fb
 .c20fe
-    beq c2101                                                         ; 20fe: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c2101                                                         ; 20fe: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &92 ; jam (undocumented)                                     ; 2100: 92          .   halts         A:-- X:-- Y:-- ------
 
 ; &2101 referenced 1 time by &20fe
 .c2101
-    beq c2104                                                         ; 2101: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c2104                                                         ; 2101: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &b2 ; jam (undocumented)                                     ; 2103: b2          .   halts         A:-- X:-- Y:-- ------
 
 ; &2104 referenced 1 time by &2101
 .c2104
-    beq c2107                                                         ; 2104: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq c2107                                                         ; 2104: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &d2 ; jam (undocumented)                                     ; 2106: d2          .   halts         A:-- X:-- Y:-- ------
 
 ; &2107 referenced 1 time by &2104
 .c2107
-    beq return_1                                                      ; 2107: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ----z-
+    beq return_1                                                      ; 2107: f0 01       ..  2/3 cycles    A:-- X:-- Y:-- ------ ; ALWAYS branch
+
     equb &f2 ; jam (undocumented)                                     ; 2109: f2          .   halts         A:-- X:-- Y:-- ------
 
 ; &210a referenced 1 time by &2107

@@ -12344,7 +12344,7 @@ screen_addr_high = opcode10+2
     rts                                                               ; 4beb: 60          `
 
 .no_teleport_destination_found
-    txa                                                               ; 4bec: 8a          .
+    txa                                                               ; 4bec: 8a          .  ; A=&ff
     rts                                                               ; 4bed: 60          `
 
 ; ***************************************************************************************

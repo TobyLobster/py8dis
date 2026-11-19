@@ -75,31 +75,31 @@ section pydis, org = &2000, filename = "known_state_comments_baron"
 
 ; &2041 referenced 1 time by &203f
 .c2041
-    sec                                                               ; 2041: 38          8   A:-- X:-- Y:-- -----C
-    ror l007e                                                         ; 2042: 66 7e       f~  A:-- X:-- Y:-- N---z- ; Rotate in a set bit
+    sec                                                               ; 2041: 38          8   A:0- X:01 Y:-- N---zC
+    ror l007e                                                         ; 2042: 66 7e       f~  A:0- X:01 Y:-- N---z- ; Rotate in a set bit
     bmi c2046                                                         ; 2044: 30 00       0.  A:-- X:-- Y:-- ------ ; ALWAYS branch
 
 ; &2046 referenced 1 time by &2044
 .c2046
-    lda l007f                                                         ; 2046: a5 7f       ..  A:-- X:-- Y:-- ------
-    lsr a                                                             ; 2048: 4a          J   A:-- X:-- Y:-- n-----
+    lda l007f                                                         ; 2046: a5 7f       ..  A:-- X:01 Y:-- ------
+    lsr a                                                             ; 2048: 4a          J   A:-- X:01 Y:-- n-----
     bpl c204b                                                         ; 2049: 10 00       ..  A:-- X:-- Y:-- ------ ; ALWAYS branch
 
 ; &204b referenced 1 time by &2049
 .c204b
-    cld                                                               ; 204b: d8          .   A:-- X:-- Y:-- --d---
-    lda l0080                                                         ; 204c: a5 80       ..  A:-- X:-- Y:-- --d---
-    and #&0f                                                          ; 204e: 29 0f       ).  A:0- X:-- Y:-- n-d---
-    clc                                                               ; 2050: 18          .   A:0- X:-- Y:-- n-d--c
-    adc #&f0                                                          ; 2051: 69 f0       i.  A:f- X:-- Y:-- N-d-zc
+    cld                                                               ; 204b: d8          .   A:-- X:01 Y:-- n-d---
+    lda l0080                                                         ; 204c: a5 80       ..  A:-- X:01 Y:-- --d---
+    and #&0f                                                          ; 204e: 29 0f       ).  A:0- X:01 Y:-- n-d---
+    clc                                                               ; 2050: 18          .   A:0- X:01 Y:-- n-d--c
+    adc #&f0                                                          ; 2051: 69 f0       i.  A:f- X:01 Y:-- N-d-zc
     bcc c2055                                                         ; 2053: 90 00       ..  A:-- X:-- Y:-- ------ ; ALWAYS branch
 
 ; &2055 referenced 1 time by &2053
 .c2055
-    lda l0081                                                         ; 2055: a5 81       ..  A:-- X:-- Y:-- ------
-    cmp #7                                                            ; 2057: c9 07       ..  A:-- X:-- Y:-- ----??
-    ror a                                                             ; 2059: 6a          j   A:-- X:-- Y:-- ------
-    tax                                                               ; 205a: aa          .   A:-- X:-- Y:-- ------
+    lda l0081                                                         ; 2055: a5 81       ..  A:-- X:01 Y:-- --d--c
+    cmp #7                                                            ; 2057: c9 07       ..  A:-- X:01 Y:-- --d-??
+    ror a                                                             ; 2059: 6a          j   A:-- X:01 Y:-- --d---
+    tax                                                               ; 205a: aa          .   A:-- X:-- Y:-- --d---
     rts                                                               ; 205b: 60          `   A:-- X:-- Y:-- ------
 
 ; &205c referenced 4 times by &2004, &2014, &202f, &2034

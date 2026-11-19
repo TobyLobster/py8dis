@@ -31,8 +31,9 @@ which holds what's known about A, X and Y (RegState: the value, bit by bit
 (see knownbits.py) and as a range, and which instruction last loaded,
 changed or used the register) and the flags. It
 holds two versions of this (CpuStateDisposition): the pessimistic one is
-what's known for certain, which is forgotten at each label (code can come
-there from elsewhere); the optimistic one takes the code to have run
+what's known for certain, which at a label is what all the ways into it
+agree on, where those are all branches in the code, and otherwise nothing
+(code can come there from elsewhere: see join_states_at_labels()); the optimistic one takes the code to have run
 straight through from the instruction before, even past a label. E.g. 'LDA
 #5' makes A 5, and 'AND #$0f' makes its top four bits 0; a conditional
 branch is taken not to have been taken, so its flag is known after it (and
@@ -56,10 +57,12 @@ machine modules (e.g. acorn.py and commodore.py).
 
 import classification
 import collections
+import heapq
 import config
 import disassembly
 import effectpattern
 import labelmanager
+import expression
 import mainformatter
 import output
 import memorymanager
@@ -444,6 +447,59 @@ class CpuStateDisposition:
         self._d['n'] = None
         self._d['z'] = "pending"
         self._d['c'] = "pending"
+
+    def join(self, other):
+        """What's known both here and in 'other' (another
+        CpuStateDisposition): the state where code can come from either
+        (see Cpu6502.join_states_at_labels()). A register's bits are known
+        where both know them and agree, and its range covers both; a flag is
+        known where both know it and agree ('pending' isn't kept); and z_from,
+        n_from and c_from, and where a register was loaded, are kept where
+        they're the same."""
+        result = CpuStateDisposition()
+        for reg in "axy":
+            a, b = self._d[reg], other._d[reg]
+            known = a.known & b.known & ~(a.bits ^ b.bits) & 0xff
+            r = result._d[reg]
+            r.set_range((known, a.bits & known), min(a.lo, b.lo), max(a.hi, b.hi))
+            for attr in ("previous_load_imm", "previous_load", "previous_adjust", "previous_use"):
+                value = getattr(a, attr)
+                setattr(r, attr, value if value == getattr(b, attr) else None)
+        for flag in "nvdizc":
+            a, b = self._d[flag], other._d[flag]
+            if a in (True, False, 0, 1) and b in (True, False, 0, 1) and bool(a) == bool(b):
+                result._d[flag] = bool(a)
+        result.z_from = self.z_from if self.z_from == other.z_from else None
+        result.n_from = self.n_from if self.n_from == other.n_from else None
+        result.c_from = self.c_from if self.c_from == other.c_from else None
+        return result
+
+    def widen(self, newer):
+        """'newer' (the state after another time round a loop), with each
+        register's range that's grown since this one taken to the end it's
+        growing towards (0 or $ff), as far as its known bits allow (see
+        Cpu6502.join_states_at_labels())."""
+        result = newer.copy()
+        for reg in "axy":
+            old, new = self._d[reg], newer._d[reg]
+            lo, hi = new.lo, new.hi
+            if lo < old.lo:
+                lo = 0
+            if hi > old.hi:
+                hi = 0xff
+            result._d[reg].set_range(new.known_bits, lo, hi)
+        return result
+
+    @staticmethod
+    def same(a, b):
+        """Whether two CpuStateDispositions (or None) say the same."""
+        if a is None or b is None:
+            return a is b
+        for reg in "axy":
+            if a._d[reg].__dict__ != b._d[reg].__dict__:
+                return False
+        return (all(a._d[flag] == b._d[flag] for flag in "nvdizc")
+                and a.z_from == b.z_from and a.n_from == b.n_from and a.c_from == b.c_from)
 
     def carry(self):
         """The C flag as True or False, or None if it isn't known (or is
@@ -1002,6 +1058,14 @@ class Cpu6502(cpu.Cpu):
         # whose jump tables find_jump_tables() has marked
         self.jump_tables_marked = set()
 
+        # True while join_states_at_labels() works out the states (so the
+        # opcodes' update_cpu_state() doesn't forget what's known at labels)
+        self.joining_states = False
+
+        # What's known for certain before each instruction, by binary
+        # address, from join_states_at_labels() (or None if it isn't used)
+        self.states_before = None
+
         self.code_analysis_fns.append(self.subroutine_argument_finder)  # For trace.subroutine_argument_finder_hooks (see subroutine_argument_finder())
         self.code_analysis_fns.append(self.substitute_constants)        # For the substitute_constants() command
         self.code_analysis_fns.append(self.find_subroutine_calls)       # For the subroutine() command
@@ -1525,6 +1589,10 @@ class Cpu6502(cpu.Cpu):
             (whether or not anything refers to it)."""
             # if there's a label at this address, then we lose all known (pessimistic) state.
             # This is because somewhere will be jumping to the label with unknown state.
+            if session.current().cpu.joining_states:
+                # (Cpu6502.join_states_at_labels() works out what's known at
+                # each label itself)
+                return
             runtime_addr = movemanager.b2r(memorymanager.BinaryAddr(binary_addr))
             if runtime_addr is not None:
                 if runtime_addr in session.current().labels.labels:
@@ -2079,6 +2147,25 @@ class Cpu6502(cpu.Cpu):
         def could_be_call_to_subroutine(self):
             """True: the target could be a subroutine (a tail call)."""
             return True
+
+        # The flag each branch tests, and its value when the branch is taken
+        TAKEN = {"bpl": ('n', False), "bmi": ('n', True), "bvc": ('v', False), "bvs": ('v', True),
+                 "bcc": ('c', False), "bcs": ('c', True), "bne": ('z', False), "beq": ('z', True)}
+
+        def taken_disposition(self, binary_addr, before):
+            """What's known at the target when the branch is taken, from
+            'before' (a CpuStateDisposition, before the branch): its flag has
+            the value that makes it branch, and what follows from that (see
+            CpuStateDisposition.update_transfer(), e.g. A is less than 7 at
+            the target of 'cmp #7 : bcc target'). None if the flag is known
+            not to make it branch (it's never taken)."""
+            flag, value = self.TAKEN[self.mnemonic.lower()]
+            known = before[flag]
+            if known in (True, False, 0, 1) and bool(known) != value:
+                return None
+            result = before.copy()
+            result.update_transfer(binary_addr, flag, value)
+            return result
 
         def update_cpu_state(self, binary_addr, state):
             """Change 'state' for the branch (see Opcode.update_cpu_state()).
@@ -3146,6 +3233,254 @@ class Cpu6502(cpu.Cpu):
                     self.rejected_snippet_matches.add(key)
 
     # ********************************************************************************************
+    # What's known at labels: joining the states of the ways in
+
+    # How many times a label's state can change before the ranges that are
+    # still growing are widened to the end (so loops are worked out quickly:
+    # a loop counter's range is exact if the loop runs fewer times than this)
+    JOIN_WIDEN_AFTER = 32
+
+    def calculate_cpu_states(self):
+        """Work out what's known after each instruction (see
+        Cpu.calculate_cpu_states(), which goes straight through the code,
+        forgetting what's known for certain at each label). Then, unless
+        config.set_join_states_at_labels(False), work out what's known for
+        certain again, joining the ways into each label (see
+        join_states_at_labels())."""
+        super().calculate_cpu_states()
+        if config.get_join_states_at_labels():
+            self.join_states_at_labels()
+
+    def known_before(self, run, j):
+        """What's known for certain (a CpuStateDisposition) just before the
+        instruction run[j] in a straight run (see straight_runs()): from
+        join_states_at_labels() if it's used, otherwise what's known after
+        the instruction before it in the run (nothing at the start of a
+        run)."""
+        if self.states_before is not None:
+            state = self.states_before.get(run[j])
+            return CpuStateDisposition() if state is None else state
+        if j == 0:
+            return CpuStateDisposition()
+        return self.cpu_states[run[j - 1]].pessimistic
+
+    def _addresses_in_expressions(self):
+        """The runtime addresses that expressions name (e.g. a data word
+        written as 'handler', or an operand '#<handler'), as a set: code
+        there may be reached from that address being used (see
+        join_states_at_labels())."""
+        names = set()
+        result = set()
+        def walk(e):
+            if isinstance(e, expression.Name):
+                names.add(e.name)
+            elif isinstance(e, expression.Raw):
+                names.update(re.findall(r"[A-Za-z_.@][A-Za-z0-9_.@]*", e.text))
+            elif isinstance(e, expression.LazyLeaf):
+                runtime_addr = getattr(e.lazy_string, "runtime_addr", None)
+                if runtime_addr is not None:
+                    result.add(runtime_addr)
+                else:
+                    names.add(str(e.lazy_string))
+            elif isinstance(e, expression.Unary):
+                walk(e.operand)
+            elif isinstance(e, expression.Binary):
+                walk(e.left)
+                walk(e.right)
+        for e in session.current().classifications.expressions.values():
+            walk(expression.to_expr(e))
+        optional_labels = session.current().disassembly.optional_labels
+        optional_by_name = {ol.name: addr for addr, ol in optional_labels.items()}
+        for name in names:
+            addr = labelmanager.addr(name)
+            if addr is None:
+                addr = optional_by_name.get(name)
+            if addr is not None:
+                result.add(addr)
+        return result
+
+    def join_states_at_labels(self):
+        """Work out what's known for certain (the pessimistic state) after
+        each instruction again, so that at a label it's what all the ways in
+        agree on, rather than nothing.
+
+        The ways into an instruction are the instruction before it, if the
+        code runs on from it, and, if the instruction has a label, the
+        branches to it. What's known on a branch's way in is what's known
+        before the branch, with its flag set as it is when it's taken (see
+        OpcodeConditionalBranch.taken_disposition()): e.g. after 'cmp #7 :
+        bcc ok', A is less than 7 at 'ok'. (Each branch is found from the
+        label's references.)
+
+        Nothing is known for certain at an instruction where code can come
+        from somewhere else: an entry point (e.g. from entry(), a vector or
+        code_ptr()), the target of a JSR or JMP (a subroutine could be called
+        from code that isn't seen, e.g. through a vector), a label that an
+        expression names (its address could be used to get there), a label
+        that something other than a branch refers to, or one nothing refers
+        to (e.g. from label()), a label reached from another move, or an
+        instruction after data. Code after an instruction that code jumps
+        into the middle of (the BIT trick) is handled as before: see
+        Opcode.update_cpu_state().
+
+        The states are worked out until they don't change (loops go round
+        until the states at their labels settle), with growing ranges
+        widened after JOIN_WIDEN_AFTER changes. The optimistic state isn't
+        changed."""
+        labels = session.current().labels.labels
+        move_ids = session.current().moves.move_id_for_binary_addr
+        expression_addrs = self._addresses_in_expressions()
+
+        # The instructions, in address order
+        nodes = []
+        for range_start, range_end in memorymanager.loaded_ranges():
+            for b in range(range_start, range_end):
+                if self.cpu_states[b] is not None:
+                    c = classification.get_classification(b)
+                    if isinstance(c, self.Opcode) and c.is_code(b):
+                        nodes.append(BinaryAddr(b))
+        node_set = set(nodes)
+
+        # The ways into each instruction: (instruction, 'fall' or 'taken'),
+        # or None for an instruction where nothing is known
+        ways_in = {}
+        previous = None
+        for b in nodes:
+            ways = []
+            if previous is not None and previous + classification.get_classification(previous).length() == b and not classification.get_classification(previous).is_block_end():
+                ways.append((previous, "fall"))
+            previous = b
+            runtime_addr = movemanager.b2r(BinaryAddr(b))
+            if runtime_addr in labels:
+                label = labels[runtime_addr]
+                if (b in self.explicit_entry_points or runtime_addr in expression_addrs or not label.references):
+                    ways = None
+                else:
+                    for ref in label.references:
+                        ref_addr = ref.binary_addr
+                        c = classification.get_classification(ref_addr)
+                        if (ref_addr not in node_set or not isinstance(c, self.OpcodeConditionalBranch)
+                                or c.target(ref_addr) != runtime_addr or ref.move_id != move_ids[b]):
+                            ways = None
+                            break
+                        if (ref_addr, "taken") not in ways:
+                            ways.append((ref_addr, "taken"))
+            if ways is not None and len(ways) == 0:
+                # (After data, or after a jump or return: e.g. code after a
+                # subroutine hook's string)
+                ways = None
+            ways_in[b] = ways
+
+        # The instructions each one leads to
+        ways_out = collections.defaultdict(list)
+        for b, ways in ways_in.items():
+            for p, kind in ways or []:
+                ways_out[p].append(b)
+
+        empty = CpuStateDisposition()
+        state_in = {}           # What's known before each instruction (None: no way in yet)
+        state_after = {}        # The CpuState after it
+        taken = {}              # What's known at its target if it's a branch that's taken (None: never)
+        changes = collections.Counter()
+
+        def way_state(p, kind):
+            """What's known on the way from p (None: it never goes that way)."""
+            if kind == "taken":
+                return taken.get(p)
+            after = state_after.get(p)
+            if after is None or after.always_branch:
+                return None
+            return after.pessimistic
+
+        def update(b):
+            """Work out what's known after b, from what's known before it."""
+            before = state_in[b]
+            c = classification.get_classification(b)
+            # (A CpuState made without its own empty dispositions, which
+            # would only be replaced; the optimistic one is thrown away)
+            state = self.CpuState.__new__(self.CpuState)
+            state.optimistic = before.copy()
+            state.pessimistic = before.copy()
+            state.always_branch = False
+            state.next_instruction = None
+            if isinstance(c, self.OpcodeConditionalBranch):
+                taken[b] = c.taken_disposition(b, before)
+            c.update_cpu_state(b, state)
+            state_after[b] = state
+
+        self.joining_states = True
+        try:
+            # (The lowest address first, so the code is mostly worked out
+            # in order, after the ways into it)
+            worklist = list(nodes)
+            heapq.heapify(worklist)
+            queued = set(nodes)
+            first = set(nodes)
+            limit = 200 * len(nodes) + 1000
+            unreached = iter(nodes)
+            while True:
+                if not worklist:
+                    # An instruction that no way in reaches (e.g. after an
+                    # 'ALWAYS branch', which tracing goes past anyway) is
+                    # taken to start with nothing known, as code after data
+                    # is, and the states are worked out on from there
+                    b = next((b for b in unreached if b not in state_in), None)
+                    if b is None:
+                        break
+                    ways_in[b] = None
+                    heapq.heappush(worklist, b)
+                    queued.add(b)
+                limit -= 1
+                if limit < 0:
+                    utils.warn("working out what's known at labels didn't settle, so it's what's known going straight through")
+                    return
+                b = heapq.heappop(worklist)
+                queued.discard(b)
+                ways = ways_in[b]
+                if ways is None:
+                    new = empty
+                else:
+                    new = None
+                    for p, kind in ways:
+                        s = way_state(p, kind)
+                        if s is not None:
+                            # (The states aren't changed once they're
+                            # worked out, so one way in's needn't be copied)
+                            new = s if new is None else new.join(s)
+                if new is None:
+                    # (No way in reaches it yet)
+                    continue
+                old = state_in.get(b)
+                if b not in first and old is not None:
+                    changes[b] += 1
+                    if changes[b] > self.JOIN_WIDEN_AFTER:
+                        new = old.widen(new)
+                if b in first or not CpuStateDisposition.same(old, new):
+                    first.discard(b)
+                    state_in[b] = new
+                    update(b)
+                    for successor in ways_out[b]:
+                        if successor not in queued:
+                            queued.add(successor)
+                            heapq.heappush(worklist, successor)
+        finally:
+            self.joining_states = False
+
+        # What's known for certain before each instruction (see known_before())
+        self.states_before = state_in
+
+        # What's known for certain after each instruction (nothing, after
+        # one that no way in reaches, e.g. after an 'ALWAYS branch')
+        for b in nodes:
+            after = state_after.get(b)
+            if after is None:
+                self.cpu_states[b].pessimistic = empty.copy()
+                self.cpu_states[b].always_branch = False
+            else:
+                self.cpu_states[b].pessimistic = after.pessimistic
+                self.cpu_states[b].always_branch = after.always_branch
+
+    # ********************************************************************************************
     # Jump tables
 
     # The most entries a jump table found by find_jump_tables() can have
@@ -3228,10 +3563,7 @@ class Cpu6502(cpu.Cpu):
         for m in range(j + 1, k):
             if classification.get_classification(run[m]).reg_changes[reg] in "AOT":
                 return None
-        if j == 0:
-            # (Nothing is known at the start of a run)
-            return None
-        r = self.cpu_states[run[j - 1]].pessimistic[reg]
+        r = self.known_before(run, j)[reg]
         if r.lo == 0 and r.hi == 0xff and r.known == 0:
             return None
         values = r.possible_values()
@@ -3315,9 +3647,7 @@ class Cpu6502(cpu.Cpu):
     def _indexed_jump_table(self, run, i):
         """The table of the 65C02's 'jmp (table,x)' at run[i], as (low table,
         high table, index values, offset), or None."""
-        if i == 0:
-            return None
-        r = self.cpu_states[run[i - 1]].pessimistic["x"]
+        r = self.known_before(run, i)["x"]
         if r.lo == 0 and r.hi == 0xff and r.known == 0:
             return None
         values = r.possible_values()

@@ -21,7 +21,7 @@ section pydis, org = &2000, filename = "branch_state_baron"
     ldy #8                                                            ; 2000: a0 08       ..  A:-- X:-- Y:08 n---z-
 ; &2002 referenced 1 time by &2003
 .loop_c2002
-    dey                                                               ; 2002: 88          .   A:-- X:-- Y:-- ------
+    dey                                                               ; 2002: 88          .   A:-- X:-- Y:0- n-----
     bne loop_c2002                                                    ; 2003: d0 fd       ..  A:-- X:-- Y:00 n---Z-
     lda l0070                                                         ; 2005: a5 70       .p  A:-- X:-- Y:00 ------
     cmp #&7b ; '{'                                                    ; 2007: c9 7b       .{  A:-- X:-- Y:00 ----??
@@ -37,12 +37,12 @@ section pydis, org = &2000, filename = "branch_state_baron"
     bne c201d                                                         ; 201b: d0 00       ..  A:-- X:03 Y:-- -----C
 ; &201d referenced 1 time by &201b
 .c201d
-    tax                                                               ; 201d: aa          .   A:-- X:-- Y:-- ------
-    bit l0075                                                         ; 201e: 24 75       $u  A:-- X:-- Y:-- ------
-    bne return_1                                                      ; 2020: d0 07       ..  A:-- X:-- Y:-- ----Z-
-    lda l0076                                                         ; 2022: a5 76       .v  A:-- X:-- Y:-- ------
-    sta l0077                                                         ; 2024: 85 77       .w  A:-- X:-- Y:-- ------
-    bne return_1                                                      ; 2026: d0 01       ..  A:00 X:-- Y:-- n---Z-
+    tax                                                               ; 201d: aa          .   A:-- X:-- Y:-- ----zC
+    bit l0075                                                         ; 201e: 24 75       $u  A:-- X:-- Y:-- -----C
+    bne return_1                                                      ; 2020: d0 07       ..  A:-- X:-- Y:-- ----ZC
+    lda l0076                                                         ; 2022: a5 76       .v  A:-- X:-- Y:-- -----C
+    sta l0077                                                         ; 2024: 85 77       .w  A:-- X:-- Y:-- -----C
+    bne return_1                                                      ; 2026: d0 01       ..  A:00 X:-- Y:-- n---ZC
     rts                                                               ; 2028: 60          `   A:-- X:-- Y:-- ------
 
 ; &2029 referenced 6 times by &2009, &200f, &2013, &2017, &2020, &2026

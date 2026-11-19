@@ -1087,7 +1087,7 @@ section pydis, org = &e000, filename = "atom_dos_rom_baron"
 ; &e52b referenced 1 time by &e557
 .ce52b
     sta comvec,x                                                      ; e52b: 9d 06 02    ...
-    tya                                                               ; e52e: 98          .
+    tya                                                               ; e52e: 98          .              ; A=&e5
     sta comvec+1,x                                                    ; e52f: 9d 07 02    ...
     rts                                                               ; e532: 60          `
 

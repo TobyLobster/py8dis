@@ -672,7 +672,7 @@ OSCLI   = &fff7
     bcc NOBOUN                                     ; 8367: 90 02       .. ; there were no binds
     inc SP+1                                       ; 8369: e6 7f       ..
 .NOBOUN
-    iny                                            ; 836b: c8          .  ; Now Y = 1
+    iny                                            ; 836b: c8          .  ; Now Y = 1 ; Y=1
     lda (SP),y                                     ; 836c: b1 7e       .~
     tay                                            ; 836e: a8          .  ; Index for top space
     dey                                            ; 836f: 88          .
@@ -804,7 +804,7 @@ OSCLI   = &fff7
     sty SP                                         ; 8411: 84 7e       .~
     ldy #4                                         ; 8413: a0 04       ..
     lda (SP),y                                     ; 8415: b1 7e       .~
-    adc #3                                         ; 8417: 69 03       i. ; Carry is set
+    adc #3                                         ; 8417: 69 03       i. ; Carry is set ; Carry is set, so adding 4
     pha                                            ; 8419: 48          H
     lda WSD+1                                      ; 841a: a5 84       ..
     sta (SP),y                                     ; 841c: 91 7e       .~
@@ -1150,7 +1150,7 @@ OSCLI   = &fff7
 
 .DEFLST
     pha                                            ; 8637: 48          H
-    dey                                            ; 8638: 88          .
+    dey                                            ; 8638: 88          .  ; Y=3
     lda (WSD),y                                    ; 8639: b1 83       ..
     sta WSD                                        ; 863b: 85 83       ..
     pla                                            ; 863d: 68          h
@@ -1323,7 +1323,7 @@ OSCLI   = &fff7
 
 .XLAMD
     tax                                            ; 8745: aa          .
-    dey                                            ; 8746: 88          .
+    dey                                            ; 8746: 88          .  ; Y=3
     lda (WSC),y                                    ; 8747: b1 38       .8
     stx WSC+1                                      ; 8749: 86 39       .9
     sta WSC                                        ; 874b: 85 38       .8
@@ -1334,10 +1334,10 @@ OSCLI   = &fff7
     jmp LAMERR                                     ; 8753: 4c a3 86    L..
 
 .SYNNED
-    iny                                            ; 8756: c8          .
+    iny                                            ; 8756: c8          .  ; Y=1
     lda (WSC),y                                    ; 8757: b1 38       .8
     sta ARG                                        ; 8759: 85 30       .0
-    iny                                            ; 875b: c8          .
+    iny                                            ; 875b: c8          .  ; Y=2
     lda (WSC),y                                    ; 875c: b1 38       .8
     sta ARG+1                                      ; 875e: 85 31       .1
     jsr EVALU                                      ; 8760: 20 39 85     9.
@@ -1912,7 +1912,7 @@ OSCLI   = &fff7
     bcc STINC                                      ; 8acd: 90 02       ..
     inc POINT+1                                    ; 8acf: e6 7b       .{
 .STINC
-    iny                                            ; 8ad1: c8          .
+    iny                                            ; 8ad1: c8          .  ; Y=1
     lda (POINT),y                                  ; 8ad2: b1 7a       .z
     tay                                            ; 8ad4: a8          .
     dey                                            ; 8ad5: 88          .
@@ -3603,18 +3603,18 @@ OSCLI   = &fff7
     equb 0                                         ; 94dc: 00          .
 
 .GEVIL
-    iny                                            ; 94dd: c8          .  ; Expr?
+    iny                                            ; 94dd: c8          .  ; Expr? ; Y=1
     lda (ARGA),y                                   ; 94de: b1 3a       .:
     cmp #<LAMBDA                                   ; 94e0: c9 18       ..
     bne APFERR                                     ; 94e2: d0 e8       ..
-    iny                                            ; 94e4: c8          .
+    iny                                            ; 94e4: c8          .  ; Y=2
     lda (ARGA),y                                   ; 94e5: b1 3a       .:
     cmp IMBOT                                      ; 94e7: cd 2c 04    .,.
     bne APFERR                                     ; 94ea: d0 e0       ..
-    iny                                            ; 94ec: c8          .
+    iny                                            ; 94ec: c8          .  ; Y=3
     lda (ARGA),y                                   ; 94ed: b1 3a       .:
     sta WSD                                        ; 94ef: 85 83       ..
-    iny                                            ; 94f1: c8          .
+    iny                                            ; 94f1: c8          .  ; Y=4
     lda (ARGA),y                                   ; 94f2: b1 3a       .:
     sta WSD+1                                      ; 94f4: 85 84       ..
     beq APFERR                                     ; 94f6: f0 d4       ..
@@ -3941,10 +3941,10 @@ OSCLI   = &fff7
     jmp WSBTST                                     ; 9702: 4c 44 97    LD.
 
 .SQUISH
-    iny                                            ; 9705: c8          .
+    iny                                            ; 9705: c8          .  ; Y=1
     lda (ARGA),y                                   ; 9706: b1 3a       .:
     sta WSB                                        ; 9708: 85 36       .6
-    iny                                            ; 970a: c8          .
+    iny                                            ; 970a: c8          .  ; Y=2
     lda (ARGA),y                                   ; 970b: b1 3a       .:
     bne NODNIL                                     ; 970d: d0 07       ..
     lda #<NIL                                      ; 970f: a9 24       .$
@@ -3958,7 +3958,7 @@ OSCLI   = &fff7
     jmp FILERR                                     ; 971e: 4c 97 8f    L.. ; Not char err
 
 .ISCH
-    iny                                            ; 9721: c8          .
+    iny                                            ; 9721: c8          .  ; Y=1
     lda (WSB),y                                    ; 9722: b1 36       .6
     sta YSAV                                       ; 9724: 85 22       ."
     ldy #6                                         ; 9726: a0 06       ..
@@ -4178,10 +4178,10 @@ OSCLI   = &fff7
     sta ARG+1                                      ; 986b: 85 31       .1
     lda (ARG),y                                    ; 986d: b1 30       .0
     sta OSWBUF-10,x                                ; 986f: 9d f6 05    ...
-    iny                                            ; 9872: c8          .
+    iny                                            ; 9872: c8          .  ; Y=3
     lda (ARG),y                                    ; 9873: b1 30       .0
     sta OSWBUF-9,x                                 ; 9875: 9d f7 05    ...
-    dey                                            ; 9878: 88          .
+    dey                                            ; 9878: 88          .  ; Y=2
     inx                                            ; 9879: e8          .
     inx                                            ; 987a: e8          .
     cpx #&12                                       ; 987b: e0 12       ..
@@ -4310,7 +4310,7 @@ OSCLI   = &fff7
     ldx #5                                         ; 9914: a2 05       ..
     ldy #0                                         ; 9916: a0 00       ..
 .MCLK1
-    tya                                            ; 9918: 98          .
+    tya                                            ; 9918: 98          .  ; A=0
     sta REM40,x                                    ; 9919: 9d 07 04    ... ; Zero remainder
     sta AUX40,x                                    ; 991c: 9d 0c 04    ... ; Zero divisor
     lda TIMEW,x                                    ; 991f: bd 25 04    .%. ; Dividend
@@ -4367,7 +4367,7 @@ OSCLI   = &fff7
     dex                                            ; 9995: ca          .  ; X=&ff
 .PEXIST
     sta (POINT),y                                  ; 9996: 91 7a       .z
-    iny                                            ; 9998: c8          .
+    iny                                            ; 9998: c8          .  ; Y=3
     txa                                            ; 9999: 8a          .
     sta (POINT),y                                  ; 999a: 91 7a       .z
     jmp AMADE                                      ; 999c: 4c 67 88    Lg.
@@ -4423,13 +4423,13 @@ OSCLI   = &fff7
 .INKER
     lda #&ff                                       ; 99eb: a9 ff       ..
     sta (POINT),y                                  ; 99ed: 91 7a       .z
-    iny                                            ; 99ef: c8          .
+    iny                                            ; 99ef: c8          .  ; Y=3
     sta (POINT),y                                  ; 99f0: 91 7a       .z
     jmp AMADE                                      ; 99f2: 4c 67 88    Lg.
 
 .INKEY2
     pha                                            ; 99f5: 48          H  ; Scan keyboard
-    dey                                            ; 99f6: 88          .
+    dey                                            ; 99f6: 88          .  ; Y=2
     lda (ARGA),y                                   ; 99f7: b1 3a       .:
     tax                                            ; 99f9: aa          .
     pla                                            ; 99fa: 68          h
@@ -4516,11 +4516,11 @@ OSCLI   = &fff7
     lda (WSA),y                                    ; 9a79: b1 34       .4
     and (POINT),y                                  ; 9a7b: 31 7a       1z
     sta (POINT),y                                  ; 9a7d: 91 7a       .z
-    iny                                            ; 9a7f: c8          .
+    iny                                            ; 9a7f: c8          .  ; Y=3
     lda (WSA),y                                    ; 9a80: b1 34       .4
     and (POINT),y                                  ; 9a82: 31 7a       1z
     sta (POINT),y                                  ; 9a84: 91 7a       .z
-    dey                                            ; 9a86: 88          .
+    dey                                            ; 9a86: 88          .  ; Y=2
     cpx #&0a                                       ; 9a87: e0 0a       ..
     bne MBAND                                      ; 9a89: d0 e4       ..
     jmp AMADE                                      ; 9a8b: 4c 67 88    Lg.
@@ -4546,11 +4546,11 @@ OSCLI   = &fff7
     lda (WSA),y                                    ; 9aa9: b1 34       .4
     ora (POINT),y                                  ; 9aab: 11 7a       .z
     sta (POINT),y                                  ; 9aad: 91 7a       .z
-    iny                                            ; 9aaf: c8          .
+    iny                                            ; 9aaf: c8          .  ; Y=3
     lda (WSA),y                                    ; 9ab0: b1 34       .4
     ora (POINT),y                                  ; 9ab2: 11 7a       .z
     sta (POINT),y                                  ; 9ab4: 91 7a       .z
-    dey                                            ; 9ab6: 88          .
+    dey                                            ; 9ab6: 88          .  ; Y=2
     cpx #&0a                                       ; 9ab7: e0 0a       ..
     bne MBOR                                       ; 9ab9: d0 e4       ..
     jmp AMADE                                      ; 9abb: 4c 67 88    Lg.
@@ -4855,9 +4855,9 @@ OSCLI   = &fff7
     bmi SIXG                                       ; 9c7a: 30 0a       0.
     cmp #SUBRF                                     ; 9c7c: c9 08       ..
     bcs SIXG                                       ; 9c7e: b0 06       ..
-    iny                                            ; 9c80: c8          .
+    iny                                            ; 9c80: c8          .  ; Y=1
     lda (CELL),y                                   ; 9c81: b1 7c       .|
-    dey                                            ; 9c83: 88          .
+    dey                                            ; 9c83: 88          .  ; Y=0
     bcc ADDIN                                      ; 9c84: 90 02       .. ; ALWAYS branch
 
 .SIXG

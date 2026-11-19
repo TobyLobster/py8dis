@@ -2109,7 +2109,8 @@ ccac3:
     ldy int_workspace_stack_mid1                                      ; cac5: a4 25       .%
     sta int_workspace_stack_low+1                                     ; cac7: 85 17       ..
     sty int_workspace_stack_mid1+1                                    ; cac9: 84 26       .&
-    bcs cca6e                                                         ; cacb: b0 a1       ..
+    bcs cca6e                                                         ; cacb: b0 a1       .. ; ALWAYS branch
+
 statement_next:
     jsr skip_spaces                                                   ; cacd: 20 34 c4     4.
     ldy int_workspace_stack_low-1                                     ; cad0: a4 15       ..
@@ -2726,7 +2727,7 @@ loop_cce4b:
 cce56:
     dey                                                               ; ce56: 88          .
     tya                                                               ; ce57: 98          .
-    adc l0054                                                         ; ce58: 65 54       eT
+    adc l0054                                                         ; ce58: 65 54       eT ; +1 because carry is set
     ldx l0055                                                         ; ce5a: a6 55       .U
     bcc cce5f                                                         ; ce5c: 90 01       ..
     inx                                                               ; ce5e: e8          .
@@ -2835,7 +2836,8 @@ ccec7:
 ; $ceea referenced 1 time by $ceda
 cceea:
     iny                                                               ; ceea: c8          .
-    bcs ccec7                                                         ; ceeb: b0 da       ..
+    bcs ccec7                                                         ; ceeb: b0 da       .. ; ALWAYS branch
+
 statement_load:
     jsr sub_ccefa                                                     ; ceed: 20 fa ce     ..
     dey                                                               ; cef0: 88          .

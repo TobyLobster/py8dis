@@ -44,7 +44,7 @@ section pydis, org = &2000, filename = "copy_loops_baron"
 .loop_c200d
     lda l3282 - 130,y                                                 ; 200d: b9 00 32    ..2
     sta l3382 - 130,y                                                 ; 2010: 99 00 33    ..3
-    dey                                                               ; 2013: 88          .
+    dey                                                               ; 2013: 88          .  ; Y=&81
     bpl loop_c200d                                                    ; 2014: 10 f7       ..
     ; Copy 8 bytes of memory from (table3+3) + 2 to l3502
     ldy #9                                                            ; 2016: a0 09       ..
@@ -61,7 +61,7 @@ section pydis, org = &2000, filename = "copy_loops_baron"
 .loop_c2025
     lda l3601 - 1,x                                                   ; 2025: bd 00 36    ..6
     sta l3701 - 1,x                                                   ; 2028: 9d 00 37    ..7
-    dex                                                               ; 202b: ca          .
+    dex                                                               ; 202b: ca          .  ; X=0
     cpx #4                                                            ; 202c: e0 04       ..
     bcs loop_c2025                                                    ; 202e: b0 f5       ..
     ldx #&f0                                                          ; 2030: a2 f0       ..

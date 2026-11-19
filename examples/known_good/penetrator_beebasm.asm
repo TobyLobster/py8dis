@@ -1551,13 +1551,14 @@ l5fac = logo_picture+8108
 .c60ab
     cpx #&60                                                          ; 60ab: e0 60       `.
     bcc c60b1                                                         ; 60ad: 90 02       ..
-    eor #1                                                            ; 60af: 49 01       ..
+    eor #1                                                            ; 60af: 49 01       .. ; A=&fe
 ; &60b1 referenced 2 times by &60a9, &60ad
 .c60b1
     cpy #&20                                                          ; 60b1: c0 20       @.
     bcs c60b9                                                         ; 60b3: b0 04       0.
     eor #8                                                            ; 60b5: 49 08       ..
-    bne c60bf                                                         ; 60b7: d0 06       P.
+    bne c60bf                                                         ; 60b7: d0 06       P. ; ALWAYS branch
+
 ; &60b9 referenced 1 time by &60b3
 .c60b9
     cpy #&60                                                          ; 60b9: c0 60       @.
@@ -2580,7 +2581,7 @@ l6721 = loop_c671f+2
 ; &6720 referenced 1 time by &6700
 ; &6721 referenced 1 time by &6703
     beq return_5                                                      ; 6722: f0 05       p.
-    dex                                                               ; 6724: ca          J
+    dex                                                               ; 6724: ca          J  ; X=&ff
     bpl loop_c671f                                                    ; 6725: 10 f8       .x
     bmi c670d                                                         ; 6727: 30 e4       .d ; ALWAYS branch
 
@@ -3115,7 +3116,7 @@ l6721 = loop_c671f+2
 
 ; &6af5 referenced 1 time by &6af2
 .c6af5
-    dex                                                               ; 6af5: ca          J
+    dex                                                               ; 6af5: ca          J  ; X=4
     cpx tempBlock+16                                                  ; 6af6: e4 66       d.
     beq c6afd                                                         ; 6af8: f0 03       p.
     jsr uiInsertHighScoreRow                                          ; 6afa: 20 17 6b    ...
@@ -4834,7 +4835,7 @@ l6fb8 = c6fb6+2
 ; &7576 referenced 1 time by &7546
 .c7576
     lda lb422,x                                                       ; 7576: bd 22 b4    =.4
-    sbc #0                                                            ; 7579: e9 00       i.
+    sbc #0                                                            ; 7579: e9 00       i. ; Carry is clear, so subtracting 1
     tay                                                               ; 757b: a8          (
     sta lb622,x                                                       ; 757c: 9d 22 b6    ..6
     lda #3                                                            ; 757f: a9 03       ).
@@ -6742,7 +6743,8 @@ l7fa5 = c7fa3+2
 ; &82dc referenced 1 time by &82d2
 .c82dc
     sta tempBlock+6                                                   ; 82dc: 85 5c       ..
-    bne c82f9                                                         ; 82de: d0 19       P.
+    bne c82f9                                                         ; 82de: d0 19       P. ; ALWAYS branch
+
 ; &82e0 referenced 1 time by &82c3
 .c82e0
     txa                                                               ; 82e0: 8a          .
@@ -6793,7 +6795,8 @@ l82fe = c82fc+2
 ; &8314 referenced 1 time by &8310
 .c8314
     sta tempBlock+6                                                   ; 8314: 85 5c       ..
-    bne c82f9                                                         ; 8316: d0 e1       Pa
+    bne c82f9                                                         ; 8316: d0 e1       Pa ; ALWAYS branch
+
 ; &8318 referenced 2 times by &8306, &8355
 .c8318
     inc zScreenCol                                                    ; 8318: e6 53       f.

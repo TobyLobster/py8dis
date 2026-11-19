@@ -4909,7 +4909,7 @@ showlife
 
 showlife2
     asl                                                               ; 2f71: 0a          .
-    asl                                                               ; 2f72: 0a          .
+    asl                                                               ; 2f72: 0a          .              ; Shift clear bit out (clears carry)
     adc currentscorexpos                                              ; 2f73: 65 3f       e?
     adc #$0a                                                          ; 2f75: 69 0a       i.
     tax                                                               ; 2f77: aa          .

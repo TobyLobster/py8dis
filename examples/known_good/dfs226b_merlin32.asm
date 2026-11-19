@@ -555,7 +555,8 @@ c8103
 ; $2111 referenced 1 time by $8136[1]
 c8111
     stx l00cc                                                         ; 2111: 86 cc       ..  :8111[1]
-    beq c8103                                                         ; 2113: f0 ee       ..  :8113[1]
+    beq c8103                                                         ; 2113: f0 ee       ..  :8113[1]   ; ALWAYS branch
+
 ; $2115 referenced 1 time by $810f[1]
 c8115
     cmp #$3a ; ':'                                                    ; 2115: c9 3a       .:  :8115[1]
@@ -3647,7 +3648,7 @@ c92c7
 ; $32d6 referenced 1 time by $92d2[1]
 c92d6
     rol                                                               ; 32d6: 2a          *   :92d6[1]
-    rol                                                               ; 32d7: 2a          *   :92d7[1]
+    rol                                                               ; 32d7: 2a          *   :92d7[1]   ; Rotate in a clear bit
     rol                                                               ; 32d8: 2a          *   :92d8[1]
     sta l108a                                                         ; 32d9: 8d 8a 10    ... :92d9[1]
     ldx #2                                                            ; 32dc: a2 02       ..  :92dc[1]
@@ -3791,7 +3792,7 @@ c93a8
 ; $33b1 referenced 1 time by $93ad[1]
 c93b1
     sta (l00b2),y                                                     ; 33b1: 91 b2       ..  :93b1[1]
-    tya                                                               ; 33b3: 98          .   :93b3[1]
+    tya                                                               ; 33b3: 98          .   :93b3[1]   ; A=$11
 ; $33b4 referenced 1 time by $9388[1]
 sub_c93b4
     jsr sub_c93c5                                                     ; 33b4: 20 c5 93     .. :93b4[1]
@@ -4188,7 +4189,7 @@ loop_c9618
     sta l10de,x                                                       ; 3618: 9d de 10    ... :9618[1]
     dex                                                               ; 361b: ca          .   :961b[1]
     bne loop_c9618                                                    ; 361c: d0 fa       ..  :961c[1]
-    dey                                                               ; 361e: 88          .   :961e[1]
+    dey                                                               ; 361e: 88          .   :961e[1]   ; Y=$ff
     sty l10c7                                                         ; 361f: 8c c7 10    ... :961f[1]
     sty l10c6                                                         ; 3622: 8c c6 10    ... :9622[1]
     sty l10dd                                                         ; 3625: 8c dd 10    ... :9625[1]

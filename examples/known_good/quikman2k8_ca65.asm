@@ -1460,7 +1460,7 @@ loop_c17ce:
     iny                                                               ; 17d1: c8          H
     cpy #$10                                                          ; 17d2: c0 10       ..
     bne loop_c17ce                                                    ; 17d4: d0 f8       P.
-    tay                                                               ; 17d6: a8          .
+    tay                                                               ; 17d6: a8          .  ; Y=0
 ; $17d7 referenced 1 time by $17e0
 loop_c17d7:
     lda (basic_int_to_float_vector),y                                 ; 17d7: b1 05       ..

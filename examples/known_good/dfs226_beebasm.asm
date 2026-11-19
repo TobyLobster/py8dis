@@ -539,7 +539,8 @@ l8004 = service_entry+1
 ; &8111 referenced 1 time by &8136
 .c8111
     stx l00cc                                                         ; 8111: 86 cc       ..
-    beq c8103                                                         ; 8113: f0 ee       ..
+    beq c8103                                                         ; 8113: f0 ee       ..             ; ALWAYS branch
+
 ; &8115 referenced 1 time by &810f
 .c8115
     cmp #&3a ; ':'                                                    ; 8115: c9 3a       .:
@@ -3664,7 +3665,7 @@ nmi_XXX5 = c0d1f+1
 ; &92d6 referenced 1 time by &92d2
 .c92d6
     rol a                                                             ; 92d6: 2a          *
-    rol a                                                             ; 92d7: 2a          *
+    rol a                                                             ; 92d7: 2a          *              ; Rotate in a clear bit
     rol a                                                             ; 92d8: 2a          *
     sta l108a                                                         ; 92d9: 8d 8a 10    ...
     ldx #2                                                            ; 92dc: a2 02       ..
@@ -3808,7 +3809,7 @@ nmi_XXX5 = c0d1f+1
 ; &93b1 referenced 1 time by &93ad
 .c93b1
     sta (l00b2),y                                                     ; 93b1: 91 b2       ..
-    tya                                                               ; 93b3: 98          .
+    tya                                                               ; 93b3: 98          .              ; A=&11
 ; &93b4 referenced 1 time by &9388
 .sub_c93b4
     jsr sub_c93c5                                                     ; 93b4: 20 c5 93     ..
@@ -4205,7 +4206,7 @@ nmi_XXX5 = c0d1f+1
     sta l10de,x                                                       ; 9618: 9d de 10    ...
     dex                                                               ; 961b: ca          .
     bne loop_c9618                                                    ; 961c: d0 fa       ..
-    dey                                                               ; 961e: 88          .
+    dey                                                               ; 961e: 88          .              ; Y=&ff
     sty l10c7                                                         ; 961f: 8c c7 10    ...
     sty l10c6                                                         ; 9622: 8c c6 10    ...
     sty l10dd                                                         ; 9625: 8c dd 10    ...

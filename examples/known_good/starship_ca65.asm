@@ -850,19 +850,19 @@ empty_torpedo_slot:
     lda temp0_high                                                    ; 242f: a5 81       ..  :132f[1]
     adc #0                                                            ; 2431: 69 00       i.  :1331[1]
     sta temp1_high                                                    ; 2433: 85 83       ..  :1333[1]
-    iny                                                               ; 2435: c8          .   :1335[1]
+    iny                                                               ; 2435: c8          .   :1335[1]   ; Y=1
     lda #$7f                                                          ; 2436: a9 7f       ..  :1336[1]
     sta (temp0_low),y                                                 ; 2438: 91 80       ..  :1338[1]
     sta (temp1_low),y                                                 ; 243a: 91 82       ..  :133a[1]
-    iny                                                               ; 243c: c8          .   :133c[1]
+    iny                                                               ; 243c: c8          .   :133c[1]   ; Y=2
     sta (temp0_low),y                                                 ; 243d: 91 80       ..  :133d[1]
     sta (temp1_low),y                                                 ; 243f: 91 82       ..  :133f[1]
-    iny                                                               ; 2441: c8          .   :1341[1]
+    iny                                                               ; 2441: c8          .   :1341[1]   ; Y=3
     lda #$80                                                          ; 2442: a9 80       ..  :1342[1]
     sta (temp0_low),y                                                 ; 2444: 91 80       ..  :1344[1]
     lda #$90                                                          ; 2446: a9 90       ..  :1346[1]
     sta (temp1_low),y                                                 ; 2448: 91 82       ..  :1348[1]
-    iny                                                               ; 244a: c8          .   :134a[1]
+    iny                                                               ; 244a: c8          .   :134a[1]   ; Y=4
     lda #$75                                                          ; 244b: a9 75       .u  :134b[1]
     sta (temp0_low),y                                                 ; 244d: 91 80       ..  :134d[1]
     lda #$77                                                          ; 244f: a9 77       .w  :134f[1]
@@ -2583,7 +2583,7 @@ skip22:
 skip_uninversion_cosine:
     eor #$80                                                          ; 2f97: 49 80       I.  :1e97[1]
     sta y_pixels                                                      ; 2f99: 85 7b       .{  :1e99[1]
-    dey                                                               ; 2f9b: 88          .   :1e9b[1]
+    dey                                                               ; 2f9b: 88          .   :1e9b[1]   ; Y=1
     lda (temp0_low),y                                                 ; 2f9c: b1 80       ..  :1e9c[1]
     bpl plot_variable_size_fragment                                   ; 2f9e: 10 26       .&  :1e9e[1]
     lda temp8                                                         ; 2fa0: a5 75       .u  :1ea0[1]
@@ -2599,7 +2599,7 @@ skip_uninversion_cosine:
     rol                                                               ; 2fae: 2a          *   :1eae[1]   ; Rotate in a set bit
     sta segment_length                                                ; 2faf: 85 74       .t  :1eaf[1]
     inc output_pixels                                                 ; 2fb1: e6 72       .r  :1eb1[1]
-    iny                                                               ; 2fb3: c8          .   :1eb3[1]
+    iny                                                               ; 2fb3: c8          .   :1eb3[1]   ; Y=2
     lda (temp0_low),y                                                 ; 2fb4: b1 80       ..  :1eb4[1]
     and #$1f                                                          ; 2fb6: 29 1f       ).  :1eb6[1]
     sta segment_angle                                                 ; 2fb8: 85 78       .x  :1eb8[1]
@@ -2681,7 +2681,7 @@ initialise_starship_explosion_piece:
     ora #$80                                                          ; 3049: 09 80       ..  :1f49[1]
     sta (temp0_low),y                                                 ; 304b: 91 80       ..  :1f4b[1]
 not_a_segment:
-    dey                                                               ; 304d: 88          .   :1f4d[1]
+    dey                                                               ; 304d: 88          .   :1f4d[1]   ; Y=0
     lda rnd_1                                                         ; 304e: ad d1 1c    ... :1f4e[1]
     and #$1f                                                          ; 3051: 29 1f       ).  :1f51[1]
     clc                                                               ; 3053: 18          .   :1f53[1]

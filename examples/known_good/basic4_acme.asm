@@ -497,7 +497,7 @@ loop_c819f
 ; $81ad referenced 1 time by $819d
 c81ad
     bne c81b9                                                         ; 81ad: d0 0a       ..
-    iny                                                               ; 81af: c8          .
+    iny                                                               ; 81af: c8          .  ; Y=2
     lda (l003d),y                                                     ; 81b0: b1 3d       .=
     cmp l002a                                                         ; 81b2: c5 2a       .*
     bcc loop_c819f                                                    ; 81b4: 90 e9       ..
@@ -734,7 +734,7 @@ c82f4
 ; $82f7 referenced 1 time by $82f9
 loop_c82f7
     dey                                                               ; 82f7: 88          .
-    rol                                                               ; 82f8: 2a          *
+    rol                                                               ; 82f8: 2a          *  ; Rotate clear bit out (clears carry)
     bpl loop_c82f7                                                    ; 82f9: 10 fc       ..
 ; $82fb referenced 2 times by $82b0, $82bc
 c82fb
@@ -1461,7 +1461,7 @@ c89bf
 
 ; $89d7 referenced 1 time by $89e2
 loop_c89d7
-    dec                                                               ; 89d7: 3a          :
+    dec                                                               ; 89d7: 3a          :  ; A=$ff
     sta l0028                                                         ; 89d8: 85 28       .(
     jmp c90d0                                                         ; 89da: 4c d0 90    L..
 
@@ -2899,13 +2899,13 @@ c9193
     adc (l002a)                                                       ; 9198: 72 2a       r*
     eor l0002                                                         ; 919a: 45 02       E.
     bne c91ad                                                         ; 919c: d0 0f       ..
-    dey                                                               ; 919e: 88          .
+    dey                                                               ; 919e: 88          .  ; Y=1
     adc (l002a),y                                                     ; 919f: 71 2a       q*
     eor l0003                                                         ; 91a1: 45 03       E.
     bne c91ad                                                         ; 91a3: d0 08       ..
     sta l002d                                                         ; 91a5: 85 2d       .-
     txa                                                               ; 91a7: 8a          .
-    iny                                                               ; 91a8: c8          .
+    iny                                                               ; 91a8: c8          .  ; Y=2
     sec                                                               ; 91a9: 38          8
     sbc (l002a),y                                                     ; 91aa: f1 2a       .*
     tax                                                               ; 91ac: aa          .
@@ -5722,7 +5722,7 @@ ca116
     stx l0037                                                         ; a116: 86 37       .7
     lda l0014                                                         ; a118: a5 14       ..
     beq ca126                                                         ; a11a: f0 0a       ..
-    sbc l0037                                                         ; a11c: e5 37       .7
+    sbc l0037                                                         ; a11c: e5 37       .7 ; -1 because carry is clear
     beq ca126                                                         ; a11e: f0 06       ..
     tax                                                               ; a120: aa          .
     jsr cbdff                                                         ; a121: 20 ff bd     ..
@@ -10498,7 +10498,7 @@ cbb9b
 cbba6
     dey                                                               ; bba6: 88          .
     tya                                                               ; bba7: 98          .
-    adc l0039                                                         ; bba8: 65 39       e9
+    adc l0039                                                         ; bba8: 65 39       e9 ; +1 because carry is set
     ldx l003a                                                         ; bbaa: a6 3a       .:
     bcc cbbaf                                                         ; bbac: 90 01       ..
     inx                                                               ; bbae: e8          .

@@ -3777,7 +3777,7 @@ sub_cbc9c
 cbcbe
     lda #0                                                            ; bcbe: a9 00       ..
     sta fac1_sign                                                     ; bcc0: 85 66       ..
-    dey                                                               ; bcc2: 88          .
+    dey                                                               ; bcc2: 88          .  ; Y=0
     lda (basic_index1),y                                              ; bcc3: b1 22       ."
     sta fac1_exponent                                                 ; bcc5: 85 61       ..
     sty fac1_rounding                                                 ; bcc7: 84 70       ..

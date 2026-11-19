@@ -3784,7 +3784,8 @@ cd2c5
 ; $d2ca referenced 1 time by $d2c6
 cd2ca
     sty l00df                                                         ; d2ca: 84 df       ..
-    beq cd2d7                                                         ; d2cc: f0 09       ..
+    beq cd2d7                                                         ; d2cc: f0 09       .. ; ALWAYS branch
+
 ; $d2ce referenced 1 time by $d2a3
 cd2ce
     txa                                                               ; d2ce: 8a          .
@@ -4914,7 +4915,7 @@ cd9e7
     ldx #4                                                            ; d9e7: a2 04       ..
     stx l0001                                                         ; d9e9: 86 01       ..
     sta l0000                                                         ; d9eb: 85 00       ..
-    tay                                                               ; d9ed: a8          .
+    tay                                                               ; d9ed: a8          .  ; Y=0
 ; $d9ee referenced 2 times by $d9f5, $d9fb
 cd9ee
     sta (l0000),y                                                     ; d9ee: 91 00       ..
@@ -4940,7 +4941,7 @@ loop_cda08
     stx system_via_register_b                                         ; da09: 8e 40 fe    .@.
     cpx #9                                                            ; da0c: e0 09       ..
     bcs loop_cda08                                                    ; da0e: b0 f8       ..
-    inx                                                               ; da10: e8          .
+    inx                                                               ; da10: e8          .  ; X=9
 ; $da11 referenced 1 time by $da1b
 loop_cda11
     txa                                                               ; da11: 8a          .
@@ -5348,7 +5349,7 @@ cdca9
 ; $dcb3 referenced 1 time by $dced
 cdcb3
     ldy acia_data                                                     ; dcb3: ac 09 fe    ...
-    rol                                                               ; dcb6: 2a          *
+    rol                                                               ; dcb6: 2a          *  ; Rotate in a set bit
     asl                                                               ; dcb7: 0a          .
 ; $dcb8 referenced 1 time by $dc82
 cdcb8
@@ -5637,7 +5638,7 @@ cde6e
 ; $de72 referenced 1 time by $de48
 cde72
     rol                                                               ; de72: 2a          *
-    rol                                                               ; de73: 2a          *
+    rol                                                               ; de73: 2a          *  ; Rotate in a clear bit
     rol                                                               ; de74: 2a          *
     rol                                                               ; de75: 2a          *
     bpl cde7f                                                         ; de76: 10 07       ..
@@ -7272,7 +7273,7 @@ loop_ce904
     bcs loop_ce904                                                    ; e90c: b0 f6       ..
     lda (l00f0),y                                                     ; e90e: b1 f0       ..
     sta l00e9                                                         ; e910: 85 e9       ..
-    dey                                                               ; e912: 88          .
+    dey                                                               ; e912: 88          .  ; Y=0
     sty l0269                                                         ; e913: 8c 69 02    .i.
     lda (l00f0),y                                                     ; e916: b1 f0       ..
     sta l00e8                                                         ; e918: 85 e8       ..
@@ -9434,7 +9435,8 @@ cf561
     iny                                                               ; f563: c8          .
     iny                                                               ; f564: c8          .
     iny                                                               ; f565: c8          .
-    bne cf56a                                                         ; f566: d0 02       ..
+    bne cf56a                                                         ; f566: d0 02       .. ; ALWAYS branch
+
 ; $f568 referenced 1 time by $f55c
 cf568
     lda #$cc                                                          ; f568: a9 cc       ..
@@ -9463,8 +9465,9 @@ cf57a
 
 ; $f57e referenced 1 time by $f54e
 cf57e
-    tay                                                               ; f57e: a8          .
-    beq loop_cf56d                                                    ; f57f: f0 ec       ..
+    tay                                                               ; f57e: a8          .  ; Y=0
+    beq loop_cf56d                                                    ; f57f: f0 ec       .. ; ALWAYS branch
+
 ; $f581 referenced 1 time by $f56d
 cf581
     lda (l0000,x)                                                     ; f581: a1 00       ..

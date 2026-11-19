@@ -28,6 +28,14 @@ run_tests.py -c when all the tests are run.
    (e.g. 'cmp #5 : lda #9 : bcs', where what CMP said about A no longer
    holds).
 
+3. Joining at labels (see Cpu6502.join_states_at_labels()): random
+   programs of the instructions above, with loads, stores, conditional
+   branches (forwards and backwards, so with loops) and jumps, are traced by
+   py8dis, then run on the simple 6502 from random states (with D clear) and
+   random memory. At each instruction run, what py8dis says it knows for
+   certain after it must be so (after a branch, only when it isn't taken,
+   and a branch it says is always taken must be).
+
 The tests are randomised with a fixed seed, so they're the same each run.
 
 Usage: ./known_bits_tests.py   (exits with 1 if any fail)
@@ -381,11 +389,148 @@ def test_cpu_state(rng):
     return count
 
 
+# 3. Joining at labels
+
+# The instructions of the random programs: (opcode, length), by kind
+PROGRAM_IMMEDIATE = [0xa9, 0xa2, 0xa0, 0x29, 0x09, 0x49, 0x69, 0xe9, 0xc9, 0xe0, 0xc0]
+PROGRAM_IMPLIED = [0x0a, 0x2a, 0x4a, 0x6a, 0xe8, 0xca, 0xc8, 0x88, 0xaa, 0x8a, 0xa8, 0x98, 0x18, 0x38, 0xd8, 0xea]
+PROGRAM_ZP = [0xa5, 0xa6, 0xa4, 0x85, 0x86, 0x84]          # LDA/LDX/LDY/STA/STX/STY zp
+PROGRAM_BRANCHES = [b[0] for b in BRANCHES]
+
+def random_program(rng, slots=24):
+    """A random program at $2000: a list of instructions (as lists of
+    bytes), ending with RTS. Branch and jump targets are other
+    instructions (filled in once the addresses are known)."""
+    kinds = []
+    for i in range(slots - 1):
+        r = rng.random()
+        if r < 0.25:
+            kinds.append(("imm", rng.choice(PROGRAM_IMMEDIATE), rng.choice([0, 1, 2, 3, 7, 0x0f, 0x10, 0x7f, 0x80, 0xfe, 0xff, rng.randrange(256)])))
+        elif r < 0.55:
+            kinds.append(("implied", rng.choice(PROGRAM_IMPLIED)))
+        elif r < 0.7:
+            kinds.append(("zp", rng.choice(PROGRAM_ZP), 0x70 + rng.randrange(4)))
+        elif r < 0.93:
+            kinds.append(("branch", rng.choice(PROGRAM_BRANCHES), rng.randrange(slots)))
+        elif r < 0.97:
+            kinds.append(("jmp", 0x4c, rng.randrange(slots)))
+        else:
+            kinds.append(("rts", 0x60))
+    kinds.append(("rts", 0x60))
+    lengths = {"imm": 2, "implied": 1, "zp": 2, "branch": 2, "jmp": 3, "rts": 1}
+    addrs = []
+    addr = 0x2000
+    for k in kinds:
+        addrs.append(addr)
+        addr += lengths[k[0]]
+    program = []
+    for i, k in enumerate(kinds):
+        if k[0] in ("imm", "zp"):
+            program.append([k[1], k[2]])
+        elif k[0] == "branch":
+            program.append([k[1], (addrs[k[2]] - (addrs[i] + 2)) & 0xff])
+        elif k[0] == "jmp":
+            program.append([k[1], addrs[k[2]] & 0xff, addrs[k[2]] >> 8])
+        else:
+            program.append([k[1]])
+    return program
+
+def run(program_bytes, s, memory, steps=300):
+    """Run the program (bytes at $2000) on the simple 6502 from the state s
+    (changed as it runs), with 'memory' its zero page. Yields (address,
+    branch taken or not, or None) after each instruction."""
+    pc = 0x2000
+    for _ in range(steps):
+        op = program_bytes[pc - 0x2000]
+        if op == 0x60:
+            return
+        if op == 0x4c:
+            pc = program_bytes[pc - 0x2000 + 1] | program_bytes[pc - 0x2000 + 2] << 8
+            yield None
+            continue
+        operand = program_bytes[pc - 0x2000 + 1] if pc - 0x2000 + 1 < len(program_bytes) else 0
+        here = pc
+        if op in PROGRAM_BRANCHES:
+            flag, value = [(f, v) for b, f, v in BRANCHES if b == op][0]
+            taken = s[flag] != value
+            pc = (pc + 2 + (operand - 256 if operand & 0x80 else operand)) if taken else pc + 2
+            yield here, taken
+            continue
+        if op in (0xa5, 0xa6, 0xa4):
+            reg = {0xa5: 'a', 0xa6: 'x', 0xa4: 'y'}[op]
+            s[reg] = memory[operand]
+            s['n'] = bool(s[reg] & 0x80)
+            s['z'] = s[reg] == 0
+            pc += 2
+        elif op in (0x85, 0x86, 0x84):
+            memory[operand] = s[{0x85: 'a', 0x86: 'x', 0x84: 'y'}[op]]
+            pc += 2
+        elif op == 0x18:
+            s['c'] = False
+            pc += 1
+        elif op == 0x38:
+            s['c'] = True
+            pc += 1
+        elif op == 0xd8:
+            s['d'] = False
+            pc += 1
+        elif op == 0xea:
+            pc += 1
+        else:
+            assert step(op, operand, s)
+            pc += 2 if op in PROGRAM_IMMEDIATE else 1
+        yield here, None
+
+def test_joining(rng, programs=150):
+    import commands
+    import os
+    import session
+    import tempfile
+    count = 0
+    for n in range(programs):
+        program = random_program(rng)
+        program_bytes = [b for instruction in program for b in instruction]
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            f.write(bytes(program_bytes))
+            filename = f.name
+        try:
+            session.new_session(assembler="acme")
+            commands.load(0x2000, filename, "6502")
+            commands.entry(0x2000)
+            cpu = session.current().cpu
+            cpu.trace()
+        finally:
+            os.unlink(filename)
+        for trial in range(30):
+            s = {reg: rng.randrange(256) for reg in "axy"}
+            for flag in "nvizc":
+                s[flag] = rng.choice([False, True])
+            s['d'] = False
+            memory = [rng.randrange(256) for _ in range(256)]
+            for result in run(program_bytes, s, memory):
+                if result is None:
+                    continue
+                here, taken = result
+                state = cpu.cpu_states[here]
+                if state is None:
+                    fail("program %d: $%04x was run but not traced: %s" % (n, here, program_bytes))
+                    break
+                inputs = "program %d at $%04x (%s)" % (n, here, " ".join("%02x" % b for b in program_bytes))
+                if taken is None or not taken:
+                    if taken is False and state.always_branch:
+                        fail("ALWAYS branch, but it isn't taken, at " + inputs)
+                    if not state.always_branch:
+                        check_disposition("joined", state.pessimistic, s, inputs)
+                        count += 1
+    return count
+
+
 def main():
     rng = random.Random(6502)
     test_knownbits(rng)
     test_precision()
     count = test_cpu_state(rng)
+    count += test_joining(rng)
     if failures:
         print("%d failed" % len(failures))
         sys.exit(1)

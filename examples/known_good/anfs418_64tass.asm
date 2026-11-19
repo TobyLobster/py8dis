@@ -570,12 +570,12 @@ c8177
     bne c819f                                                         ; 8189: d0 14       ..
 ; $818b referenced 1 time by $8184
 c818b
-    iny                                                               ; 818b: c8          .
+    iny                                                               ; 818b: c8          .              ; Y=2
     lda (l00a6),y                                                     ; 818c: b1 a6       ..
     beq c81ba                                                         ; 818e: f0 2a       .*
     cmp l0d2e                                                         ; 8190: cd 2e 0d    ...
     bne c819f                                                         ; 8193: d0 0a       ..
-    iny                                                               ; 8195: c8          .
+    iny                                                               ; 8195: c8          .              ; Y=3
     lda (l00a6),y                                                     ; 8196: b1 a6       ..
     beq c81ba                                                         ; 8198: f0 20       .
     cmp l0d2f                                                         ; 819a: cd 2f 0d    ./.
@@ -863,7 +863,7 @@ loop_c835a
 ; $8388 referenced 1 time by $838f
 loop_c8388
     lda #0                                                            ; 8388: a9 00       ..
-    adc (l00a6),y                                                     ; 838a: 71 a6       q.
+    adc (l00a6),y                                                     ; 838a: 71 a6       q.             ; +1 because carry is set
     sta (l00a6),y                                                     ; 838c: 91 a6       ..
     iny                                                               ; 838e: c8          .
     bcs loop_c8388                                                    ; 838f: b0 f7       ..
@@ -1199,7 +1199,7 @@ sub_c858c
 c85a4
     sta l0d24                                                         ; 85a4: 8d 24 0d    .$.
     tax                                                               ; 85a7: aa          .
-    iny                                                               ; 85a8: c8          .
+    iny                                                               ; 85a8: c8          .              ; Y=1
     lda (l00a0),y                                                     ; 85a9: b1 a0       ..
     sta l0d25                                                         ; 85ab: 8d 25 0d    .%.
     bne c85e3                                                         ; 85ae: d0 33       .3
@@ -3806,7 +3806,7 @@ c9586
 
 ; $9589 referenced 2 times by $9584, $95c2
 c9589
-    ora #9                                                            ; 9589: 09 09       ..
+    ora #9                                                            ; 9589: 09 09       ..             ; A=9
     sta (l009c),y                                                     ; 958b: 91 9c       ..
     ldx #$80                                                          ; 958d: a2 80       ..
     ldy #$80                                                          ; 958f: a0 80       ..
@@ -3984,7 +3984,8 @@ loop_c968c
     bne loop_c968c                                                    ; 9696: d0 f4       ..
 ; $9698 referenced 1 time by $9692
 c9698
-    beq c96af                                                         ; 9698: f0 15       ..
+    beq c96af                                                         ; 9698: f0 15       ..             ; ALWAYS branch
+
 ; $969a referenced 1 time by $9656
 c969a
     tax                                                               ; 969a: aa          .
@@ -4279,7 +4280,7 @@ c9873
 
 ; $987e referenced 2 times by $9859, $9876
 c987e
-    tax                                                               ; 987e: aa          .
+    tax                                                               ; 987e: aa          .              ; X=0
     jmp c964c                                                         ; 987f: 4c 4c 96    LL.
 
 ; $9882 referenced 1 time by $9856
@@ -6006,7 +6007,8 @@ loop_ca230
     sta l1071                                                         ; a23e: 8d 71 10    .q.
 ; $a241 referenced 1 time by $a258
 loop_ca241
-    bne ca1ca                                                         ; a241: d0 87       ..
+    bne ca1ca                                                         ; a241: d0 87       ..             ; ALWAYS branch
+
 ; $a243 referenced 1 time by $a217
 ca243
     ldx #$ff                                                          ; a243: a2 ff       ..
@@ -6802,10 +6804,10 @@ loop_ca81a
 
 ; $a837 referenced 1 time by $a82f
 ca837
-    iny                                                               ; a837: c8          .
+    iny                                                               ; a837: c8          .              ; Y=1
     sta (l00ac),y                                                     ; a838: 91 ac       ..
-    iny                                                               ; a83a: c8          .
-    iny                                                               ; a83b: c8          .
+    iny                                                               ; a83a: c8          .              ; Y=2
+    iny                                                               ; a83b: c8          .              ; Y=3
     lda (l00ac),y                                                     ; a83c: b1 ac       ..
     beq ca847                                                         ; a83e: f0 07       ..
 ca840
@@ -7324,7 +7326,7 @@ cab36
 ; $ab75 referenced 1 time by $ab1c
 cab75
     lda l0d6a                                                         ; ab75: ad 6a 0d    .j.
-    ror a                                                             ; ab78: 6a          j
+    ror a                                                             ; ab78: 6a          j              ; Rotate in a clear bit
     bcc cab36                                                         ; ab79: 90 bb       ..
     lda l00d0                                                         ; ab7b: a5 d0       ..
     pha                                                               ; ab7d: 48          H
@@ -8779,7 +8781,7 @@ cb41d
 
 ; $b423 referenced 1 time by $b3fd
 cb423
-    dex                                                               ; b423: ca          .
+    dex                                                               ; b423: ca          .              ; X=$ff
 ; $b424 referenced 1 time by $b42d
 loop_cb424
     inx                                                               ; b424: e8          .

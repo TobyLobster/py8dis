@@ -2050,7 +2050,7 @@ lf9a3 = cf9a2+1
 ; &fb29 referenced 2 times by &fb21, &fb24
 .cfb29
     ror l00d2                                                         ; fb29: 66 d2       f.
-    inx                                                               ; fb2b: e8          .
+    inx                                                               ; fb2b: e8          .  ; X=0
     jsr sub_cfb3b                                                     ; fb2c: 20 3b fb     ;.
     inc l00d0                                                         ; fb2f: e6 d0       ..
     inc l00d4                                                         ; fb31: e6 d4       ..
@@ -2889,7 +2889,8 @@ lf9a3 = cf9a2+1
 .cff38
     lda via_pcr                                                       ; ff38: ad 0c b8    ...
     and #&f0                                                          ; ff3b: 29 f0       ).
-    bcs cff33                                                         ; ff3d: b0 f4       ..
+    bcs cff33                                                         ; ff3d: b0 f4       .. ; ALWAYS branch
+
 .reset
     ; Copy 24 bytes of memory from default_vectors to irqvec
     ldx #&17                                                          ; ff3f: a2 17       ..
