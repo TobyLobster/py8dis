@@ -3298,7 +3298,7 @@ uiGetHighScoreName:
     lda #$5f                                                          ; 6b63: a9 5f       ).
     ldx #6                                                            ; 6b65: a2 06       ".
     stx tempBlock+18                                                  ; 6b67: 86 68       ..
-; Set 6 bytes of memory to 95
+    ; Set 6 bytes of memory to 95
     ldy #0                                                            ; 6b69: a0 00        .
 ; $6b6b referenced 1 time by $6b6f
 loop_c6b6b:
@@ -3910,7 +3910,7 @@ loop_c6f46:
     dex                                                               ; 6f58: ca          J
     bne loop_c6f46                                                    ; 6f59: d0 eb       Pk
     ldx #4                                                            ; 6f5b: a2 04       ".
-; Clear 5 bytes of memory from lb2af onwards
+    ; Clear 5 bytes of memory from lb2af onwards
 ; $6f5d referenced 1 time by $6f61
 loop_c6f5d:
     sta lb2af,x                                                       ; 6f5d: 9d af b2    ./2 ; A=0
@@ -4018,7 +4018,7 @@ c6ff9:
     lda lb422,x                                                       ; 7000: bd 22 b4    =.4
     sec                                                               ; 7003: 38          .
     sbc #1                                                            ; 7004: e9 01       i.
-; Set 4 bytes of memory at lb622+X
+    ; Set 4 bytes of memory at lb622+X
 ; $7006 referenced 1 time by $700b
 loop_c7006:
     sta lb622,x                                                       ; 7006: 9d 22 b6    ..6
@@ -4275,7 +4275,7 @@ gameInit:
     sta lb2ab                                                         ; 717f: 8d ab b2    .+2
     sta lb2ac                                                         ; 7182: 8d ac b2    .,2 ; A=0
     ldx #4                                                            ; 7185: a2 04       ".
-; Clear 5 bytes of memory from lb2af onwards
+    ; Clear 5 bytes of memory from lb2af onwards
 ; $7187 referenced 1 time by $718b
 loop_c7187:
     sta lb2af,x                                                       ; 7187: 9d af b2    ./2 ; A=0
@@ -4316,7 +4316,7 @@ loop_c71b9:
     dex                                                               ; 71cb: ca          J
     bne loop_c71b9                                                    ; 71cc: d0 eb       Pk
     ldx #5                                                            ; 71ce: a2 05       ".
-; Clear 6 bytes of memory from lb31c onwards
+    ; Clear 6 bytes of memory from lb31c onwards
 ; $71d0 referenced 1 time by $71d4
 loop_c71d0:
     sta lb31c,x                                                       ; 71d0: 9d 1c b3    ..3 ; A=0
@@ -7513,7 +7513,7 @@ c8680:
     bpl loop_c8676                                                    ; 8681: 10 f3       .s
     lda #0                                                            ; 8683: a9 00       ).
     ldx #$0e                                                          ; 8685: a2 0e       ".
-; Clear 15 bytes of memory from lb2ca onwards
+    ; Clear 15 bytes of memory from lb2ca onwards
 ; $8687 referenced 1 time by $868b
 loop_c8687:
     sta lb2ca,x                                                       ; 8687: 9d ca b2    .J2 ; A=0

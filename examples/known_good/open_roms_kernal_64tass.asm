@@ -417,7 +417,7 @@ ce541
 ce544
     lda #$80                                                          ; e544: a9 80       ..
     ldy #$18                                                          ; e546: a0 18       ..
-; Set 25 bytes of memory from screen_line_links onwards to 128
+    ; Set 25 bytes of memory from screen_line_links onwards to 128
 ; $e548 referenced 1 time by $e54c
 loop_ce548
     sta screen_line_links,y                                           ; e548: 99 d9 00    .Y. ; A=$80
@@ -487,7 +487,7 @@ ce59e
 sub_ce5a0
     lda #0                                                            ; e5a0: a9 00       ..
     ldx #$2e ; '.'                                                    ; e5a2: a2 2e       ..
-; Clear 47 bytes of memory from vic_sprite0_x onwards
+    ; Clear 47 bytes of memory from vic_sprite0_x onwards
 ; $e5a4 referenced 1 time by $e5a8
 loop_ce5a4
     sta vic_sprite0_x,x                                               ; e5a4: 9d 00 d0    ..P ; A=0
@@ -1061,7 +1061,7 @@ loop_ce8f3
     jsr sub_cf972                                                     ; e8f5: 20 72 f9     ..
     dey                                                               ; e8f8: 88          .
     bne loop_ce8f3                                                    ; e8f9: d0 f8       P.
-; Copy 24 bytes of memory from screen_line_links+1 to screen_line_links
+    ; Copy 24 bytes of memory from screen_line_links+1 to screen_line_links
 ; $e8fb referenced 1 time by $e8ef
 ce8fb
     ldy #0                                                            ; e8fb: a0 00       ..
@@ -1194,7 +1194,7 @@ ce9bb
     jsr sub_cf8b4                                                     ; e9bb: 20 b4 f8     ..
     jsr sub_ce5f9                                                     ; e9be: 20 f9 e5     ..
     bcs ce98f                                                         ; e9c1: b0 cc       .L
-; Copy 11 bytes of memory from lf33f to l0100
+    ; Copy 11 bytes of memory from lf33f to l0100
     ldx #$0a                                                          ; e9c3: a2 0a       ..
 ; $e9c5 referenced 1 time by $e9cc
 loop_ce9c5
@@ -3431,7 +3431,7 @@ cf8b2
 sub_cf8b4
     lda #0                                                            ; f8b4: a9 00       ..
     ldy #$1c                                                          ; f8b6: a0 1c       ..
-; Clear 29 bytes of memory from sid_voice1_frequency_low onwards
+    ; Clear 29 bytes of memory from sid_voice1_frequency_low onwards
 ; $f8b8 referenced 1 time by $f8bc
 loop_cf8b8
     sta sid_voice1_frequency_low,y                                    ; f8b8: 99 00 d4    ..T ; A=0
@@ -4400,7 +4400,7 @@ default_vectors
 cfd50
     ldy #0                                                            ; fd50: a0 00       ..
     lda #0                                                            ; fd52: a9 00       ..
-; Clear 256 bytes of memory from basic_error_vector onwards, and 256 bytes from basic_input_buffer onwards, and 256 bytes from l0002 onwards
+    ; Clear 256 bytes of memory from basic_error_vector onwards, and 256 bytes from basic_input_buffer onwards, and 256 bytes from l0002 onwards
 ; $fd54 referenced 1 time by $fd5e
 loop_cfd54
     sta basic_error_vector,y                                          ; fd54: 99 00 03    ... ; A=0

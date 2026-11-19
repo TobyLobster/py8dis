@@ -192,6 +192,28 @@ def _loop_run(start, step, keep_going):
     return lowest, len(values)
 
 # ************************************************************************************************
+def _comment_loop(binary_loc, text):
+    """Comment a loop (e.g. 'Copy 8 bytes of memory from source to dest'),
+    on a line of its own before the label at binary_loc (where the loop, or
+    the loads before it, start). The comment is indented, as the code is,
+    if the code before it runs on into it (it isn't after an RTS or JMP,
+    say, or data), so it reads as part of that code rather than as the
+    start of a routine."""
+    cpu = session.current().cpu
+    indent = 0
+    for length in (1, 2, 3):
+        before = binary_loc.binary_addr - length
+        if before < 0:
+            break
+        c = classification.get_classification(before)
+        if isinstance(c, cpu.Opcode) and c.length() == length:
+            state = cpu.cpu_states[before]
+            if not c.is_block_end() and not (state is not None and state.always_branch):
+                indent = 1
+            break
+    disassembly.comment_binary(binary_loc, text, indent=indent, align=Align.BEFORE_LABEL, auto_generated=True)
+
+# ************************************************************************************************
 def comment_memory_copy_loop(p):
     """Post-trace function for a loop that copies memory, counting X or Y
     down to zero ('dex : bne loop') or past it ('dex : bpl loop'): comment
@@ -276,7 +298,7 @@ def comment_memory_copy_loop(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
+    _comment_loop(comment_loc, text)
 
 # ************************************************************************************************
 def comment_memory_copy_with_limited_end_loop(p):
@@ -363,7 +385,7 @@ def comment_memory_copy_with_limited_end_loop(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
+    _comment_loop(comment_loc, text)
 
 
 # ************************************************************************************************
@@ -437,7 +459,7 @@ def comment_memory_copy_increment(p):
 
     # (The labels aren't named yet, so the text is a LazyString)
     text = utils.LazyString("Copy%s%s%s", bytes_to_copy_string, source_label, dest_label)
-    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
+    _comment_loop(comment_loc, text)
 
 # ************************************************************************************************
 def comment_add_to_y(p):
@@ -530,7 +552,7 @@ def comment_set_memory_r_loop(p, reg, other_reg):
     else:
         # "This loop sets 18 bytes of memory at l20e1+Y to 0"
         text = utils.LazyString("Set%s%s%s", bytes_to_set_string, dest_label, to_value_string)
-    disassembly.comment_binary(comment_loc, text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
+    _comment_loop(comment_loc, text)
 
 # ************************************************************************************************
 def comment_set_memory_x_loop(p):
@@ -717,7 +739,7 @@ def comment_set_memory_one_register_loop(p, reg):
     # e.g. "Clear 256 bytes of memory from table onwards, and 256 bytes from
     # table+512 onwards"
     text = utils.LazyString("%s %s%s", verb, utils.LazyString(", and ".join(["%s"] * len(parts)), *parts), to_text)
-    disassembly.comment_binary(p.get_start_loc(), text, indent=0, align=Align.BEFORE_LABEL, auto_generated=True)
+    _comment_loop(p.get_start_loc(), text)
 
 def comment_set_memory_y_index_loop(p):
     """Post-trace function for a loop that stores A with Y as both the

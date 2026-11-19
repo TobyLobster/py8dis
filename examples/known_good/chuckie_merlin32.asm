@@ -1777,7 +1777,7 @@ initmap
     sta numbirds                                                      ; 1b62: 85 57       .W
     lda #0                                                            ; 1b64: a9 00       ..
     tax                                                               ; 1b66: aa          .              ; X=0
-; Clear 512 bytes of memory from mapdata onwards
+    ; Clear 512 bytes of memory from mapdata onwards
 clearmaploop
     sta mapdata,x                                                     ; 1b67: 9d 00 06    ...            ; A=0
     sta mapdata + $0100,x                                             ; 1b6a: 9d 00 07    ...
@@ -3746,7 +3746,7 @@ resethiscoretabloop
     jsr gethiscoreaddr                                                ; 279c: 20 7c 27     |'
     ldy #$0f                                                          ; 279f: a0 0f       ..
     lda #' '                                                          ; 27a1: a9 20       .
-; Set 5 bytes of memory from (hiscoreaddr)+11 onwards to 32
+    ; Set 5 bytes of memory from (hiscoreaddr)+11 onwards to 32
 clearhiscorenameloop
     sta (hiscoreaddr),y                                               ; 27a3: 91 76       .v             ; A=$20
     dey                                                               ; 27a5: 88          .
@@ -3762,7 +3762,7 @@ clearhiscorenameloop
     sta (hiscoreaddr),y                                               ; 27b6: 91 76       .v
     dey                                                               ; 27b8: 88          .              ; Y=7
     lda #0                                                            ; 27b9: a9 00       ..
-; Clear 8 bytes of memory from (hiscoreaddr) onwards
+    ; Clear 8 bytes of memory from (hiscoreaddr) onwards
 clearhiscoreloop
     sta (hiscoreaddr),y                                               ; 27bb: 91 76       .v             ; A=0
     dey                                                               ; 27bd: 88          .
@@ -3802,7 +3802,7 @@ checknexthiscore
 
 inserthiscore
     jsr shufflehiscores                                               ; 27ed: 20 06 28     .(
-; Copy 8 bytes of memory from score
+    ; Copy 8 bytes of memory from score
     ldy #7                                                            ; 27f0: a0 07       ..
 inserthiscoreloop
     lda score,y                                                       ; 27f2: b9 28 00    .(.
@@ -3811,7 +3811,7 @@ inserthiscoreloop
     bpl inserthiscoreloop                                             ; 27f8: 10 f8       ..
     ldy #$0f                                                          ; 27fa: a0 0f       ..
     lda #' '                                                          ; 27fc: a9 20       .
-; Set 8 bytes of memory from (hiscoreaddr)+8 onwards to 32
+    ; Set 8 bytes of memory from (hiscoreaddr)+8 onwards to 32
 insertblanknameloop
     sta (hiscoreaddr),y                                               ; 27fe: 91 76       .v             ; A=$20
     dey                                                               ; 2800: 88          .
@@ -3830,7 +3830,7 @@ shuffleloop
     cpx temp3                                                         ; 280c: e4 8a       ..
     bcc shuffled                                                      ; 280e: 90 22       ."
     jsr gethiscoreaddr                                                ; 2810: 20 7c 27     |'
-; Copy 16 bytes of memory to bigbirdxpos
+    ; Copy 16 bytes of memory to bigbirdxpos
     ldy #$0f                                                          ; 2813: a0 0f       ..
 readhiscoreloop
     lda (hiscoreaddr),y                                               ; 2815: b1 76       .v
@@ -3840,7 +3840,7 @@ readhiscoreloop
     ldx temp4                                                         ; 281d: a6 8b       ..
     inx                                                               ; 281f: e8          .
     jsr gethiscoreaddr                                                ; 2820: 20 7c 27     |'
-; Copy 16 bytes of memory from bigbirdxpos
+    ; Copy 16 bytes of memory from bigbirdxpos
     ldy #$0f                                                          ; 2823: a0 0f       ..
 writehiscoreloop
     lda bigbirdxpos,y                                                 ; 2825: b9 30 00    .0.
@@ -4394,7 +4394,7 @@ resetplayerscores
     asl                                                               ; 2c16: 0a          .
     asl                                                               ; 2c17: 0a          .
     tax                                                               ; 2c18: aa          .
-; Clear 8 bytes of memory at playerscore+X
+    ; Clear 8 bytes of memory at playerscore+X
     ldy #7                                                            ; 2c19: a0 07       ..
     lda #0                                                            ; 2c1b: a9 00       ..
 resetplayerscores2

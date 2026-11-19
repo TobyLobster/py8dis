@@ -2347,7 +2347,7 @@ cafc9
 sub_cafd4
     lda #0                                                            ; afd4: a9 00       ..
     ldy #$1d                                                          ; afd6: a0 1d       ..
-; Clear 30 bytes of memory from l0101 onwards
+    ; Clear 30 bytes of memory from l0101 onwards
 ; $afd8 referenced 1 time by $afdc
 loop_cafd8
     sta l0101,y                                                       ; afd8: 99 01 01    ... ; A=0
@@ -2586,7 +2586,7 @@ loop_cb3a5
     sta basic_error_vector,y                                          ; b3a8: 99 00 03    ...
     dey                                                               ; b3ab: 88          .
     bpl loop_cb3a5                                                    ; b3ac: 10 f7       ..
-; Copy 5 bytes of memory from la181 to basic_float_to_int_vector
+    ; Copy 5 bytes of memory from la181 to basic_float_to_int_vector
     ldy #4                                                            ; b3ae: a0 04       ..
 ; $b3b0 referenced 1 time by $b3b7
 loop_cb3b0

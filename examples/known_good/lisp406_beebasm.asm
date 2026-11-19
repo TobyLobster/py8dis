@@ -242,7 +242,7 @@ OSCLI   = &fff7
     sta LSCHAR                                     ; 808a: 8d 30 04    .0.
     ldx #3                                         ; 808d: a2 03       ..
     lda #'0'                                       ; 808f: a9 30       .0
-; Set 4 bytes of memory from GENCNT onwards to 48
+    ; Set 4 bytes of memory from GENCNT onwards to 48
 .LOOP5
     sta GENCNT,x                                   ; 8091: 9d 34 04    .4. ; A=&30
     dex                                            ; 8094: ca          .
@@ -683,7 +683,7 @@ OSCLI   = &fff7
     lda (SP),y                                     ; 8374: b1 7e       .~
     pha                                            ; 8376: 48          H
     dey                                            ; 8377: 88          .
-; Copy Y bytes of memory to TVSEXT
+    ; Copy Y bytes of memory to TVSEXT
 .MORSP
     lda (SP),y                                     ; 8378: b1 7e       .~  ; Copy back TVS
     sta TVSEXT - 1,y                               ; 837a: 99 32 00    .2. ; WSA, WSB and WSC
@@ -759,7 +759,7 @@ OSCLI   = &fff7
     sta (SP),y                                     ; 83d8: 91 7e       .~
     dey                                            ; 83da: 88          .
     dey                                            ; 83db: 88          .
-; Copy Y+1 bytes of memory from BINDER
+    ; Copy Y+1 bytes of memory from BINDER
 .PILE
     lda BINDER,y                                   ; 83dc: b9 32 00    .2.
     sta (SP),y                                     ; 83df: 91 7e       .~
@@ -1457,7 +1457,7 @@ OSCLI   = &fff7
     sta ARG                                        ; 8810: 85 30       .0
     lda POINT+1                                    ; 8812: a5 7b       .{
     sta ARG+1                                      ; 8814: 85 31       .1
-; Copy 4 bytes of memory from WSA
+    ; Copy 4 bytes of memory from WSA
     ldy #4                                         ; 8816: a0 04       ..
 .MORODD
     lda WSA - 1,y                                  ; 8818: b9 33 00    .3.
@@ -2186,7 +2186,7 @@ OSCLI   = &fff7
 .PINT
     ldx #5                                         ; 8c57: a2 05       ..
     lda #0                                         ; 8c59: a9 00       ..
-; Clear 6 bytes of memory from NBUFF onwards
+    ; Clear 6 bytes of memory from NBUFF onwards
 .CLDIV
     sta NBUFF,x                                    ; 8c5b: 95 14       ..  ; A=0
     dex                                            ; 8c5d: ca          .
@@ -2514,7 +2514,7 @@ OSCLI   = &fff7
     ; **** CONS
 .CONS
     jsr ALPAIR                                     ; 8e1e: 20 53 84     S.
-; Copy 4 bytes of memory from ARGA
+    ; Copy 4 bytes of memory from ARGA
     ldy #4                                         ; 8e21: a0 04       ..
 .CONSLP
     lda ARGA - 1,y                                 ; 8e23: b9 39 00    .9.
@@ -4261,7 +4261,7 @@ OSCLI   = &fff7
 .GCTIMZ
     lda #0                                         ; 98d6: a9 00       ..
     ldx #4                                         ; 98d8: a2 04       ..
-; Clear 5 bytes of memory from GCTIME onwards
+    ; Clear 5 bytes of memory from GCTIME onwards
 .MGCTIM
     sta GCTIME,x                                   ; 98da: 9d 20 04    . . ; A=0
     dex                                            ; 98dd: ca          .
@@ -5530,7 +5530,7 @@ DWARF=NERRC-1
     dey                                            ; a06d: 88          .
     bpl MDIV3                                      ; a06e: 10 f3       ..
     bcc DIV40C                                     ; a070: 90 0e       ..
-; Copy 5 bytes of memory from TEMP40 to REM40
+    ; Copy 5 bytes of memory from TEMP40 to REM40
     ldx #4                                         ; a072: a2 04       ..
 .MDIV4
     lda TEMP40,x                                   ; a074: bd 11 04    ...

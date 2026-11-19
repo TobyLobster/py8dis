@@ -5445,7 +5445,7 @@ skip_unplotting_scanners
     lda #$59                                                          ; 42a1: a9 59       .Y  :31a1[1]
     sta temp0_high                                                    ; 42a3: 85 81       ..  :31a3[1]
     ldx #8                                                            ; 42a5: a2 08       ..  :31a5[1]
-; Copy 64 bytes of memory
+    ; Copy 64 bytes of memory
 plot_static_row_loop
     ldy #$3f                                                          ; 42a7: a0 3f       .?  :31a7[1]
 plot_static_column_loop
@@ -5515,7 +5515,7 @@ clear_long_range_scanner
 clear_long_range_scanner_row_loop
     ldy #$3f                                                          ; 430f: a0 3f       .?  :320f[1]
     lda #0                                                            ; 4311: a9 00       ..  :3211[1]
-; Clear 64 bytes of memory from (temp0_low) onwards
+    ; Clear 64 bytes of memory from (temp0_low) onwards
 clear_long_range_scanner_column_loop
     sta (temp0_low),y                                                 ; 4313: 91 80       ..  :3213[1]   ; A=0
     dey                                                               ; 4315: 88          .   :3215[1]
@@ -6321,7 +6321,7 @@ start_game_continuation
     sta score_as_bcd                                                  ; 4906: 8d 65 2d    .e- :3806[1]
     lda maximum_number_of_stars_in_game                               ; 4909: ad b9 34    ..4 :3809[1]
     sta maximum_number_of_stars                                       ; 490c: 8d 50 0e    .P. :380c[1]
-; Copy 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
+    ; Copy 4 bytes of memory from initial_enemy_ship_spawning_probabilities to probability_of_new_enemy_ship_being_defensive_about_damage
     ldy #3                                                            ; 490f: a0 03       ..  :380f[1]
 reset_enemy_ship_spawning_probabilities_loop
     lda initial_enemy_ship_spawning_probabilities,y                   ; 4911: b9 cc 33    ..3 :3811[1]

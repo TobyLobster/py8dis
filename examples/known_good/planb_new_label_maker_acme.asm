@@ -10334,7 +10334,7 @@ draw_bar
     lda bar_pixels_set_table + 1,x                                    ; 3f4e: bd 5c 3f    .\?
     ldx #6                                                            ; 3f51: a2 06       ..
     iny                                                               ; 3f53: c8          .
-; Set 6 bytes of memory
+    ; Set 6 bytes of memory
 draw_bar_loop
     sta (print_addr_low),y                                            ; 3f54: 91 2f       ./
     iny                                                               ; 3f56: c8          .
@@ -10386,7 +10386,7 @@ print_decremented_bar
     lda bar_pixels_set_table,x                                        ; 3f97: bd 5b 3f    .[?
     ldx #6                                                            ; 3f9a: a2 06       ..
     iny                                                               ; 3f9c: c8          .
-; Set 6 bytes of memory
+    ; Set 6 bytes of memory
 draw_bar_loop2
     sta (print_addr_low),y                                            ; 3f9d: 91 2f       ./
     iny                                                               ; 3f9f: c8          .
@@ -11051,7 +11051,7 @@ write_collision_map_loop
     ldy sprite_pixel_width_minus_one                                  ; 43c9: a4 02       ..
     dey                                                               ; 43cb: 88          .
     lda collision_map_byte_to_write                                   ; 43cc: a5 0c       ..
-; Set Y+1 bytes of memory from address_to_overwrite onwards
+    ; Set Y+1 bytes of memory from address_to_overwrite onwards
 inner_loop
 collision_map_dest_low = inner_loop+1
 collision_map_dest_high = inner_loop+2
@@ -12274,7 +12274,7 @@ update_key_count
     beq plot_updated_number                                           ; 4b5d: f0 2c       .,
     lda current_room_cache + 3,y                                      ; 4b5f: b9 03 04    ...
     pha                                                               ; 4b62: 48          H
-; Copy 256 bytes of memory from current_room_cache
+    ; Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            ; 4b63: a0 00       ..
 copy_cache_back_to_room_definition
     lda current_room_cache,y                                          ; 4b65: b9 00 04    ...
@@ -12291,7 +12291,7 @@ copy_cache_back_to_room_definition
     ora #$80                                                          ; 4b7b: 09 80       ..
     and #$f8                                                          ; 4b7d: 29 f8       ).
     sta (temp_addr_low),y                                             ; 4b7f: 91 1d       ..
-; Copy 256 bytes of memory to current_room_cache
+    ; Copy 256 bytes of memory to current_room_cache
 skip_reset_door_animation
     ldy #0                                                            ; 4b81: a0 00       ..
 copy_room_definition_to_cache_loop
@@ -12352,7 +12352,7 @@ no_teleport_destination_found
 change_room
     ldx stack_ptr                                                     ; 4bee: a6 36       .6
     txs                                                               ; 4bf0: 9a          .
-; Copy 256 bytes of memory from current_room_cache
+    ; Copy 256 bytes of memory from current_room_cache
     ldy #0                                                            ; 4bf1: a0 00       ..
 copy_current_room_cache_back_to_definition_loop
     lda current_room_cache,y                                          ; 4bf3: b9 00 04    ...

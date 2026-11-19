@@ -269,7 +269,7 @@ section pydis, org = &e000, filename = "atom_dos_rom_baron"
 .sub_ce075
     lda #&20 ; ' '                                                    ; e075: a9 20       .
     ldy #6                                                            ; e077: a0 06       ..
-; Set 7 bytes of memory from l00a5 onwards to 32
+    ; Set 7 bytes of memory from l00a5 onwards to 32
 ; &e079 referenced 1 time by &e07d
 .loop_ce079
     sta l00a5,y                                                       ; e079: 99 a5 00    ...            ; A=&20
@@ -1863,7 +1863,7 @@ le95a = ce959+1
 .ce971
     lda #0                                                            ; e971: a9 00       ..
     ldx #8                                                            ; e973: a2 08       ..
-; Clear 8 bytes of memory from l009c onwards
+    ; Clear 8 bytes of memory from l009c onwards
 ; &e975 referenced 1 time by &e978
 .loop_ce975
     sta l009b,x                                                       ; e975: 95 9b       ..             ; A=0
@@ -1950,7 +1950,7 @@ le98b = ce98a+1
     inx                                                               ; e9ea: e8          .
     dec l00c5                                                         ; e9eb: c6 c5       ..
     bne loop_ce9dc                                                    ; e9ed: d0 ed       ..
-; Clear 16 bytes of memory at l2200+Y
+    ; Clear 16 bytes of memory at l2200+Y
     ldx #&10                                                          ; e9ef: a2 10       ..
     lda #0                                                            ; e9f1: a9 00       ..
 ; &e9f3 referenced 1 time by &e9f8
@@ -2776,7 +2776,7 @@ le98b = ce98a+1
 .ceeaa
     lda #&20 ; ' '                                                    ; eeaa: a9 20       .
     ldy #0                                                            ; eeac: a0 00       ..
-; Set 1024 bytes of memory from l0400 onwards to 32
+    ; Set 1024 bytes of memory from l0400 onwards to 32
 ; &eeae referenced 1 time by &eebb
 .loop_ceeae
     sta l0400,y                                                       ; eeae: 99 00 04    ...            ; A=&20

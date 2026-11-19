@@ -423,7 +423,7 @@ sub_c8074
 sub_c8090
     cpy #5                                                            ; 8090: c0 05       ..
     bne return_1                                                      ; 8092: d0 29       .)
-; Copy 32 bytes of memory from sub_c89a7 to l0d00
+    ; Copy 32 bytes of memory from sub_c89a7 to l0d00
     ldy #$20 ; ' '                                                    ; 8094: a0 20       .
 ; $8096 referenced 1 time by $809d
 loop_c8096
@@ -1061,7 +1061,7 @@ c8485
     sta l00a3                                                         ; 849a: 85 a3       ..
     lda l009d                                                         ; 849c: a5 9d       ..
     sta l00a5                                                         ; 849e: 85 a5       ..
-; Copy 2 bytes of memory from l0d32 to l0d66
+    ; Copy 2 bytes of memory from l0d32 to l0d66
     ldy #1                                                            ; 84a0: a0 01       ..
 ; $84a2 referenced 1 time by $84a9
 loop_c84a2
@@ -1233,7 +1233,7 @@ c85cf
     bcc c862f                                                         ; 85d1: 90 5c       .\
     cpx #$89                                                          ; 85d3: e0 89       ..
     bcs c862f                                                         ; 85d5: b0 58       .X
-; Copy 4 bytes of memory to l0d26
+    ; Copy 4 bytes of memory to l0d26
     ldy #$0c                                                          ; 85d7: a0 0c       ..
 ; $85d9 referenced 1 time by $85e1
 loop_c85d9
@@ -1386,7 +1386,7 @@ c86ac
     sta l0d3f                                                         ; 86b8: 8d 3f 0d    .?.
     lda #$40 ; '@'                                                    ; 86bb: a9 40       .@
     sta l0d3e                                                         ; 86bd: 8d 3e 0d    .>.
-; Copy 8 bytes of memory to l0d26
+    ; Copy 8 bytes of memory to l0d26
     ldy #4                                                            ; 86c0: a0 04       ..
 ; $86c2 referenced 1 time by $86ca
 loop_c86c2
@@ -2191,7 +2191,7 @@ loop_c8b39
     rol l0d6c                                                         ; 8b43: 2e 6c 0d    .l.            ; Rotate in a set bit
     clc                                                               ; 8b46: 18          .
     ror l0d6c                                                         ; 8b47: 6e 6c 0d    nl.            ; Rotate in a clear bit
-; Copy 14 bytes of memory from l8e61 to filev
+    ; Copy 14 bytes of memory from l8e61 to filev
     ldy #$0d                                                          ; 8b4a: a0 0d       ..
 ; $8b4c referenced 1 time by $8b53
 loop_c8b4c
@@ -2212,7 +2212,7 @@ loop_c8b4c
     sta l0e08                                                         ; 8b6f: 8d 08 0e    ...
     jsr sub_c8cc0                                                     ; 8b72: 20 c0 8c     ..
     jsr sub_cb449                                                     ; 8b75: 20 49 b4     I.
-; Copy 120 bytes of memory to l1000
+    ; Copy 120 bytes of memory to l1000
     ldy #$77 ; 'w'                                                    ; 8b78: a0 77       .w
 ; $8b7a referenced 1 time by $8b80
 loop_c8b7a
@@ -2816,7 +2816,7 @@ loop_c8eee
     dey                                                               ; 8f11: 88          .              ; Y=2
     lda #$eb                                                          ; 8f12: a9 eb       ..
     sta (l009e),y                                                     ; 8f14: 91 9e       ..
-; Copy 3 bytes of memory from l8f49 to l0d6d
+    ; Copy 3 bytes of memory from l8f49 to l0d6d
     ldx #3                                                            ; 8f16: a2 03       ..
 ; $8f18 referenced 1 time by $8f1f
 loop_c8f18
@@ -3656,7 +3656,7 @@ c94b4
 c94b5
     php                                                               ; 94b5: 08          .
     sty l0f01                                                         ; 94b6: 8c 01 0f    ...
-; Copy 2 bytes of memory from l0e03 to l0f03
+    ; Copy 2 bytes of memory from l0e03 to l0f03
     ldy #1                                                            ; 94b9: a0 01       ..
 ; $94bb referenced 1 time by $94c2
 loop_c94bb
@@ -4478,7 +4478,7 @@ loop_c9971
     sta l00b7                                                         ; 9982: 85 b7       ..
     jsr sub_c9b95                                                     ; 9984: 20 95 9b     ..
     jsr sub_c9998                                                     ; 9987: 20 98 99     ..
-; Copy 3 bytes of memory from l0f10 to l0f05
+    ; Copy 3 bytes of memory from l0f10 to l0f05
     ldx #2                                                            ; 998a: a2 02       ..
 ; $998c referenced 1 time by $9993
 loop_c998c
@@ -4545,7 +4545,7 @@ loop_c99cd
     jsr sub_c9a7e                                                     ; 99e3: 20 7e 9a     ~.
     dex                                                               ; 99e6: ca          .
     bne loop_c99cd                                                    ; 99e7: d0 e4       ..
-; Copy 9 bytes of memory to l0f04
+    ; Copy 9 bytes of memory to l0f04
     ldy #9                                                            ; 99e9: a0 09       ..
 ; $99eb referenced 1 time by $99f1
 loop_c99eb
@@ -5466,7 +5466,7 @@ loop_c9f27
     dex                                                               ; 9f3a: ca          .
     bne loop_c9f27                                                    ; 9f3b: d0 ea       ..
     inx                                                               ; 9f3d: e8          .              ; X=1
-; Copy X+1 bytes of memory from l0f03 to l0f06
+    ; Copy X+1 bytes of memory from l0f03 to l0f06
 ; $9f3e referenced 1 time by $9f45
 loop_c9f3e
     lda l0f03,x                                                       ; 9f3e: bd 03 0f    ...
@@ -5523,7 +5523,7 @@ c9f82
 ; $9f90 referenced 2 times by $9f87, $9f8b
 c9f90
     sta l00a9                                                         ; 9f90: 85 a9       ..
-; Copy Y bytes of memory to l00be
+    ; Copy Y bytes of memory to l00be
 ; $9f92 referenced 1 time by $9f98
 loop_c9f92
     lda (l00bb),y                                                     ; 9f92: b1 bb       ..
@@ -5635,7 +5635,7 @@ ca00f
 ; $a04b referenced 1 time by $a046
 ca04b
     ldx #2                                                            ; a04b: a2 02       ..
-; Set 3 bytes of memory from l0f07 onwards
+    ; Set 3 bytes of memory from l0f07 onwards
 ; $a04d referenced 1 time by $a051
 loop_ca04d
     sta l0f07,x                                                       ; a04d: 9d 07 0f    ...
@@ -5988,14 +5988,14 @@ loop_ca21d
     lda l0e30,x                                                       ; a21e: bd 30 0e    .0.
     cmp #$0d                                                          ; a221: c9 0d       ..
     bne loop_ca21d                                                    ; a223: d0 f8       ..
-; Copy X+1 bytes of memory from l0e30 to l0e38
+    ; Copy X+1 bytes of memory from l0e30 to l0e38
 ; $a225 referenced 1 time by $a22c
 loop_ca225
     lda l0e30,x                                                       ; a225: bd 30 0e    .0.
     sta l0e38,x                                                       ; a228: 9d 38 0e    .8.
     dex                                                               ; a22b: ca          .
     bpl loop_ca225                                                    ; a22c: 10 f7       ..
-; Copy 8 bytes of memory from la291 to l0e30
+    ; Copy 8 bytes of memory from la291 to l0e30
     ldx #7                                                            ; a22e: a2 07       ..
 ; $a230 referenced 1 time by $a237
 loop_ca230
@@ -6618,7 +6618,7 @@ return_23
 
     bit l0d6c                                                         ; a734: 2c 6c 0d    ,l.
     bpl ca749                                                         ; a737: 10 10       ..
-; Copy 3 bytes of memory from l1072
+    ; Copy 3 bytes of memory from l1072
     ldy #3                                                            ; a739: a0 03       ..
 ; $a73b referenced 1 time by $a741
 loop_ca73b
@@ -8108,7 +8108,7 @@ cb025
 cb028
     sty l00ac                                                         ; b028: 84 ac       ..
     bvs cb058                                                         ; b02a: 70 2c       p,
-; Set 6 bytes of memory to 32
+    ; Set 6 bytes of memory to 32
     ldx #6                                                            ; b02c: a2 06       ..
     ldy #$18                                                          ; b02e: a0 18       ..
     lda #$20 ; ' '                                                    ; b030: a9 20       .
@@ -8353,7 +8353,7 @@ loop_cb179
     sta l009b                                                         ; b183: 85 9b       ..
     lda #$0c                                                          ; b185: a9 0c       ..
     sta l009a                                                         ; b187: 85 9a       ..
-; Copy 4 bytes of memory from lb194
+    ; Copy 4 bytes of memory from lb194
     ldy #3                                                            ; b189: a0 03       ..
 ; $b18b referenced 1 time by $b191
 loop_cb18b
@@ -8430,7 +8430,7 @@ cb205
 ; $b208 referenced 1 time by $b1df
 cb208
     bvs cb236                                                         ; b208: 70 2c       p,
-; Set 6 bytes of memory to 32
+    ; Set 6 bytes of memory to 32
     ldx #6                                                            ; b20a: a2 06       ..
     ldy #$10                                                          ; b20c: a0 10       ..
     lda #$20 ; ' '                                                    ; b20e: a9 20       .
@@ -8812,7 +8812,7 @@ return_35
 sub_cb449
     lda #0                                                            ; b449: a9 00       ..
     tay                                                               ; b44b: a8          .              ; Y=0
-; Clear 256 bytes of memory from l1000 onwards
+    ; Clear 256 bytes of memory from l1000 onwards
 ; $b44c referenced 1 time by $b450
 loop_cb44c
     sta l1000,y                                                       ; b44c: 99 00 10    ...            ; A=0
@@ -9089,7 +9089,7 @@ sub_cb5d8
     sty l10d6                                                         ; b5e4: 8c d6 10    ...
     tya                                                               ; b5e7: 98          .              ; A=0
     ldx #2                                                            ; b5e8: a2 02       ..
-; Clear 3 bytes of memory from l10d1 onwards
+    ; Clear 3 bytes of memory from l10d1 onwards
 ; $b5ea referenced 1 time by $b5ee
 loop_cb5ea
     sta l10d1,x                                                       ; b5ea: 9d d1 10    ...            ; A=0
@@ -9259,7 +9259,7 @@ cb718
     iny                                                               ; b71c: c8          .
     cpy #$0d                                                          ; b71d: c0 0d       ..
     bne cb718                                                         ; b71f: d0 f7       ..
-; Copy 13 bytes of memory from l10d9 to l0f00
+    ; Copy 13 bytes of memory from l10d9 to l0f00
 ; $b721 referenced 1 time by $b922
 sub_cb721
     ldy #$0c                                                          ; b721: a0 0c       ..
@@ -9874,7 +9874,7 @@ sub_cbb0e
     tax                                                               ; bb0f: aa          .
     lda #0                                                            ; bb10: a9 00       ..
     tay                                                               ; bb12: a8          .              ; Y=0
-; Clear 4 bytes of memory from (l00ae) onwards
+    ; Clear 4 bytes of memory from (l00ae) onwards
 ; $bb13 referenced 1 time by $bb18
 loop_cbb13
     sta (l00ae),y                                                     ; bb13: 91 ae       ..             ; A=0
@@ -10016,7 +10016,7 @@ cbbbc
     lda (os_text_ptr),y                                               ; bbcc: b1 f2       ..
     cmp #$0d                                                          ; bbce: c9 0d       ..
     bne cbc0a                                                         ; bbd0: d0 38       .8
-; Copy 2 bytes of memory from os_text_ptr
+    ; Copy 2 bytes of memory from os_text_ptr
     ldy #1                                                            ; bbd2: a0 01       ..
 ; $bbd4 referenced 1 time by $bbda
 loop_cbbd4
@@ -10051,7 +10051,7 @@ loop_cbbf6
     bne loop_cbbf6                                                    ; bbfd: d0 f7       ..
     ldy #3                                                            ; bbff: a0 03       ..
     lda #0                                                            ; bc01: a9 00       ..
-; Clear 4 bytes of memory from (l00ae) onwards
+    ; Clear 4 bytes of memory from (l00ae) onwards
 ; $bc03 referenced 1 time by $bc06
 loop_cbc03
     sta (l00ae),y                                                     ; bc03: 91 ae       ..             ; A=0

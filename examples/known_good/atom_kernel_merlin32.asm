@@ -1163,7 +1163,7 @@ cf6ab
 ; $f6c2 referenced 1 time by $f682
 cf6c2
     lda #$40 ; '@'                                                    ; f6c2: a9 40       .@
-; Set Y bytes of memory from l8001 onwards, and Y bytes from l8101 onwards to 64
+    ; Set Y bytes of memory from l8001 onwards, and Y bytes from l8101 onwards to 64
 ; $f6c4 referenced 1 time by $f6cb
 loop_cf6c4
     sta l8001 - 1,y                                                   ; f6c4: 99 00 80    ... ; A=$40
@@ -2510,7 +2510,7 @@ wrch_clear_screen
     ldy #0                                                            ; fd6d: a0 00       ..
     sty ppi_port_a                                                    ; fd6f: 8c 00 b0    ... ; Select text mode
     lda #$20 ; ' '                                                    ; fd72: a9 20       .
-; Set 512 bytes of memory from l8000 onwards to 32
+    ; Set 512 bytes of memory from l8000 onwards to 32
 ; $fd74 referenced 1 time by $fd7b
 loop_cfd74
     sta l8000,y                                                       ; fd74: 99 00 80    ... ; A=$20
@@ -2639,7 +2639,7 @@ loop_cfe19
     bne loop_cfe19                                                    ; fe20: d0 f7       ..
     ldy #$1f                                                          ; fe22: a0 1f       ..
     lda #$20 ; ' '                                                    ; fe24: a9 20       .
-; Set 32 bytes of memory from (screen_line_address) onwards to 32
+    ; Set 32 bytes of memory from (screen_line_address) onwards to 32
 ; $fe26 referenced 1 time by $fe29
 loop_cfe26
     sta (screen_line_address),y                                       ; fe26: 91 de       ..  ; A=$20
@@ -2910,7 +2910,7 @@ loop_cff41
     stx cursor_mask                                                   ; ff4f: 86 e1       ..
     stx lock_flag                                                     ; ff51: 86 e7       ..
     ldx #$33 ; '3'                                                    ; ff53: a2 33       .3
-; Set 52 bytes of memory from l02eb onwards
+    ; Set 52 bytes of memory from l02eb onwards
 ; $ff55 referenced 1 time by $ff59
 loop_cff55
     sta l02eb,x                                                       ; ff55: 9d eb 02    ...

@@ -268,7 +268,7 @@ loop_c10fa
     jsr sub_c19e8                                                     // 1113: 20 e8 19     ..
     ldx #0                                                            // 1116: a2 00       ..
     lda #$20 // ' '                                                   // 1118: a9 20       .
-// Set 5 bytes of memory from screen_memory+281 onwards to 32
+    // Set 5 bytes of memory from screen_memory+281 onwards to 32
 // $111a referenced 1 time by $1120
 loop_c111a
     sta screen_memory+281,x                                           // 111a: 9d 19 1f    ... // A=$20
@@ -1206,7 +1206,7 @@ c16c7
     lda usr_jmp                                                       // 16c9: a5 00       ..
     cmp #5                                                            // 16cb: c9 05       I.
     bne c1691                                                         // 16cd: d0 c2       PB
-// Copy 17 bytes of memory from sprite to spritelast
+    // Copy 17 bytes of memory from sprite to spritelast
     ldx #0                                                            // 16cf: a2 00       ..
 // $16d1 referenced 1 time by $16da
 loop_c16d1
@@ -1393,7 +1393,7 @@ sub_c17b5
     tax                                                               // 17ca: aa          .
     ldy #0                                                            // 17cb: a0 00       ..
     tya                                                               // 17cd: 98          .   // A=0
-// Clear 16 bytes of memory from tape_buffer+32 onwards
+    // Clear 16 bytes of memory from tape_buffer+32 onwards
 // $17ce referenced 1 time by $17d4
 loop_c17ce
     sta tape_buffer+32,y                                              // 17ce: 99 5c 03    ... // A=0
@@ -1614,7 +1614,7 @@ loop_c1913
     inx                                                               // 191d: e8          .
     cpx #6                                                            // 191e: e0 06       ..
     bne loop_c1913                                                    // 1920: d0 f1       P.
-// Copy 6 bytes of memory from l1a06 to l1a0f
+    // Copy 6 bytes of memory from l1a06 to l1a0f
 // $1922 referenced 1 time by $191b
 c1922
     ldx #0                                                            // 1922: a2 00       ..
@@ -1625,7 +1625,7 @@ loop_c1924
     inx                                                               // 192a: e8          .
     cpx #6                                                            // 192b: e0 06       ..
     bne loop_c1924                                                    // 192d: d0 f5       P.
-// Copy 21 bytes of memory from l1a00 to pydis_end
+    // Copy 21 bytes of memory from l1a00 to pydis_end
 // $192f referenced 1 time by $1919
 c192f
     ldx #$15                                                          // 192f: a2 15       ..

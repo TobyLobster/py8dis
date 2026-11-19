@@ -329,7 +329,7 @@ c80a8:
     jsr sub_cbf66                                                     ; 80ac: 20 66 bf     f.
     bne c80cc                                                         ; 80af: d0 1b       ..
     jsr sub_c80d8                                                     ; 80b1: 20 d8 80     ..
-; Copy 11 bytes of memory from l80c2 to l0100
+    ; Copy 11 bytes of memory from l80c2 to l0100
     ldx #$0a                                                          ; 80b4: a2 0a       ..
 ; $80b6 referenced 1 time by $80bd
 copy_to_stack_loop:
@@ -2232,7 +2232,7 @@ c8dff:
     jsr sub_c8e5f                                                     ; 8e0d: 20 5f 8e     _.
     jsr sub_c8e5f                                                     ; 8e10: 20 5f 8e     _.
     jsr sub_c8e5f                                                     ; 8e13: 20 5f 8e     _.
-; Copy Y bytes of memory
+    ; Copy Y bytes of memory
 ; $8e16 referenced 1 time by $8e1b
 loop_c8e16:
     lda (l0039),y                                                     ; 8e16: b1 39       .9
@@ -2968,7 +2968,7 @@ c91ef:
     jsr sub_cbe6b                                                     ; 91ef: 20 6b be     k.
     cpy #0                                                            ; 91f2: c0 00       ..
     beq c9201                                                         ; 91f4: f0 0b       ..
-; Copy Y bytes of memory from l0601
+    ; Copy Y bytes of memory from l0601
 ; $91f6 referenced 1 time by $91fc
 loop_c91f6:
     lda l0601 - 1,y                                                   ; 91f6: b9 00 06    ...
@@ -10552,7 +10552,7 @@ sub_cbbdc:
     sta l0001                                                         ; bbe4: 85 01       ..
     sta l0003                                                         ; bbe6: 85 03       ..
     jsr sub_cbbff                                                     ; bbe8: 20 ff bb     ..
-; Copy 16 bytes of memory from lbf72 to l07f0
+    ; Copy 16 bytes of memory from lbf72 to l07f0
 ; $bbeb referenced 1 time by $96f4
 sub_cbbeb:
     ldx #$10                                                          ; bbeb: a2 10       ..
@@ -10684,7 +10684,7 @@ cbc91:
     jsr sub_cbd5e                                                     ; bc96: 20 5e bd     ^.
     ldy l0036                                                         ; bc99: a4 36       .6
     beq cbca5                                                         ; bc9b: f0 08       ..
-; Copy Y bytes of memory from l0600
+    ; Copy Y bytes of memory from l0600
 ; $bc9d referenced 1 time by $bca3
 loop_cbc9d:
     lda l0600 - 1,y                                                   ; bc9d: b9 ff 05    ...
@@ -10783,7 +10783,7 @@ sub_cbd12:
     sta l0036                                                         ; bd14: 85 36       .6
     beq cbd23                                                         ; bd16: f0 0b       ..
     tay                                                               ; bd18: a8          .
-; Copy Y bytes of memory to l0600
+    ; Copy Y bytes of memory to l0600
 ; $bd19 referenced 1 time by $bd1f
 loop_cbd19:
     lda (l0004),y                                                     ; bd19: b1 04       ..

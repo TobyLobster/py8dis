@@ -31,7 +31,7 @@ loop_cc007
     jsr chrout                                                        ; c00c: 20 d2 ff     R.
     inx                                                               ; c00f: e8          .
     bne loop_cc007                                                    ; c010: d0 f5       P.
-; Copy 21 bytes of memory from lc04e to l0400
+    ; Copy 21 bytes of memory from lc04e to l0400
 ; $c012 referenced 1 time by $c00a
 cc012
     ldx #$14                                                          ; c012: a2 14       ..

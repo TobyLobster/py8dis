@@ -34,7 +34,7 @@ loop_c2002
     sta l3100,x                                                       // 2005: 9d 00 31    ..1
     dex                                                               // 2008: ca          .
     bne loop_c2002                                                    // 2009: d0 f7       ..
-// Copy 1 byte of memory from l3282 to l3382
+    // Copy 1 byte of memory from l3282 to l3382
     ldy #$82                                                          // 200b: a0 82       ..
 // $200d referenced 1 time by $2014
 loop_c200d
@@ -42,7 +42,7 @@ loop_c200d
     sta l3382 - 130,y                                                 // 2010: 99 00 33    ..3
     dey                                                               // 2013: 88          .   // Y=$81
     bpl loop_c200d                                                    // 2014: 10 f7       ..
-// Copy 8 bytes of memory from (table3+3) + 2 to l3502
+    // Copy 8 bytes of memory from (table3+3) + 2 to l3502
     ldy #9                                                            // 2016: a0 09       ..
 // $2018 referenced 1 time by $2021
 loop_c2018
@@ -51,7 +51,7 @@ loop_c2018
     dey                                                               // 201e: 88          .
     cpy #2                                                            // 201f: c0 02       ..
     bcs loop_c2018                                                    // 2021: b0 f5       ..
-// Copy 1 byte of memory from l3601 to l3701
+    // Copy 1 byte of memory from l3601 to l3701
     ldx #1                                                            // 2023: a2 01       ..
 // $2025 referenced 1 time by $202e
 loop_c2025
@@ -68,7 +68,7 @@ loop_c2032
     inx                                                               // 2038: e8          .
     cpx #$10                                                          // 2039: e0 10       ..
     bne loop_c2032                                                    // 203b: d0 f5       ..
-// Copy 128 bytes of memory from l3a80 to l3b80
+    // Copy 128 bytes of memory from l3a80 to l3b80
     ldy #$80                                                          // 203d: a0 80       ..
 // $203f referenced 1 time by $2048
 loop_c203f
@@ -77,7 +77,7 @@ loop_c203f
     iny                                                               // 2045: c8          .
     cpy #0                                                            // 2046: c0 00       ..
     bne loop_c203f                                                    // 2048: d0 f5       ..
-// Copy 6 bytes of memory from l3c02 to (table7+16) + 2
+    // Copy 6 bytes of memory from l3c02 to (table7+16) + 2
     ldx #2                                                            // 204a: a2 02       ..
 // $204c referenced 1 time by $2055
 loop_c204c
@@ -86,7 +86,7 @@ loop_c204c
     inx                                                               // 2052: e8          .
     cpx #8                                                            // 2053: e0 08       ..
     bcc loop_c204c                                                    // 2055: 90 f5       ..
-// Clear 256 bytes of memory at l3e00+Y
+    // Clear 256 bytes of memory at l3e00+Y
     lda #0                                                            // 2057: a9 00       ..
     ldy l3f00                                                         // 2059: ac 00 3f    ..?
     ldx #0                                                            // 205c: a2 00       ..
@@ -96,7 +96,7 @@ loop_c205e
     iny                                                               // 2061: c8          .
     dex                                                               // 2062: ca          .
     bne loop_c205e                                                    // 2063: d0 f9       ..
-// Set 4 bytes of memory at l3f80+Y to 255
+    // Set 4 bytes of memory at l3f80+Y to 255
     lda #$ff                                                          // 2065: a9 ff       ..
     ldy l0070                                                         // 2067: a4 70       .p
     ldx #4                                                            // 2069: a2 04       ..

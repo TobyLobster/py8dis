@@ -1676,7 +1676,7 @@ set_float8A_mantissa_to_7fffffff_and_clear_float8B:
 zero_float8B_bugged:
     ldx #8                                                            ; d8c7: a2 08       ..
     lda #0                                                            ; d8c9: a9 00       ..
-; Clear 8 bytes of memory from float8B_overflow onwards
+    ; Clear 8 bytes of memory from float8B_overflow onwards
 zero_float8B_loop:
     sta float8B_overflow - 1,x                                        ; d8cb: 95 5f       ._  ; A=0
     dex                                                               ; d8cd: ca          .
@@ -1991,7 +1991,7 @@ dummy:
 error3 = dummy+1
     lda #0                                                            ; daa6: a9 00       ..
 ; overlapping: brk                                                    ; daa7: 00          .
-; Set X bytes of memory from float8A_sign onwards
+    ; Set X bytes of memory from float8A_sign onwards
 zero_loop:
     sta float8A_sign - 1,x                                            ; daa8: 95 56       .V
     dex                                                               ; daaa: ca          .
@@ -2567,7 +2567,7 @@ colour_function:
     ; Clear $8600 to $8800
     lda #0                                                            ; df19: a9 00       ..
     tay                                                               ; df1b: a8          .   ; Y=0
-; Clear 512 bytes of memory from l8600 onwards
+    ; Clear 512 bytes of memory from l8600 onwards
 loop_cdf1c:
     sta l8600,y                                                       ; df1c: 99 00 86    ... ; A=0
     sta l8700,y                                                       ; df1f: 99 00 87    ...

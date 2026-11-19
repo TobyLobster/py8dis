@@ -68,7 +68,7 @@ loop_c0525
     // Job 1: move the head to track 1 (bump)
     lda #job_bump                                                     // 0529: a9 c0       ..
     sta JOBS+1                                                        // 052b: 85 01       ..
-// Copy 69 bytes of memory from buffer_0+1 to buffer_0+70
+    // Copy 69 bytes of memory from buffer_0+1 to buffer_0+70
 
     ldy #$45 // 'e'                                                   // 052d: a0 45       .e
 // $052f referenced 1 time by $0536

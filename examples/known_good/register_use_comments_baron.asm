@@ -40,7 +40,7 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2025
     ldy #0                                                            ; 2025: a0 00       ..
     tya                                                               ; 2027: 98          .   ; A=0
-; Clear 16 bytes of memory from table1 onwards
+    ; Clear 16 bytes of memory from table1 onwards
 ; &2028 referenced 1 time by &202e
 .loop_c2028
     sta table1,y                                                      ; 2028: 99 59 20    .Y  ; A=0
@@ -53,7 +53,7 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2031
     lda #&ff                                                          ; 2031: a9 ff       ..
     ldx #7                                                            ; 2033: a2 07       ..
-; Set 8 bytes of memory from table2 onwards to 255
+    ; Set 8 bytes of memory from table2 onwards to 255
 ; &2035 referenced 1 time by &2039
 .loop_c2035
     sta table2,x                                                      ; 2035: 9d 69 20    .i  ; A=&ff
@@ -65,7 +65,7 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c203c
     lda #0                                                            ; 203c: a9 00       ..
     ldy #4                                                            ; 203e: a0 04       ..
-; Clear 4 bytes of memory from l2072 onwards
+    ; Clear 4 bytes of memory from l2072 onwards
 ; &2040 referenced 1 time by &2044
 .loop_c2040
     sta l2072 - 1,y                                                   ; 2040: 99 71 20    .q  ; A=0
@@ -77,7 +77,7 @@ section pydis, org = &2000, filename = "register_use_comments_baron"
 .sub_c2047
     lda #0                                                            ; 2047: a9 00       ..
     tay                                                               ; 2049: a8          .   ; Y=0
-; Clear 256 bytes of memory from (l0074) onwards
+    ; Clear 256 bytes of memory from (l0074) onwards
 ; &204a referenced 1 time by &204d
 .loop_c204a
     sta (l0074),y                                                     ; 204a: 91 74       .t  ; A=0

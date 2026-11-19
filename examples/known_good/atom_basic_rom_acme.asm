@@ -729,7 +729,7 @@ cc2f2
     sta l0013                                                         ; c2fd: 85 13       ..
     sta int_workspace_stack_low-2                                     ; c2ff: 85 14       ..  ; A=0
     ldx #$34 ; '4'                                                    ; c301: a2 34       .4
-; Clear 52 bytes of memory from l038d onwards
+    ; Clear 52 bytes of memory from l038d onwards
 ; $c303 referenced 1 time by $c307
 loop_cc303
     sta l038d - 1,x                                                   ; c303: 9d 8c 03    ... ; A=0
