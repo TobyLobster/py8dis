@@ -465,7 +465,7 @@ OSBYTE  = &fff4
 ; ----------------------------------------------------------------------------------
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 .multiply_enemy_position_by_starship_rotation_sine_magnitude
     lda starship_rotation_sine_magnitude                              ; 2181: ad 05 0f    ... :1081[1]
@@ -497,7 +497,7 @@ OSBYTE  = &fff4
 ; ----------------------------------------------------------------------------------
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 .multiply_enemy_position_by_starship_rotation_cosine
     lda starship_rotation_cosine                                      ; 21af: ad 04 0f    ... :10af[1]
@@ -2959,8 +2959,7 @@ OSBYTE  = &fff4
 
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
-;     Y: (preserved)
+;     X and Y are preserved
 ; ***************************************************************************************
 .random_number_generator
     lda rnd_1                                                         ; 3213: ad d1 1c    ... :2113[1]
@@ -4424,8 +4423,7 @@ OSBYTE  = &fff4
 
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
-;     Y: (preserved)
+;     X and Y are preserved
 ; ***************************************************************************************
 .get_rectilinear_distance_from_centre_of_screen
     lda enemy_ships_x_pixels,x                                        ; 3c26: bd 82 04    ... :2b26[1]
@@ -4460,7 +4458,7 @@ OSBYTE  = &fff4
     jsr calculate_enemy_ship_angle_to_starship                        ; 3c5e: 20 58 27     X' :2b5e[1]
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 .turn_enemy_ship_towards_desired_angle_accounting_for_starship_velocity
     lda enemy_ship_desired_angle_divided_by_eight                     ; 3c61: ad 55 26    .U& :2b61[1]
@@ -4581,7 +4579,7 @@ OSBYTE  = &fff4
 
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 .decrease_enemy_ship_velocity
     lda enemy_ships_velocity,x                                        ; 3d29: bd 08 04    ... :2c29[1]
@@ -4597,7 +4595,7 @@ OSBYTE  = &fff4
 
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 .increase_or_decrease_enemy_ship_velocity_towards_desired_velocity
     lda enemy_ship_desired_velocity                                   ; 3d3a: ad 81 2a    ..* :2c3a[1]

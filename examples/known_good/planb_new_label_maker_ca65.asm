@@ -10218,7 +10218,7 @@ print_loop:
 
 ; ***************************************************************************************
 ; On Exit:
-;     Y: (preserved)
+;     Y is preserved
 ; ***************************************************************************************
 increment_print_address:
     inc print_addr_low                                                ; 3e6a: e6 2f       ./
@@ -12438,7 +12438,7 @@ room_ready:
 ; returns with carry clear if a closed door is near the player
 ; ***************************************************************************************
 ; On Exit:
-;     Y: (preserved)
+;     Y is preserved
 ; ***************************************************************************************
 is_closed_door_near_player:
     lda current_room_cache,y                                          ; 4c5c: b9 00 04    ...

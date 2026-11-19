@@ -165,8 +165,7 @@ section pydis, org = &c700, filename = "apple2_io_rpi_baron"
 
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
-;     Y: (preserved)
+;     X and Y are preserved
 ; ***************************************************************************************
 ; &c7c5 referenced 11 times by &c749, &c76f, &c774, &c779, &c77d, &c79b, &c7a0, &c7a5, &c7a9, &c7be, &c7c8
 .SendByte
@@ -185,7 +184,7 @@ section pydis, org = &c700, filename = "apple2_io_rpi_baron"
 
 ; ***************************************************************************************
 ; On Exit:
-;     Y: (preserved)
+;     Y is preserved
 ; ***************************************************************************************
 ; &c7dd referenced 2 times by &c743, &c790
 .GetByte

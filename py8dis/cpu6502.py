@@ -3166,9 +3166,9 @@ class Cpu6502(cpu.Cpu):
         """Note what each subroutine leaves behind (see
         subroutine_summaries()) that the code after a call to it relies on,
         as 'On Exit' notes before it, e.g. 'C: clear' if it always returns
-        with the carry clear and a caller branches on the carry, or 'X:
-        (preserved)' if it doesn't change X and a caller uses X after the
-        call. Something it leaves that no caller uses isn't noted. Not for a
+        with the carry clear and a caller branches on the carry, and, on one
+        line after the others, 'X is preserved' if it doesn't change X and a
+        caller uses X after the call (or e.g. 'X, Y and C are preserved'). Something it leaves that no caller uses isn't noted. Not for a
         subroutine whose 'On Exit' notes are given with subroutine()."""
         declared = {}
         for subroutine in session.current().trace.subroutines_list:
@@ -3186,11 +3186,12 @@ class Cpu6502(cpu.Cpu):
             for jsr in callers[entry]:
                 relied_on |= self._read_after(jsr)
             lines = []
+            preserved = []
             for name in "axyczvn":
                 if name not in relied_on:
                     continue
                 if name not in summary.written:
-                    lines.append((name, "(preserved)"))
+                    preserved.append(name.upper())
                 elif at_exit is None:
                     continue
                 elif name in "axy":
@@ -3199,13 +3200,18 @@ class Cpu6502(cpu.Cpu):
                         lines.append((name, config.get_assembler().hex(value) if value > 9 else str(value)))
                 elif at_exit[name] in (True, False, 0, 1):
                     lines.append((name, "set" if at_exit[name] else "clear"))
-            if not lines:
+            if not lines and not preserved:
                 continue
             move_id = session.current().moves.move_id_for_binary_addr[entry]
             binary_loc = movemanager.BinaryLocation(BinaryAddr(entry), move_id)
             if config.get_subroutine_header() is not None:
                 disassembly.comment_binary(binary_loc, config.get_subroutine_header(), word_wrap=False, auto_generated=True)
-            text = "On Exit:\n" + "\n".join(config.get_indent_string() + name.upper() + ": " + value for name, value in lines)
+            text_lines = [name.upper() + ": " + value for name, value in lines]
+            if preserved:
+                # (On one line after the others, e.g. 'X and C are preserved')
+                names = preserved[0] if len(preserved) == 1 else ", ".join(preserved[:-1]) + " and " + preserved[-1]
+                text_lines.append(names + (" is" if len(preserved) == 1 else " are") + " preserved")
+            text = "On Exit:\n" + "\n".join(config.get_indent_string() + line for line in text_lines)
             disassembly.comment_binary(binary_loc, text, word_wrap=False, auto_generated=True)
             if config.get_subroutine_footer() is not None:
                 disassembly.comment_binary(binary_loc, config.get_subroutine_footer(), word_wrap=False, auto_generated=True)

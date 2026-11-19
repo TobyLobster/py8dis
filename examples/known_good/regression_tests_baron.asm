@@ -74,7 +74,7 @@ section pydis, org = &2000, filename = "regression_tests_baron"
 ; Quiet routine
 ; ***************************************************************************************
 ; On Exit:
-;     X: (preserved)
+;     X is preserved
 ; ***************************************************************************************
 ; &2036 referenced 1 time by &200b
 .quiet_routine
