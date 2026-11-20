@@ -25,9 +25,12 @@ class Subroutine:
             subroutine) for each call to the subroutine, and for the code at
             its address, with the CPU state before the instruction; or None
             for no hook (hook=False)
+        zero_page_written: the zero page addresses it may write, as a
+            frozenset, or None if that isn't given (see
+            Cpu6502.declared_exits())
     """
 
-    def __init__(self, runtime_addr, label_name, title, description, on_entry, on_exit, hook_function, move_id):
+    def __init__(self, runtime_addr, label_name, title, description, on_entry, on_exit, hook_function, move_id, zero_page_written=None):
         self.runtime_addr   = runtime_addr
         self.move_id        = move_id
         self.label_name     = label_name
@@ -36,3 +39,4 @@ class Subroutine:
         self.on_entry       = on_entry if on_entry else {}
         self.on_exit        = on_exit if on_exit else {}
         self.hook_function  = hook_function
+        self.zero_page_written = zero_page_written

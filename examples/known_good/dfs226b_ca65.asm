@@ -171,7 +171,6 @@ l1005   = $1005
 l1006   = $1006
 l1007   = $1007
 l100e   = $100e
-l103f   = $103f
 l1045   = $1045
 l1047   = $1047
 l104d   = $104d
@@ -618,7 +617,7 @@ c815d:
 ; $215f referenced 1 time by $8141[1]
 c815f:
     lda #$20 ; ' '                                                    ; 215f: a9 20       .   :815f[1]
-    ; Set memory from l1000+X to l103f to 32
+    ; Set memory from l1000+X to l1000 + 63 to 32
 ; $2161 referenced 1 time by $8167[1]
 loop_c8161:
     sta l1000,x                                                       ; 2161: 9d 00 10    ... :8161[1]   ; A=$20
@@ -11015,7 +11014,7 @@ cbeee:
     lda #osbyte_write_shadow_memory_use                               ; 5eee: a9 72       .r  :beee[1]
     ldx #0                                                            ; 5ef0: a2 00       ..  :bef0[1]
     jsr OSBYTE                                                        ; 5ef2: 20 f4 ff     .. :bef2[1]   ; B+ and Master only: Select shadow memory always used (X=0)
-    jsr OSBYTE                                                        ; 5ef5: 20 f4 ff     .. :bef5[1]
+    jsr OSBYTE                                                        ; 5ef5: 20 f4 ff     .. :bef5[1]   ; B+ and Master only: Write shadow memory use (X=0 is always; X non-zero is no shadow memory for MODEs 0-7)
     bvs cbee8                                                         ; 5ef8: 70 ee       p.  :bef8[1]
     lda #$ea                                                          ; 5efa: a9 ea       ..  :befa[1]
     jsr sub_cbf82                                                     ; 5efc: 20 82 bf     .. :befc[1]
@@ -13395,7 +13394,6 @@ pydis_end:
 ;     l1006
 ;     l1007
 ;     l100e
-;     l103f
 ;     l1045
 ;     l1047
 ;     l104d

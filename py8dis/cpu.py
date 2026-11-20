@@ -300,6 +300,13 @@ class Cpu:
         see Cpu6502.drop_traced_data().)"""
         return False
 
+    def drop_overlaps_after_always_branches(self):
+        """Take back the comments for overlapping instructions that tracing
+        found only by running on past a branch that's always taken, once the
+        CPU states are known. (Nothing here: see
+        Cpu6502.drop_overlaps_after_always_branches().)"""
+        pass
+
     def find_entry_points_from_effects(self):
         """Find entry points from what the code does, using the CPU states
         (e.g. the address stored to a vector), adding them with add_entry().
@@ -332,7 +339,10 @@ class Cpu:
         This traces from the entry points given, then from those that the
         snippets find, then (repeatedly) from those found from what the code
         does. Then it takes back any code that turns out to be data (see
-        drop_traced_data()). Then it records which labels each instruction
+        drop_traced_data()), and the comments for overlapping instructions
+        found only by running on past a branch that's always taken (see
+        drop_overlaps_after_always_branches()). Then it records which labels
+        each instruction
         refers to
         (generate_references()), works out the comments and names from what
         the code does (analyse_code() and the snippets' post-trace
@@ -369,6 +379,7 @@ class Cpu:
         # drop_traced_data())
         while self.drop_traced_data():
             self.calculate_cpu_states()
+        self.drop_overlaps_after_always_branches()
 
         # Generate all the references
         self.generate_references()

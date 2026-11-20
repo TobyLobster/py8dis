@@ -1932,6 +1932,7 @@ cda0c
     cmp float8B_sign                                                  // da27: c5 5f       ._
     bne cda38                                                         // da29: d0 0d       ..
     ldx #0                                                            // da2b: a2 00       ..
+    // Compare 5 bytes from float8B_exponent with float8A_exponent
 loop_cda2d
     lda float8B_exponent,x                                            // da2d: b5 61       .a
     cmp float8A_exponent,x                                            // da2f: d5 59       .Y

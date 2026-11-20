@@ -1,6 +1,7 @@
 ; A 65C02 program for python/search_loops.py: loops that search a table for
-; a byte, and loops that clear memory with the 65C02's STZ, commented by the
-; built in snippets (see py8dis/snippets6502.py). Assemble with:
+; a byte, loops that compare two tables, and loops that clear memory with
+; the 65C02's STZ, commented by the built in snippets (see
+; py8dis/snippets6502.py). Assemble with:
 ;
 ;   acme -o ../orig/search_loops.orig search_loops.asm
 ;
@@ -9,6 +10,7 @@
 !cpu 65c02
 
 ptr = $80
+ptr2 = $82
 
 * = $2000
 
@@ -147,6 +149,71 @@ loop12
     cpx #6
     bne loop12
 found12
+
+    ; 13. Comparing two tables with CMP, counting up to a limit: the 4 bytes
+    ; from table6 with those from key_table
+    ldx #0
+loop13
+    lda table6,x
+    cmp key_table,x
+    bne found13
+    inx
+    cpx #4
+    bne loop13
+found13
+
+    ; 14. Comparing with EOR, in zero page, counting down to zero: the 4
+    ; bytes from $90 with those from $94
+    ldx #4
+loop14
+    lda $8f,x
+    eor $93,x
+    bne found14
+    dex
+    bne loop14
+found14
+
+    ; 15. Comparing through a pointer, indexed by Y from 0 and counted by X,
+    ; which isn't known: X bytes from (ptr2) with buffer4
+    lda $7c
+    sta ptr2
+    lda $7d
+    sta ptr2+1
+    ldy #0
+    ldx $7e
+loop15
+    lda (ptr2),y
+    cmp buffer4,y
+    bne found15
+    iny
+    dex
+    bne loop15
+found15
+
+    ; 16. Searching, indexed by Y from 2 and counted by X from 3 past zero:
+    ; the 4 bytes from table2+2
+    lda $7f
+    ldx #3
+    ldy #2
+loop16
+    cmp table2,y
+    beq found16
+    iny
+    dex
+    bpl loop16
+found16
+
+    ; 17. Searching for 0, indexed by Y down from 5 and counted by X from 2
+    ; past zero: the 3 bytes from table6+3
+    ldx #2
+    ldy #5
+loop17
+    lda table6,y
+    beq found17
+    dey
+    dex
+    bpl loop17
+found17
     rts
 
 key_table

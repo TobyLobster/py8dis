@@ -37,7 +37,7 @@
   {"runtime_addr": 51998, "name": "basic_print_string", "title": "Print the zero-terminated string at A/Y", "on_entry": {"a": "string address (low byte)", "y": "string address (high byte)"}},
   {"runtime_addr": 56781, "name": "basic_print_number", "title": "Print the 16-bit number in A/X", "on_entry": {"a": "number to print (high byte)", "x": "number to print (low byte)"}},
   {"runtime_addr": 60095, "name": "kernal_irq_handler", "title": "The Kernal's IRQ handler (updates the clock, flashes the cursor and scans the keyboard, then returns from the interrupt)"},
-  {"runtime_addr": 65490, "name": "CHROUT", "title": "Output a character", "on_entry": {"a": "character to output"}},
+  {"runtime_addr": 65490, "name": "CHROUT", "title": "Output a character", "on_entry": {"a": "character to output"}, "on_exit": {"x": "(preserved)", "y": "(preserved)"}},
   {"runtime_addr": 65508, "name": "GETIN", "title": "Get a character from the input channel (from the keyboard, 0 if there's none)", "on_exit": {"a": "character read"}},
   {"runtime_addr": 65520, "name": "PLOT", "title": "Read or set the cursor position (carry set: read it into X/Y; carry clear: set it from X/Y)", "on_entry": {"x": "cursor row", "y": "cursor column"}}
 ],

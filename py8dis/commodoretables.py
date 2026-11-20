@@ -504,6 +504,37 @@ kernal_jump_table = [
                None, {'x': "I/O base address (low byte)", 'y': "I/O base address (high byte)"}),
 ]
 
+# What the Kernal calls leave unchanged on the C64 and the VIC-20: the
+# registers that neither the C64 Programmer's Reference Guide ("Registers
+# affected") nor a reading of the C64's Kernal code (the "Used registers" in
+# sta.c64.org's list of the Kernal functions) says the call changes (e.g.
+# CHROUT: A, says the guide, and none, says the code, so X and Y are
+# preserved; CHRIN: A and X, and A and Y, so none is). Only the calls both
+# give. As on_exit descriptions of '(preserved)', which py8dis takes as
+# what's known after a call (see Cpu6502.declared_exits()). These calls also
+# write only the Kernal's part of zero page, $90 to $ff (BASIC has $02 to
+# $8f), as kernal_zero_page.
+kernal_preserved_registers = {
+    "acptr":  "y",
+    "chkin":  "y",
+    "chkout": "y",
+    "chrout": "xy",
+    "ciout":  "axy",
+    "clall":  "y",
+    "clrchn": "y",
+    "iobase": "a",
+    "listen": "xy",
+    "membot": "a",
+    "memtop": "a",
+    "readst": "xy",
+    "screen": "a",
+    "second": "xy",
+    "setlfs": "axy",
+    "setmsg": "xy",
+    "setnam": "axy",
+}
+kernal_zero_page = range(0x90, 0x100)
+
 # ************************************************************************************************
 # Well known routines inside the C64's ROMs that programs call, with
 # Commodore's names (from the Kernal source, and Microsoft's for BASIC) and

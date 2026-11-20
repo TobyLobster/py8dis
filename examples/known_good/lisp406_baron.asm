@@ -602,6 +602,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     bne NO                                         ; 831a: d0 11       ..
     tay                                            ; 831c: a8          .
     dey                                            ; 831d: 88          .
+    ; Compare Y bytes from (ARGA)+1 with (ARGB)+1
 .EQUINE
     lda (ARGA),y                                   ; 831e: b1 3a       .:  ; Compare value
     cmp (ARGB),y                                   ; 8320: d1 3c       .<
@@ -2256,6 +2257,7 @@ section pydis, org = &8000, filename = "lisp406_baron"
     lda #2                                         ; 8cba: a9 02       ..
     jsr OSARGS                                     ; 8cbc: 20 da ff     .. ; Get length of file into zero page address X (A=2)
     ldx #2                                         ; 8cbf: a2 02       ..
+    ; Compare 3 bytes from ACL with ARGINF
 .EOFCP
     lda ACL,x                                      ; 8cc1: b5 72       .r
     cmp ARGINF,x                                   ; 8cc3: d5 90       ..

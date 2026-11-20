@@ -41,7 +41,6 @@ l0067                   = &0067
 l0068                   = &0068
 l0069                   = &0069
 l006a                   = &006a
-l0086                   = &0086
 l00c0                   = &00c0
 l00c1                   = &00c1
 l00c2                   = &00c2
@@ -175,7 +174,6 @@ lce83                   = &ce83
 
 ; DOS ROM (&e000-&efff)
 dos     = &e000
-le298   = &e298
 lefff   = &efff
 
 section pydis, org = &f000, filename = "atom_kernel_baron"
@@ -1184,10 +1182,8 @@ lf6ce = cf6cd+1
     beq cf6ab                                                         ; f6cd: f0 dc       ..  ; ALWAYS branch
 
 ; &f6ce referenced 1 time by &f693
-; overlapping: sty l0086                                              ; f6cf: 84 86       ..
 .graphics_mode_end_pages
     equb &84, &86, &8c, &98                                           ; f6cf: 84 86 8c... ...
-; overlapping: sty le298                                              ; f6d1: 8c 98 e2    ...
 ; &f6d3 referenced 1 time by &f6b3
 .plot_routines_low
     equb <plot_mode_0                                                 ; f6d3: e2          .
@@ -3814,7 +3810,6 @@ endsection
 ;     l0068
 ;     l0069
 ;     l006a
-;     l0086
 ;     l00c0
 ;     l00c1
 ;     l00c2
@@ -3894,7 +3889,6 @@ endsection
 ;     lcd54
 ;     lcd9b
 ;     lce83
-;     le298
 ;     lefff
 ;     lf001
 ;     lf084

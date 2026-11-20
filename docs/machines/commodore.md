@@ -57,6 +57,8 @@ Some calls get more:
 - SETNAM's filename, and the string printed by BASIC's STROUT, are marked as PETSCII strings;
 - SAVE's zero page pointer is named.
 
+On the C64 and VIC-20, the Kernal calls also say what they leave unchanged, which py8dis takes as known after a call (see [cpus.md](../cpus.md#what-py8dis-knows-about-the-registers)): the registers that neither the C64 Programmer's Reference Guide ("Registers affected") nor the Kernal's code changes, e.g. X and Y for CHROUT (so a loop that prints with CHROUT keeps its counter), Y for CHKIN, CHKOUT and CLRCHN, and all three for SETLFS, SETNAM and CIOUT; and that these calls write only the Kernal's part of zero page ($90 to $ff), so what's known about the rest is kept. (Not CHRIN, GETIN or PLOT, which the two sources disagree about, nor OPEN, CLOSE, LOAD or SAVE, which may change anything.)
+
 **Names the ROMs' routines** that programs call (e.g. `jmp kernal_irq_handler` for $ea31, `basic_print_string` for STROUT), and all the labels in Commodore's source for the Kernal and BASIC ROMs. A program that replaces the ROMs should use `commodore.c64(rom_labels=False)`. Where a Kernal label in Commodore's source has the same name as a jump table entry or another name (e.g. PLOT, the routine at $e50a that `PLOT` at $fff0 jumps to), it has `_ROM` added (`PLOT_ROM`), and a BASIC label with the same name as another has `_BASIC` added (e.g. `STOP_BASIC`, BASIC's STOP command).
 
 **Names colours** stored in the VIC-II's colour registers or the text colour, as constants: `lda #colour_black : sta vic_border_colour`.

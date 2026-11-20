@@ -383,7 +383,7 @@ c80ff
     jsr OSBYTE                                                        ; 8101: 20 f4 ff     .. ; Read top of user memory (HIMEM)
     stx l0006                                                         ; 8104: 86 06       ..  ; X and Y contain the address of HIMEM (low, high)
     sty l0007                                                         ; 8106: 84 07       ..
-    dec a                                                             ; 8108: 3a          :
+    dec a                                                             ; 8108: 3a          :   ; A=$83
     jsr OSBYTE                                                        ; 8109: 20 f4 ff     ..
     sty l0018                                                         ; 810c: 84 18       ..
     ldx #$13                                                          ; 810e: a2 13       ..
@@ -622,6 +622,7 @@ c8246
     rol l003f                                                         ; 824c: 26 3f       &?
     rol l0040                                                         ; 824e: 26 40       &@
     ldx l0042                                                         ; 8250: a6 42       .B
+    ; Compare X+1 bytes from l003d with l002a
 ; $8252 referenced 1 time by $8259
 loop_c8252
     lda l003d,x                                                       ; 8252: b5 3d       .=
@@ -8013,6 +8014,7 @@ cacd2
     ldy #0                                                            ; acd2: a0 00       ..
     ldx l0036                                                         ; acd4: a6 36       .6
     beq cace3                                                         ; acd6: f0 0b       ..
+    ; Compare X bytes from (l0037) with l0600
 ; $acd8 referenced 1 time by $ace1
 loop_cacd8
     lda (l0037),y                                                     ; acd8: b1 37       .7

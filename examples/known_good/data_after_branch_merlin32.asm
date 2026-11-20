@@ -8,82 +8,114 @@
 l0070   equ $70
 l0071   equ $71
 l0072   equ $72
+l0086   equ $86
+
+; Other
+l3000   equ $3000
 
     org $2000
 
 pydis_start
 start
-    jsr sub_c200a                                                     ; 2000: 20 0a 20     .
-    jsr sub_c201e                                                     ; 2003: 20 1e 20     .
-    jsr sub_c2032                                                     ; 2006: 20 32 20     2
-    rts                                                               ; 2009: 60          `
+    jsr sub_c2010                                                     ; 2000: 20 10 20     .
+    jsr sub_c2024                                                     ; 2003: 20 24 20     $
+    jsr sub_c2038                                                     ; 2006: 20 38 20     8
+    jsr sub_c2050                                                     ; 2009: 20 50 20     P
+    jsr sub_c205b                                                     ; 200c: 20 5b 20     [
+    rts                                                               ; 200f: 60          `
 
-; $200a referenced 1 time by $2000
-sub_c200a
-    ldy l0070                                                         ; 200a: a4 70       .p
-    cpy #4                                                            ; 200c: c0 04       ..
-    bcs c2015                                                         ; 200e: b0 05       ..
-    lda l2019,y                                                       ; 2010: b9 19 20    ..
-    sta l0071                                                         ; 2013: 85 71       .q
-; $2015 referenced 1 time by $200e
-c2015
-    ldx #0                                                            ; 2015: a2 00       ..
-    beq return_1                                                      ; 2017: f0 04       ..  ; ALWAYS branch
+; $2010 referenced 1 time by $2000
+sub_c2010
+    ldy l0070                                                         ; 2010: a4 70       .p
+    cpy #4                                                            ; 2012: c0 04       ..
+    bcs c201b                                                         ; 2014: b0 05       ..
+    lda l201f,y                                                       ; 2016: b9 1f 20    ..
+    sta l0071                                                         ; 2019: 85 71       .q
+; $201b referenced 1 time by $2014
+c201b
+    ldx #0                                                            ; 201b: a2 00       ..
+    beq return_1                                                      ; 201d: f0 04       ..  ; ALWAYS branch
 
-; A table of 4 bytes, indexed by Y (0 to 3), read at $2010
-; $2019 referenced 1 time by $2010
-l2019
-    dfb $a1, 0, $22, $11                                              ; 2019: a1 00 22... .."
+; A table of 4 bytes, indexed by Y (0 to 3), read at $2016
+; $201f referenced 1 time by $2016
+l201f
+    dfb $a1, 0, $22, $11                                              ; 201f: a1 00 22... .."
 
-; $201d referenced 1 time by $2017
+; $2023 referenced 1 time by $201d
 return_1
-    rts                                                               ; 201d: 60          `
+    rts                                                               ; 2023: 60          `
 
-; $201e referenced 1 time by $2003
-sub_c201e
-    ldy l0070                                                         ; 201e: a4 70       .p
-    cpy #4                                                            ; 2020: c0 04       ..
-    bcs c2029                                                         ; 2022: b0 05       ..
-    lda c202d,y                                                       ; 2024: b9 2d 20    .-
-    sta l0071                                                         ; 2027: 85 71       .q
-; $2029 referenced 1 time by $2022
-c2029
-    ldx #0                                                            ; 2029: a2 00       ..
-    beq return_2                                                      ; 202b: f0 04       ..  ; ALWAYS branch
+; $2024 referenced 1 time by $2003
+sub_c2024
+    ldy l0070                                                         ; 2024: a4 70       .p
+    cpy #4                                                            ; 2026: c0 04       ..
+    bcs c202f                                                         ; 2028: b0 05       ..
+    lda c2033,y                                                       ; 202a: b9 33 20    .3
+    sta l0071                                                         ; 202d: 85 71       .q
+; $202f referenced 1 time by $2028
+c202f
+    ldx #0                                                            ; 202f: a2 00       ..
+    beq return_2                                                      ; 2031: f0 04       ..  ; ALWAYS branch
 
-; $202d referenced 1 time by $2024
-c202d
-    lda #0                                                            ; 202d: a9 00       ..
-    rts                                                               ; 202f: 60          `
+; $2033 referenced 1 time by $202a
+c2033
+    lda #0                                                            ; 2033: a9 00       ..
+    rts                                                               ; 2035: 60          `
 
-    dfb $ea                                                           ; 2030: ea          .
+    dfb $ea                                                           ; 2036: ea          .
 
-; $2031 referenced 1 time by $202b
+; $2037 referenced 1 time by $2031
 return_2
-    rts                                                               ; 2031: 60          `
+    rts                                                               ; 2037: 60          `
 
-; $2032 referenced 1 time by $2006
-sub_c2032
-    lda l0072                                                         ; 2032: a5 72       .r
-    bne c2045                                                         ; 2034: d0 0f       ..
-    ldy l0070                                                         ; 2036: a4 70       .p
-    cpy #4                                                            ; 2038: c0 04       ..
-    bcs c2041                                                         ; 203a: b0 05       ..
-    lda c2045,y                                                       ; 203c: b9 45 20    .E
-    sta l0071                                                         ; 203f: 85 71       .q
-; $2041 referenced 1 time by $203a
-c2041
-    ldx #0                                                            ; 2041: a2 00       ..
-    beq return_3                                                      ; 2043: f0 04       ..  ; ALWAYS branch
+; $2038 referenced 1 time by $2006
+sub_c2038
+    lda l0072                                                         ; 2038: a5 72       .r
+    bne c204b                                                         ; 203a: d0 0f       ..
+    ldy l0070                                                         ; 203c: a4 70       .p
+    cpy #4                                                            ; 203e: c0 04       ..
+    bcs c2047                                                         ; 2040: b0 05       ..
+    lda c204b,y                                                       ; 2042: b9 4b 20    .K
+    sta l0071                                                         ; 2045: 85 71       .q
+; $2047 referenced 1 time by $2040
+c2047
+    ldx #0                                                            ; 2047: a2 00       ..
+    beq return_3                                                      ; 2049: f0 04       ..  ; ALWAYS branch
 
-; $2045 referenced 2 times by $2034, $203c
-c2045
-    nop                                                               ; 2045: ea          .
-    dfb 2, $33, $44                                                   ; 2046: 02 33 44    .3D
+; $204b referenced 2 times by $203a, $2042
+c204b
+    nop                                                               ; 204b: ea          .
+    dfb 2, $33, $44                                                   ; 204c: 02 33 44    .3D
 
-; $2049 referenced 1 time by $2043
+; $204f referenced 1 time by $2049
 return_3
-    rts                                                               ; 2049: 60          `
+    rts                                                               ; 204f: 60          `
+
+; $2050 referenced 1 time by $2009
+sub_c2050
+    ldx #0                                                            ; 2050: a2 00       ..
+    beq return_4                                                      ; 2052: f0 06       ..  ; ALWAYS branch
+
+table4
+    dfb $84, $86, $8c, $98, $e2, 2                                    ; 2054: 84 86 8c... ...
+
+; $205a referenced 1 time by $2052
+return_4
+    rts                                                               ; 205a: 60          `
+
+; $205b referenced 1 time by $200c
+sub_c205b
+    ldx #0                                                            ; 205b: a2 00       ..
+    beq return_5                                                      ; 205d: f0 06       ..  ; ALWAYS branch
+
+; overlapping: sty l0086                                              ; 205f: 84 86       ..
+table5
+    dfb $84, $86, $20, 0, $30, 2                                      ; 205f: 84 86 20... ..
+; overlapping: jsr l3000                                              ; 2061: 20 00 30     .0
+
+; $2065 referenced 1 time by $205d
+return_5
+    rts                                                               ; 2065: 60          `
 
 pydis_end
 
@@ -91,45 +123,55 @@ pydis_end
 ; Label references by decreasing frequency:
 ;     l0070:       3
 ;     l0071:       3
-;     c2045:       2
-;     c2015:       1
-;     c2029:       1
-;     c202d:       1
-;     c2041:       1
+;     c204b:       2
+;     c201b:       1
+;     c202f:       1
+;     c2033:       1
+;     c2047:       1
 ;     l0072:       1
-;     l2019:       1
+;     l201f:       1
 ;     return_1:    1
 ;     return_2:    1
 ;     return_3:    1
-;     sub_c200a:   1
-;     sub_c201e:   1
-;     sub_c2032:   1
+;     return_4:    1
+;     return_5:    1
+;     sub_c2010:   1
+;     sub_c2024:   1
+;     sub_c2038:   1
+;     sub_c2050:   1
+;     sub_c205b:   1
 
 ; Automatically generated labels:
-;     c2015
-;     c2029
-;     c202d
-;     c2041
-;     c2045
+;     c201b
+;     c202f
+;     c2033
+;     c2047
+;     c204b
 ;     l0070
 ;     l0071
 ;     l0072
-;     l2019
+;     l0086
+;     l201f
+;     l3000
 ;     return_1
 ;     return_2
 ;     return_3
-;     sub_c200a
-;     sub_c201e
-;     sub_c2032
+;     return_4
+;     return_5
+;     sub_c2010
+;     sub_c2024
+;     sub_c2038
+;     sub_c2050
+;     sub_c205b
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 74 bytes
-;     Code                     = 66 bytes (89%)
-;     Data                     = 8 bytes (11%)
+;     Total size (Code + Data) = 102 bytes
+;     Code                     = 82 bytes (80%)
+;     Data                     = 20 bytes (20%)
 ;
-;     Number of instructions   = 33
-;     Number of data bytes     = 8 bytes
+;     Number of instructions   = 41
+;     Number of data bytes     = 20 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 0 bytes
 ;     Number of strings        = 0

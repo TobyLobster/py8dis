@@ -85,6 +85,7 @@ import textencoding
 import valuesets
 from align import Align
 from binaryaddrtype import BinaryAddrType
+from comment import OverlappingInstruction
 from memorymanager import BinaryAddr
 from snippethelper import *
 
@@ -447,14 +448,16 @@ class CpuStateDisposition:
             assert item is None or item == 'pending' or utils.is_integer_type(item)
         self._d[key] = item
 
-    def apply_exit(self, preserved, values):
+    def apply_exit(self, preserved, values, zero_page_written=None):
         """What's known after a call to a subroutine whose subroutine()
         declares what it leaves (see Cpu6502.declared_exits()): the
         registers and flags in 'preserved' (a set of 'axynvdizc') are as
         they were ('pending' becomes unknown), the rest are unknown, then the
         flags in 'values' (a dict) have those values. What a flag says
         about the registers (z_from, n_from, c_from) is kept if the flag and
-        the registers are preserved."""
+        the registers are preserved. What's known about zero page is kept,
+        except for the addresses in 'zero_page_written' (a frozenset), or
+        all of it if that's None."""
         for reg in "axy":
             if reg not in preserved:
                 self._d[reg].clear()
@@ -471,8 +474,12 @@ class CpuStateDisposition:
             self.n_from = None
         if self.c_from is not None and not kept("c", (self.c_from[0],)):
             self.c_from = None
-        # (The subroutine may write anywhere in zero page)
-        self.zp = {}
+        # (The subroutine may write anywhere in zero page, unless it's
+        # declared where it may)
+        if zero_page_written is None:
+            self.zp = {}
+        elif self.zp:
+            self.zp = {address: possible for address, possible in self.zp.items() if address not in zero_page_written}
 
     def update_clear_nz(self, binary_addr):
         """N and Z become unknown."""
@@ -867,10 +874,11 @@ class CpuStateDisposition:
             r.previous_adjust = None
 
     def show(self):
-        """The state as text, e.g. 'A:05 X:-- Y:00 nvdIzc': '--' for a
-        register that isn't known, and each flag upper case if it's set,
-        lower case if it's clear, '-' if it isn't known, or '?' if it's
-        'pending'."""
+        """The state as text, e.g. 'A:05 X:-- Y:00 nvdIzc [70]:12 [71]:2-':
+        '--' for a register that isn't known, each flag upper case if it's
+        set, lower case if it's clear, '-' if it isn't known, or '?' if it's
+        'pending', then each byte of zero page with a hex digit known (in
+        brackets, by address)."""
         s = ""
         def reg(r):
             v = self._d[r].value
@@ -889,6 +897,16 @@ class CpuStateDisposition:
                 return "?"
             return name.upper() if b else name.lower()
         s += " %s%s%s%s%s%s" % (flag('n'), flag('v'), flag('d'), flag('i'), flag('z'), flag('c'))
+
+        # (Zero page, where a hex digit of a byte is known)
+        for address in sorted(self.zp):
+            value = valuesets.value(self.zp[address])
+            text = utils.plainhex2(value) if value is not None else valuesets.show(self.zp[address])
+            if text != "--":
+                address_text = utils.plainhex2(address)
+                if not config.get_lower_case():
+                    text = text.upper()
+                s += " [%s]:%s" % (address_text, text)
         return s
 
     def __repr__(self):
@@ -3774,8 +3792,8 @@ class Cpu6502(cpu.Cpu):
         # (Only the labels in the code matter)
         labels = tuple((addr, tuple((int(ref.binary_addr), ref.move_id) for ref in label.references))
                        for addr, label in sorted(session.current().labels.labels.items()) if addr in code_addrs)
-        declared = tuple(sorted((addr, tuple(sorted(preserved)), tuple(sorted(values.items())))
-                                for addr, (preserved, values) in self.declared_exits().items()))
+        declared = tuple(sorted((addr, tuple(sorted(preserved)), tuple(sorted(values.items())), None if zero_page is None else tuple(sorted(zero_page)))
+                                for addr, (preserved, values, zero_page) in self.declared_exits().items()))
         return (tuple(placed), labels, frozenset(self.explicit_entry_points), frozenset(self.expression_addrs),
                 len(session.current().moves.move_definitions), None if self.modified is None else frozenset(self.modified),
                 frozenset(self._untracked_zero_page), tuple(session.current().disassembly.io_ranges), declared,
@@ -4085,13 +4103,15 @@ class Cpu6502(cpu.Cpu):
         """What the subroutines given with subroutine() (see
         trace.add_subroutine()) declare they leave behind, by runtime
         address: (the registers and flags it preserves, as a set of
-        'axynvdizc', and the flags' values, as a dict), from on_exit
-        descriptions of exactly '(preserved)' (for a register or a flag),
-        or '(clear)' or '(set)' (for a flag), e.g. on_exit={'x':
-        '(preserved)', 'c': '(clear)'}. (E.g. acorn.mos_labels() declares
-        that OSWRCH preserves A, X and Y, and clears D.) Only those with at
-        least one such description are included. (Worked out again only
-        when a subroutine has been added since.)"""
+        'axynvdizc', the flags' values, as a dict, and the zero page
+        addresses it may write, as a frozenset, or None if that isn't
+        given), from on_exit descriptions of exactly '(preserved)' (for a
+        register or a flag), or '(clear)' or '(set)' (for a flag), e.g.
+        on_exit={'x': '(preserved)', 'c': '(clear)'}, and from its
+        zero_page_written. (E.g. acorn.mos_labels() declares that OSWRCH
+        preserves A, X and Y, clears D, and writes only the OS's part of
+        zero page.) Only those that declare something are included. (Worked
+        out again only when a subroutine has been added since.)"""
         subroutines = session.current().trace.subroutines_list
         cached = getattr(self, "_declared_exits", None)
         if cached is not None and cached[0] == len(subroutines):
@@ -4109,11 +4129,21 @@ class Cpu6502(cpu.Cpu):
                     preserved.add(name)
                 elif name in "nvdizc" and description in self._FLAG_VALUE_DESCRIPTIONS:
                     values[name] = self._FLAG_VALUE_DESCRIPTIONS[description]
-            if preserved or values:
-                old_preserved, old_values = result.get(sub.runtime_addr, (set(), {}))
-                result[sub.runtime_addr] = (old_preserved | preserved, dict(old_values, **values))
+            zero_page = sub.zero_page_written
+            if preserved or values or zero_page is not None:
+                old_preserved, old_values, old_zero_page = result.get(sub.runtime_addr, (set(), {}, None))
+                if old_zero_page is not None:
+                    zero_page = old_zero_page if zero_page is None else old_zero_page | zero_page
+                result[sub.runtime_addr] = (old_preserved | preserved, dict(old_values, **values), zero_page)
         self._declared_exits = (len(subroutines), result)
         return result
+
+    def _declared_zero_page(self, runtime_addr):
+        """The zero page addresses that the subroutine at runtime_addr is
+        declared to write (see declared_exits()), as a frozenset, or None if
+        that isn't declared."""
+        declared = self.declared_exits().get(runtime_addr)
+        return None if declared is None else declared[2]
 
     def subroutine_summaries(self, nodes, node_set):
         """A SubroutineSummary for each subroutine (each instruction a traced
@@ -4248,14 +4278,19 @@ class Cpu6502(cpu.Cpu):
                         touches_stack = touches_stack or entries[callee].touches_stack
                         callee_zp = entries[callee].zp_written
                     else:
-                        # (Code outside the binary may write anywhere)
-                        callee_zp = None
+                        # (Code outside the binary may write anywhere, unless
+                        # its subroutine() says where)
+                        callee_zp = self._declared_zero_page(classification.get_classification(jsr).target(jsr))
                     zp_written = None if zp_written is None or callee_zp is None else zp_written | callee_zp
                 for t in summary.tail_calls:
                     valid = valid and entries[t].valid
                     touches_stack = touches_stack or entries[t].touches_stack
                     t_zp = entries[t].zp_written
                     zp_written = None if zp_written is None or t_zp is None else zp_written | t_zp
+                # (No more than its own subroutine() says it may write)
+                declared_zp = self._declared_zero_page(movemanager.b2r(BinaryAddr(summary.entry)))
+                if declared_zp is not None:
+                    zp_written = set(declared_zp) if zp_written is None else zp_written & declared_zp
                 if valid != summary.valid or touches_stack != summary.touches_stack or zp_written != summary.zp_written:
                     summary.valid = valid
                     summary.touches_stack = touches_stack
@@ -4373,7 +4408,7 @@ class Cpu6502(cpu.Cpu):
                 if callee is None:
                     # (Outside the code: e.g. an OS routine, which may change
                     # anything it isn't declared to preserve)
-                    callee_written = everything - declared.get(c.target(b), (set(), {}))[0]
+                    callee_written = everything - declared.get(c.target(b), (set(), {}, None))[0]
                 else:
                     callee_written = entries[callee].written
                 for r in regs:
@@ -4409,7 +4444,7 @@ class Cpu6502(cpu.Cpu):
                     states[f] = new
                     todo.append(f)
         # (Less what its subroutine() declares it preserves)
-        return written - declared.get(movemanager.b2r(BinaryAddr(entry)), (set(), {}))[0]
+        return written - declared.get(movemanager.b2r(BinaryAddr(entry)), (set(), {}, None))[0]
 
     def _loop_zero_page(self, nodes, ways_in, summaries):
         """For each instruction that starts a loop (one that a branch from
@@ -4436,10 +4471,15 @@ class Cpu6502(cpu.Cpu):
                 c = classification.get_classification(p)
                 if isinstance(c, self.OpcodeJsr):
                     callee = self.jsr_callees.get(p)
-                    if callee is None or callee not in summaries or summaries[callee].zp_written is None:
+                    if callee is not None and callee in summaries:
+                        callee_zp = summaries[callee].zp_written
+                    else:
+                        # (Outside the binary: what its subroutine() says)
+                        callee_zp = self._declared_zero_page(c.target(p)) if callee is None else None
+                    if callee_zp is None:
                         keep = None
                         break
-                    keep |= summaries[callee].zp_written
+                    keep |= callee_zp
                     continue
                 if c.mnemonic.lower() in self._CONTROL_MNEMONICS:
                     # (A branch or jump writes nothing)
@@ -4624,7 +4664,7 @@ class Cpu6502(cpu.Cpu):
                         value = None
                     setattr(result, name, value)
             # (And the flags its subroutine() says it leaves set or clear)
-            for flag, value in declared.get(movemanager.b2r(BinaryAddr(callee)), (set(), {}))[1].items():
+            for flag, value in declared.get(movemanager.b2r(BinaryAddr(callee)), (set(), {}, None))[1].items():
                 result[flag] = value
             # Zero page: what the subroutine writes is what's known at all its
             # returns (where only what it stored is known), and the rest is as
@@ -5035,9 +5075,11 @@ class Cpu6502(cpu.Cpu):
 
     def suggest_jump_tables(self):
         """For each jump through a table that find_jump_tables() found but
-        couldn't mark because what the index can be isn't known (or it can
-        be too many values), print a note of the entries the table seems to
-        have, and the control file lines that would mark them, e.g.:
+        couldn't mark, print a note saying why, and if it can, the control
+        file lines that would mark it.
+
+        Where what the index can be isn't known (or it can be too many
+        values), the note gives the entries the table seems to have, e.g.:
 
             note: &a99d: the RTS there jumps through a table (the low bytes at
             &a99e and the high bytes at &a9a7, indexed by X), but what X can be
@@ -5050,50 +5092,148 @@ class Cpu6502(cpu.Cpu):
         _jump_table_entries()), and only if there are at least two: so
         nothing is suggested for a table whose first entry is already
         classified (e.g. the control file marks it, perhaps between the
-        names in a command table). Turned off with
+        names in a command table).
+
+        Where the index is known but the table wasn't marked because of an
+        entry, the note says which, and why (see _jump_table_problem()):
+        it points into data, inside an instruction, or into the table, or
+        its bytes overlap another entry's. Then, if the entries before it
+        look right (at least two of them), it gives the lines that would
+        mark those, in case the index can't be that after all; or for a
+        table of words whose index can be odd, those that would mark the
+        entries for its even values.
+
+        Nothing is said for a table that's already marked (e.g. by the
+        control file), or that isn't loaded. Turned off with
         config.set_jump_table_suggestions(False)."""
         if not (config.get_find_jump_tables() and config.get_jump_table_suggestions()):
             return
         hex = config.get_assembler().hex
         for dispatch, (lo_table, hi_table, reg, values, offset, reason) in sorted(self.jump_table_candidates.items()):
-            if dispatch in self.jump_tables_marked or reason not in ("unknown index", "too many"):
+            if dispatch in self.jump_tables_marked:
                 continue
-            indexes = self._jump_table_entries(lo_table, hi_table, values, offset)
-            if len(indexes) < 2:
-                continue
-            c = classification.get_classification(dispatch)
-            if c.addr_mode == self.mode_indexed_abs:
-                how = "the JMP ({0},X) there jumps through a table".format(hex(lo_table))
-            elif hi_table == lo_table + 1:
-                how = "the {0} there jumps through the table at {1} (indexed by {2})".format(c.mnemonic.upper(), hex(lo_table), reg.upper())
-            elif lo_table == hi_table + 1:
-                how = "the {0} there jumps through the table at {1} (the high byte of each entry first, indexed by {2})".format(c.mnemonic.upper(), hex(hi_table), reg.upper())
-            else:
-                how = "the {0} there jumps through a table (the low bytes at {1} and the high bytes at {2}, indexed by {3})".format(
-                    c.mnemonic.upper(), hex(lo_table), hex(hi_table), reg.upper())
-            if values is None:
-                known = "what {0} can be isn't known".format(reg.upper())
-            else:
-                known = "{0} can be any of {1} values".format(reg.upper(), len(values))
-            command = "rts_code_ptr" if offset == 1 else "code_ptr"
-            if hi_table == lo_table + 1:
-                arguments = "0x{0:04x} + i".format(lo_table)
-            else:
-                arguments = "0x{0:04x} + i, 0x{1:04x} + i".format(lo_table, hi_table)
-            if offset not in (0, 1):
-                arguments += ", offset={0}".format(offset)
-            step = indexes[1] - indexes[0]
-            if all(b - a == step for a, b in zip(indexes, indexes[1:])):
-                if indexes[0] == 0 and step == 1:
-                    loop = "range({0})".format(len(indexes))
-                elif step == 1:
-                    loop = "range({0}, {1})".format(indexes[0], indexes[-1] + 1)
+            where = hex(movemanager.b2r(BinaryAddr(dispatch)))
+            how = self._jump_table_how(dispatch, lo_table, hi_table, reg)
+            R = reg.upper()
+            if reason in ("unknown index", "too many"):
+                indexes = self._jump_table_entries(lo_table, hi_table, values, offset)
+                if len(indexes) < 2:
+                    continue
+                if values is None:
+                    known = "what {0} can be isn't known".format(R)
                 else:
-                    loop = "range({0}, {1}, {2})".format(indexes[0], indexes[-1] + step, step)
+                    known = "{0} can be any of {1} values".format(R, len(values))
+                utils.note("{0}: {1}, but {2}. It seems to have {3} entries; to mark them, put this in the control file:\n"
+                           "    {4}".format(where, how, known, len(indexes), self._jump_table_lines(lo_table, hi_table, offset, indexes)))
+            elif reason in ("overlaps", "into table", "into data"):
+                problem = self._jump_table_problem(lo_table, hi_table, reg, values, offset)
+                if problem is None:
+                    continue
+                bad, why = problem
+                if values == list(range(values[0], values[-1] + 1)):
+                    known = "{0} can be {1} to {2}".format(R, values[0], values[-1])
+                else:
+                    known = "{0} can be any of {1} values from {2} to {3}".format(R, len(values), values[0], values[-1])
+                text = "{0}: {1}, and {2}, but it isn't marked: the entry for {3}={4} {5}.".format(where, how, known, R, bad, why)
+                # The entries that could be marked, if the index can't be
+                # what it seems
+                even = [v for v in values if v % 2 == 0]
+                before = [v for v in values if v < bad]
+                if why.startswith("overlaps") and abs(hi_table - lo_table) == 1 and len(even) < len(values):
+                    candidates, condition = even, "If {0} is always even, put this in the control file to mark the entries for its even values:".format(R)
+                else:
+                    candidates, condition = before, "If {0} can't be {1} or more, put this in the control file to mark the entries before it:".format(R, bad)
+                if len(candidates) >= 2 and self._jump_table_entries(lo_table, hi_table, candidates, offset) == candidates:
+                    text += " {0}\n    {1}".format(condition, self._jump_table_lines(lo_table, hi_table, offset, candidates))
+                utils.note(text)
+
+    def _jump_table_how(self, dispatch, lo_table, hi_table, reg):
+        """How the jump at 'dispatch' (a binary address) goes through its
+        table, for a note (see suggest_jump_tables()), e.g. 'the RTS there
+        jumps through the table at &2097 (indexed by X)'."""
+        hex = config.get_assembler().hex
+        c = classification.get_classification(dispatch)
+        if c.addr_mode == self.mode_indexed_abs:
+            return "the JMP ({0},X) there jumps through a table".format(hex(lo_table))
+        if hi_table == lo_table + 1:
+            return "the {0} there jumps through the table at {1} (indexed by {2})".format(c.mnemonic.upper(), hex(lo_table), reg.upper())
+        if lo_table == hi_table + 1:
+            return "the {0} there jumps through the table at {1} (the high byte of each entry first, indexed by {2})".format(c.mnemonic.upper(), hex(hi_table), reg.upper())
+        return "the {0} there jumps through a table (the low bytes at {1} and the high bytes at {2}, indexed by {3})".format(
+            c.mnemonic.upper(), hex(lo_table), hex(hi_table), reg.upper())
+
+    def _jump_table_lines(self, lo_table, hi_table, offset, indexes):
+        """The control file line that marks a jump table's entries for the
+        indexes (see suggest_jump_tables()), e.g. 'for i in range(9):
+        rts_code_ptr(0xa99e + i, 0xa9a7 + i)'."""
+        command = "rts_code_ptr" if offset == 1 else "code_ptr"
+        if hi_table == lo_table + 1:
+            arguments = "0x{0:04x} + i".format(lo_table)
+        else:
+            arguments = "0x{0:04x} + i, 0x{1:04x} + i".format(lo_table, hi_table)
+        if offset not in (0, 1):
+            arguments += ", offset={0}".format(offset)
+        step = indexes[1] - indexes[0]
+        if all(b - a == step for a, b in zip(indexes, indexes[1:])):
+            if indexes[0] == 0 and step == 1:
+                loop = "range({0})".format(len(indexes))
+            elif step == 1:
+                loop = "range({0}, {1})".format(indexes[0], indexes[-1] + 1)
             else:
-                loop = "({0})".format(", ".join(str(i) for i in indexes))
-            utils.note("{0}: {1}, but {2}. It seems to have {3} entries; to mark them, put this in the control file:\n"
-                       "    for i in {4}: {5}({6})".format(hex(movemanager.b2r(BinaryAddr(dispatch))), how, known, len(indexes), loop, command, arguments))
+                loop = "range({0}, {1}, {2})".format(indexes[0], indexes[-1] + step, step)
+        else:
+            loop = "({0})".format(", ".join(str(i) for i in indexes))
+        return "for i in {0}: {1}({2})".format(loop, command, arguments)
+
+    def _jump_table_problem(self, lo_table, hi_table, reg, values, offset):
+        """Why a jump table whose index ('reg') can have the values given
+        wasn't marked (see _mark_jump_table()), as (the index's value for the
+        first entry that's wrong, and what's wrong with it, e.g. 'points to
+        &2071, which is inside an instruction'), or None if no entry is (e.g.
+        the table isn't loaded, or it's already marked). The entries' bytes
+        are looked at first (one that overlaps an earlier entry), then where
+        they point (into the table, into data, or inside an instruction or
+        data), in the order of the index's values."""
+        hex = config.get_assembler().hex
+        memory_binary = session.current().memory.binary
+        classifications = session.current().classifications.classifications
+        expressions = session.current().classifications.expressions
+        owners = {}
+        entries = []
+        for v in values:
+            entry = []
+            for table in (lo_table, hi_table):
+                runtime_addr = table + v
+                if runtime_addr > 0xffff:
+                    return None
+                binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr))
+                if binary_addr is None or not memorymanager.is_data_loaded_at_binary_addr(binary_addr):
+                    return None
+                if classification.is_classified(binary_addr) or binary_addr in expressions:
+                    return None
+                if binary_addr in owners:
+                    return v, "overlaps the one for {0}={1}".format(reg.upper(), owners[binary_addr])
+                entry.append(binary_addr)
+            for binary_addr in entry:
+                owners[binary_addr] = v
+            entries.append((v, entry))
+        for v, (lo_binary, hi_binary) in entries:
+            code = ((memory_binary[hi_binary] << 8 | memory_binary[lo_binary]) + offset) & 0xffff
+            code_binary, _ = movemanager.r2b(memorymanager.RuntimeAddr(code))
+            if code_binary is None or not memorymanager.is_data_loaded_at_binary_addr(code_binary):
+                continue
+            if code_binary in owners:
+                return v, "points to {0}, which is in the table".format(hex(code))
+            c = classifications[code_binary]
+            if c is classification.INSIDE_A_CLASSIFICATION:
+                start = code_binary
+                while classifications[start] is classification.INSIDE_A_CLASSIFICATION:
+                    start -= 1
+                inside = "an instruction" if isinstance(classifications[start], self.Opcode) else "data"
+                return v, "points to {0}, which is inside {1}".format(hex(code), inside)
+            if c is not None and not c.is_code(code_binary):
+                return v, "points to {0}, which is data".format(hex(code))
+        return None
 
     def _jump_table_entries(self, lo_table, hi_table, values, offset):
         """The indexes of the entries a jump table that wasn't marked seems
@@ -5152,6 +5292,91 @@ class Cpu6502(cpu.Cpu):
                     table_bytes.add(movemanager.r2b(memorymanager.RuntimeAddr(table + v))[0])
         return indexes
 
+    # The kinds of instruction that just read or write memory, or change the
+    # registers (see drop_traced_data())
+    @property
+    def _PLAIN_OPCODES(self):
+        return (self.OpcodeImplied, self.OpcodeImmediate, self.OpcodeZp, self.OpcodeDataAbs)
+
+    def _reached_other_way(self, binary_addr, length):
+        """Whether code can come to any of the bytes from binary_addr some
+        other way than running on into them: an entry point (see
+        root_entry_points), or a jump, call or branch there (or anything but
+        an instruction referring to it, e.g. a table of addresses). For
+        drop_traced_data() and drop_overlaps_after_always_branches()."""
+        classifications = session.current().classifications.classifications
+        labels = session.current().labels.labels
+        for i in range(length):
+            b = binary_addr + i
+            if b in self.root_entry_points or b in self.explicit_entry_points:
+                return True
+            runtime_addr = movemanager.b2r(BinaryAddr(b))
+            label = labels.get(runtime_addr)
+            if label is None:
+                continue
+            for ref in label.references:
+                c = classifications[ref.binary_addr]
+                if not isinstance(c, self.Opcode):
+                    return True
+                if c.could_be_call_to_subroutine() and c.target(ref.binary_addr) == runtime_addr:
+                    return True
+        return False
+
+    def drop_overlaps_after_always_branches(self):
+        """Take back the comments ('; overlapping: sty l0086') for the
+        instructions that tracing found by running on past a conditional
+        branch that's always taken (see
+        OpcodeConditionalBranch.update_cpu_state()) into data that's already
+        classified (e.g. a table the control file marks), since the code
+        never gets there that way: e.g. the Atom kernel's 'dey : bne loop :
+        beq cf6ab', then its table graphics_mode_end_pages. Called by trace()
+        once the CPU states are known.
+
+        The overlapping instructions are those from the instruction after
+        each such branch, one after another, while there's one. Their comments
+        are only taken back if each one's bytes are all data (not code), it
+        just reads or writes memory, or changes the registers (not a branch,
+        jump, call or return, whose target was traced), and code can't reach
+        it some other way (see _reached_other_way()); otherwise they all
+        stay."""
+        classifications = session.current().classifications.classifications
+        annotations = session.current().disassembly.annotations
+        # The overlapping instructions' comments at each binary address
+        overlaps = collections.defaultdict(list)
+        for binary_loc, annotation_list in annotations.items():
+            for annotation in annotation_list:
+                if isinstance(annotation, OverlappingInstruction):
+                    overlaps[binary_loc.binary_addr].append((binary_loc, annotation))
+        if not overlaps:
+            return
+
+        def owner(binary_addr):
+            """The classification the byte is part of (or None)."""
+            while classifications[binary_addr] is classification.INSIDE_A_CLASSIFICATION:
+                binary_addr -= 1
+            return classifications[binary_addr]
+
+        for b in sorted(self.traced_entry_points):
+            c = classifications[b]
+            state = self.cpu_states[b]
+            if not isinstance(c, self.OpcodeConditionalBranch) or state is None or not state.always_branch:
+                continue
+            # The overlapping instructions after it, while there are any
+            chain = []
+            f = b + c.length()
+            while f in overlaps:
+                opcode = self.opcode_at(BinaryAddr(f))
+                length = 0 if opcode is None else opcode.length()
+                if (opcode is None or not isinstance(opcode, self._PLAIN_OPCODES) or opcode.is_block_end() or f + length > 0x10000
+                        or any(isinstance(owner(f + i), self.Opcode) for i in range(length)) or self._reached_other_way(f, length)):
+                    chain = None
+                    break
+                chain.append(f)
+                f += length
+            for f in chain or []:
+                for binary_loc, annotation in overlaps.pop(f):
+                    annotations[binary_loc].remove(annotation)
+
     def drop_traced_data(self):
         """Take back the code that tracing found by running on past a
         conditional branch that's always taken (see
@@ -5182,28 +5407,8 @@ class Cpu6502(cpu.Cpu):
         classifications = session.current().classifications.classifications
         memory_binary = session.current().memory.binary
         labels = session.current().labels.labels
-        plain = (self.OpcodeImplied, self.OpcodeImmediate, self.OpcodeZp, self.OpcodeDataAbs)
-
-        def reached(binary_addr, length):
-            """Whether code can come to any of the bytes some other way than
-            running on into them: an entry point, or a jump, call or branch
-            there (or anything but an instruction referring to it, e.g. a
-            table of addresses)."""
-            for i in range(length):
-                b = binary_addr + i
-                if b in self.root_entry_points or b in self.explicit_entry_points:
-                    return True
-                runtime_addr = movemanager.b2r(BinaryAddr(b))
-                label = labels.get(runtime_addr)
-                if label is None:
-                    continue
-                for ref in label.references:
-                    c = classifications[ref.binary_addr]
-                    if not isinstance(c, self.Opcode):
-                        return True
-                    if c.could_be_call_to_subroutine() and c.target(ref.binary_addr) == runtime_addr:
-                        return True
-            return False
+        plain = self._PLAIN_OPCODES
+        reached = self._reached_other_way
 
         dropped = []
         for b in sorted(self.traced_entry_points):

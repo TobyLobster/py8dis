@@ -594,34 +594,112 @@ def _state_entering(p, label_name):
             return state.pessimistic
     return None
 
-def _index_loop(p):
-    """For a loop whose index register is also its count (see
-    comment_set_memory_one_register_loop() and comment_search_loop()), with
-    its update (INX, DEX, INY or DEY), its compare (perhaps none) and its
-    branch back: (step, branch opcode, whether there's a compare, the
-    compare's value or None, a function that says whether the loop goes
-    round again for the register's new value), or None if that isn't known
-    (a BCC without a compare)."""
-    step = 1 if p.get_memory('update') in (OPCODE_INX, OPCODE_INY) else -1
+# (The register each update instruction steps, and by how much)
+_UPDATES = {OPCODE_INX: ('x', 1), OPCODE_DEX: ('x', -1), OPCODE_INY: ('y', 1), OPCODE_DEY: ('y', -1)}
+OPCODE_CPX_IMMEDIATE            = 0xe0      # cpx #nn
+OPCODE_CPY_IMMEDIATE            = 0xc0      # cpy #nn
+
+def _loop_registers(p, index_reg):
+    """For a loop that indexes with 'index_reg' ('x' or 'y'), with its
+    updates (one or two of INX, DEX, INY and DEY, at the name 'update'),
+    its compare (perhaps none, at 'compare') and its branch back (at
+    'branch'): (the index's step, the count register, its step, the branch
+    opcode, whether there's a compare, the compare's value or None, a
+    function that says whether the loop goes round again for the count's
+    new value). The count is the index register itself if there's one
+    update (e.g. 'inx : cpx #16 : bne loop'), or the other register if
+    there are two (e.g. 'iny : dex : bne loop', counting X while indexing
+    with Y). None if that isn't how it is, or if when the loop ends isn't
+    known (a BCC without a compare)."""
+    updates = [_UPDATES.get(p.memory_binary[addr]) for addr in range(p.get_binary_address('update'), p.get_binary_address('compare'))]
+    if None in updates or len(updates) not in (1, 2):
+        return None
+    index_steps = [step for reg, step in updates if reg == index_reg]
+    count = [(reg, step) for reg, step in updates if reg != index_reg]
+    if len(index_steps) != 1 or len(count) > 1:
+        return None
+    count_reg, count_step = count[0] if count else (index_reg, index_steps[0])
     branch = p.get_memory('branch')
     has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
+    if has_compare and p.get_memory('compare') != (OPCODE_CPX_IMMEDIATE if count_reg == 'x' else OPCODE_CPY_IMMEDIATE):
+        # (Comparing the register that isn't the count)
+        return None
+    keep_going = _keep_going(p, branch, has_compare)
+    if keep_going is None:
+        return None
+    limit = p.get_memory('compare', 1) if has_compare else None
+    return index_steps[0], count_reg, count_step, branch, has_compare, limit, keep_going
+
+def _loop_range(p, state, index_reg):
+    """The bytes a loop that indexes with 'index_reg' works on (see
+    _loop_registers()), from what's known entering it ('state'), as one of:
+
+    ('known', the lowest index, the number of bytes), where the count's
+    first value is known (and the index's, if it's another register);
+
+    ('count', e.g. 'X' or 'X+1', the lowest index), where the count's first
+    value isn't known, counting down to zero (BNE: X bytes, the index from
+    1 to X if it's the count) or past it (BPL: X+1 bytes, from 0); if the
+    index is another register, it must count up from a known value;
+
+    ('up_to', the limit), where the index is the count, counting up from a
+    value that isn't known to the compare's value (the last byte at
+    limit-1);
+
+    or None if it can't be said (e.g. the loop doesn't end, or the bytes
+    aren't one run)."""
+    loop = _loop_registers(p, index_reg)
+    if loop is None:
+        return None
+    index_step, count_reg, count_step, branch, has_compare, limit, keep_going = loop
+    count_start = state[count_reg].value
+    count_text = count_reg.upper() if branch == OPCODE_BNE else count_reg.upper() + "+1"
+    if count_reg == index_reg:
+        if count_start is not None:
+            run = _loop_run(count_start, count_step, keep_going)
+            return None if run is None else ('known',) + run
+        if count_step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
+            return ('up_to', limit)
+        if count_step == -1 and not has_compare:
+            return ('count', count_text, 1 if branch == OPCODE_BNE else 0)
+        return None
+    index_start = state[index_reg].value
+    if index_start is None:
+        return None
+    if count_start is not None:
+        values = _loop_indices(count_start, count_step, keep_going)
+        if values is None:
+            return None
+        n = len(values)
+        lowest = index_start if index_step == 1 else index_start - (n - 1)
+        if lowest < 0 or lowest + n - 1 > 0xff:
+            # (The index wraps round)
+            return None
+        return ('known', lowest, n)
+    if count_step == -1 and not has_compare and index_step == 1:
+        return ('count', count_text, index_start)
+    return None
+
+def _keep_going(p, branch, has_compare):
+    """For a loop's branch back ('branch', its opcode) after the update and
+    perhaps a compare with an immediate value: a function that says whether
+    it goes round again for the register's new value, or None if that isn't
+    known (a BCC without a compare)."""
     limit = p.get_memory('compare', 1) if has_compare else None
     if has_compare:
         if branch == OPCODE_BNE:
-            keep_going = lambda r: r != limit
+            return lambda r: r != limit
         elif branch == OPCODE_BCC:
-            keep_going = lambda r: r < limit
+            return lambda r: r < limit
         else:
             # (BPL: while the difference is positive)
-            keep_going = lambda r: ((r - limit) & 0xff) < 0x80
+            return lambda r: ((r - limit) & 0xff) < 0x80
     elif branch == OPCODE_BNE:
-        keep_going = lambda r: r != 0
+        return lambda r: r != 0
     elif branch == OPCODE_BPL:
-        keep_going = lambda r: r < 0x80
-    else:
-        # (BCC without a compare: the carry doesn't change in the loop)
-        return None
-    return step, branch, has_compare, limit, keep_going
+        return lambda r: r < 0x80
+    # (BCC without a compare: the carry doesn't change in the loop)
+    return None
 
 def _is_traced(p, names):
     """Whether the instructions at the names' positions are traced code
@@ -698,28 +776,23 @@ def _has_name(runtime_addr):
     label = session.current().labels.labels.get(runtime_addr)
     return label is not None and any(label.explicit_names.values())
 
-def _from_register_to(p, state, name, kind, register, limit):
+def _from_register_to(p, state, name, kind, register, limit, with_from=True):
     """For a loop counting up from the register's value (not known) to
     'limit', the bytes the operand ('name', of a kind 'abs', 'zp' or
-    'indirect') covers, e.g. 'from table+X to table+63', or None if the code
-    changes the operand (see _operand_modified())."""
+    'indirect') covers, e.g. 'from table+X to table + 63' (without 'from'
+    if not 'with_from'), or None if the code changes the operand (see
+    _operand_modified())."""
     if _operand_modified(p, name, kind):
         return None
     if kind == "indirect":
         first, last = _pointed_to(p, state, name, 0), _pointed_to(p, state, name, limit - 1)
-        if first is not None:
-            return utils.LazyString("from %s+%s to %s", first, register, last)
-        last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
-        return utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last)
-    if kind == "zp":
-        return utils.LazyString("from %s+%s to %s", p.get_expr(name), register, make_add(p.get_expr(name), limit - 1))
-    if _has_name(p.get_memory(name)):
-        # (e.g. 'table+7', as for the first byte in _first_byte(), rather
-        # than a new label in the middle of the table)
-        last = make_add(p.get_expr(name), limit - 1)
+        if first is None:
+            first, last = utils.LazyString("(%s)", p.get_expr(name)), utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
     else:
-        last = p.get_expr(name, label_offset=0, final_offset=limit - 1)
-    return utils.LazyString("from %s+%s to %s", p.get_expr(name), register, last)
+        # (The last byte as e.g. 'table + 63', rather than a new label in
+        # the middle of the table)
+        first, last = p.get_expr(name), make_add(p.get_expr(name), limit - 1)
+    return utils.LazyString("%s%s+%s to %s", "from " if with_from else "", first, register, last)
 
 def comment_set_memory_one_register_loop(p, reg, zero=False):
     """Comment a loop that stores A (or with 'zero', zero: the 65C02's STZ)
@@ -759,12 +832,10 @@ def comment_set_memory_one_register_loop(p, reg, zero=False):
     state = _state_entering(p, 'loop')
     if state is None:
         return
-    start = state[reg].value
     to_value = 0 if zero else state['a'].value
-    loop = _index_loop(p)
-    if loop is None:
+    rng = _loop_range(p, state, reg)
+    if rng is None:
         return
-    step, branch, has_compare, limit, keep_going = loop
 
     # The stores, each as (the name of its operand, and the kind: 'abs',
     # 'zp' or 'indirect')
@@ -789,11 +860,8 @@ def comment_set_memory_one_register_loop(p, reg, zero=False):
         verb, to_text = "Set", "" if to_value is None else " to {0}".format(to_value)
     register = reg.upper()
 
-    if start is not None:
-        run = _loop_run(start, step, keep_going)
-        if run is None:
-            return
-        lowest, count = run
+    if rng[0] == 'known':
+        _, lowest, count = rng
         # Each store's bytes, as (first address, count, store), with those
         # that join up (absolute stores, one after another) made one
         runs = []
@@ -810,18 +878,17 @@ def comment_set_memory_one_register_loop(p, reg, zero=False):
             if first is None:
                 return
             parts.append(utils.LazyString("%s from %s onwards", utils.count_with_units(n, *units), first))
-    elif step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
+    elif rng[0] == 'up_to':
         # Counting up to the limit, from the register's value: the last
         # byte is at limit-1
-        parts = [_from_register_to(p, state, name, kind, register, limit) for name, kind in stores]
+        parts = [_from_register_to(p, state, name, kind, register, rng[1]) for name, kind in stores]
         if None in parts:
             return
         parts[0] = utils.LazyString("memory %s", parts[0])
-    elif step == -1 and not has_compare:
+    else:
         # Counting down to zero (the register's value down to 1) or past it
         # (down to 0)
-        count = register if branch == OPCODE_BNE else register + "+1"
-        lowest = 1 if branch == OPCODE_BNE else 0
+        _, count, lowest = rng
         parts = []
         for i, (name, kind) in enumerate(stores):
             units = "bytes of memory" if i == 0 else "bytes"
@@ -829,8 +896,6 @@ def comment_set_memory_one_register_loop(p, reg, zero=False):
             if first is None:
                 return
             parts.append(utils.LazyString("%s %s from %s onwards", count, units, first))
-    else:
-        return
 
     # e.g. "Clear 256 bytes of memory from table onwards, and 256 bytes from
     # table+512 onwards"
@@ -858,37 +923,77 @@ OPCODE_BEQ                      = 0xf0      # beq found
 # (LDA with an operand, for comment_search_loop())
 OPCODES_LDA                     = {0xbd, 0xb5, 0xb9, 0xb1}
 
+def _operand(p, n):
+    """The n'th operand of a loop's instructions (its name 'addr<n>',
+    'zpaddr<n>' or 'zpptr<n>'), as (the name, the kind: 'abs', 'zp' or
+    'indirect'), or None if none of them matched."""
+    for name, kind in (("addr%d" % n, "abs"), ("zpaddr%d" % n, "zp"), ("zpptr%d" % n, "indirect")):
+        if _matched(p, name):
+            return name, kind
+    return None
+
+def _bytes_from(p, state, rng, name, kind, index_reg):
+    """The bytes an operand ('name', of a kind 'abs', 'zp' or 'indirect')
+    covers over a loop (whose range 'rng' is from _loop_range()), e.g. '16
+    bytes from table', 'X+1 bytes from table' or 'from table+X to table +
+    7', or None if it can't be said (see _first_byte())."""
+    if rng[0] == 'up_to':
+        return _from_register_to(p, state, name, kind, index_reg.upper(), rng[1])
+    if rng[0] == 'known':
+        _, lowest, count = rng
+        count_text = utils.count_with_units(count, "byte", "bytes")
+    else:
+        _, count, lowest = rng
+        count_text = count + " bytes"
+    first = _first_byte(p, state, name, kind, lowest)
+    return None if first is None else utils.LazyString("%s from %s", count_text, first)
+
+def _name_pointer_loads(p, state, operands):
+    """For each indirect operand of a loop (as (name, kind)) whose pointer
+    is known entering it ('state'), write the immediate loads that set the
+    pointer before the loop as its label's low and high bytes (see
+    Cpu6502.name_pointer_loads())."""
+    for name, kind in operands:
+        if kind == "indirect":
+            pointer = state.pointer(p.get_memory(name))
+            if pointer is not None:
+                session.current().cpu.name_pointer_loads(p.get_binary_address('loop'), p.get_memory(name), pointer)
+
+def _loop_start(p, names):
+    """What's known for certain entering a loop (see _state_entering()), if
+    its instructions at the names are traced, its branch goes back to its
+    start, and that start has just one reference (the branch back), so
+    that it's the only way in; otherwise None."""
+    if not _is_traced(p, names):
+        return None
+    if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
+        return None
+    return _state_entering(p, 'loop')
+
 def comment_search_loop(p, reg):
-    """Comment a loop that looks through a run of bytes for one, with one
-    register ('reg') as both the index and the count, e.g. 'cmp table,x : beq
-    found : inx : cpx #16 : bne loop' ('Search 16 bytes from table for A'),
-    'lda (ptr),y : beq found : iny : bne loop' ('Search 256 bytes from (ptr)
-    for 0'), or 'lda table,x : cmp #13 : bne found : dex : bpl loop'
-    ('Search 8 bytes from table for a byte other than 13'). What's searched
-    for is A (or its value, if it's known entering the loop), 0 (LDA), or
-    the CMP's value; with BNE rather than BEQ, it's a byte other than that.
-    The comment goes before the loop's label.
+    """Comment a loop that looks through a run of bytes for one, indexing
+    with one register ('reg'), e.g. 'cmp table,x : beq found : inx : cpx #16
+    : bne loop' ('Search 16 bytes from table for A'), 'lda (ptr),y : beq
+    found : iny : bne loop' ('Search 256 bytes from (ptr) for 0'), 'lda
+    table,x : cmp #13 : bne found : dex : bpl loop' ('Search 8 bytes from
+    table for a byte other than 13'), or 'cmp table,y : beq found : iny :
+    dex : bne loop' (counting with X, see _loop_registers()). What's
+    searched for is A (or its value, if it's known entering the loop), 0
+    (LDA), or the CMP's value; with BNE rather than BEQ, it's a byte other
+    than that. The comment goes before the loop's label.
 
     The bytes are worked out as for comment_set_memory_one_register_loop()
-    (which see), from the register's first value, or, if that isn't known,
-    in terms of it: e.g. 'Search X+1 bytes from table for A' for 'dex : bpl
-    loop'."""
-    if not _is_traced(p, ('loop', 'found_branch', 'update', 'branch')):
-        return
-    if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
-        return
-    state = _state_entering(p, 'loop')
+    (which see), from the registers' first values, or, if the count's isn't
+    known, in terms of it: e.g. 'Search X+1 bytes from table for A' for
+    'dex : bpl loop' (see _loop_range())."""
+    state = _loop_start(p, ('loop', 'found_branch', 'update', 'branch'))
     if state is None:
         return
-    loop = _index_loop(p)
-    if loop is None:
-        return
-    step, branch, has_compare, limit, keep_going = loop
-    operand = next(((name, kind) for name, kind in (("addr1", "abs"), ("zpaddr1", "zp"), ("zpptr1", "indirect")) if _matched(p, name)), None)
-    if operand is None:
+    operand = _operand(p, 1)
+    rng = _loop_range(p, state, reg)
+    if operand is None or rng is None:
         return
     name, kind = operand
-    register = reg.upper()
 
     # What it looks for
     hex = config.get_assembler().hex
@@ -904,42 +1009,57 @@ def comment_search_loop(p, reg):
     if p.get_memory('found_branch') != OPCODE_BEQ:
         target = "a non-zero byte" if target == "0" else "a byte other than " + target
 
-    start = state[reg].value
-    if start is not None:
-        run = _loop_run(start, step, keep_going)
-        if run is None:
-            return
-        lowest, count = run
-        first = _first_byte(p, state, name, kind, lowest)
-        where = None if first is None else utils.LazyString("%s from %s", utils.count_with_units(count, "byte", "bytes"), first)
-    elif step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
-        where = _from_register_to(p, state, name, kind, register, limit)
-    elif step == -1 and not has_compare:
-        count = register if branch == OPCODE_BNE else register + "+1"
-        lowest = 1 if branch == OPCODE_BNE else 0
-        first = _first_byte(p, state, name, kind, lowest)
-        where = None if first is None else utils.LazyString("%s bytes from %s", count, first)
-    else:
-        return
+    where = _bytes_from(p, state, rng, name, kind, reg)
     if where is None:
         return
     _comment_loop(p.get_start_loc(), utils.LazyString("Search %s for %s", where, target))
-    # (And the loads that set a pointer whose value is known, as for a loop
-    # that sets memory)
-    if kind == "indirect":
-        pointer = state.pointer(p.get_memory(name))
-        if pointer is not None:
-            session.current().cpu.name_pointer_loads(p.get_binary_address('loop'), p.get_memory(name), pointer)
+    _name_pointer_loads(p, state, [operand])
+
+def comment_compare_loop(p, reg):
+    """Comment a loop that compares two runs of bytes, indexing both with
+    one register ('reg') and leaving the loop at the first difference: 'lda
+    a,x : cmp b,x : bne differ' (or 'eor b,x'), then the update, perhaps a
+    compare, and the branch back, as for comment_search_loop(); e.g. 'ldx #4
+    : loop lda a,x : eor b,x : bne differ : dex : bne loop' ('Compare 4
+    bytes from a+1 with b+1'), or 'ldy #0 : loop lda (ptr),y : cmp buffer,y
+    : bne differ : iny : dex : bne loop' ('Compare X bytes from (ptr) with
+    buffer'). The comment goes before the loop's label."""
+    state = _loop_start(p, ('loop', 'found_branch', 'update', 'branch'))
+    if state is None:
+        return
+    first, second = _operand(p, 1), _operand(p, 2)
+    rng = _loop_range(p, state, reg)
+    if first is None or second is None or rng is None:
+        return
+    where = _bytes_from(p, state, rng, *first, reg)
+    if rng[0] == 'up_to':
+        other = _from_register_to(p, state, *second, reg.upper(), rng[1], with_from=False)
+    else:
+        other = _first_byte(p, state, *second, rng[2] if rng[0] == 'count' else rng[1])
+    if where is None or other is None:
+        return
+    _comment_loop(p.get_start_loc(), utils.LazyString("Compare %s with %s", where, other))
+    _name_pointer_loads(p, state, [first, second])
 
 def comment_search_x_index_loop(p):
-    """Post-trace function for a loop that looks through bytes with X as
-    both the index and the count (see comment_search_loop())."""
+    """Post-trace function for a loop that looks through bytes, indexing
+    them with X (see comment_search_loop())."""
     comment_search_loop(p, 'x')
 
 def comment_search_y_index_loop(p):
-    """Post-trace function for a loop that looks through bytes with Y as
-    both the index and the count (see comment_search_loop())."""
+    """Post-trace function for a loop that looks through bytes, indexing
+    them with Y (see comment_search_loop())."""
     comment_search_loop(p, 'y')
+
+def comment_compare_x_index_loop(p):
+    """Post-trace function for a loop that compares two runs of bytes,
+    indexing them with X (see comment_compare_loop())."""
+    comment_compare_loop(p, 'x')
+
+def comment_compare_y_index_loop(p):
+    """Post-trace function for a loop that compares two runs of bytes,
+    indexing them with Y (see comment_compare_loop())."""
+    comment_compare_loop(p, 'y')
 
 def comment_clear_memory_x_index_loop(p):
     """Post-trace function for a loop that stores zero (the 65C02's STZ)
@@ -1217,22 +1337,54 @@ branch
     bne loop | bpl loop | bcc loop
 """)
 
-# Loops that look through bytes for one, with one register as both the
-# index and the count: comparing A with each byte ('cmp table,x'), loading
-# each to look for 0 ('lda table,x'), or loading each and comparing it with a
-# value ('lda table,x : cmp #13'), and leaving the loop when it's found (BEQ),
-# or when a byte other than that is found (BNE). Commented e.g. 'Search 16
-# bytes from table for A' (see comment_search_loop()). (Not traced, as
-# above.)
+# Loops that compare two runs of bytes, indexing both with one register (and
+# counting with it or with the other), and leaving the loop at the first
+# difference ('lda a,x : cmp b,x : bne differ', or 'eor b,x'). Commented e.g.
+# 'Compare 4 bytes from a with b' (see comment_compare_loop()). (Not traced,
+# as above. Before the searches, since a match is skipped if it overlaps an
+# earlier one, and a search would match from the CMP.)
+register_snippet(None, comment_compare_x_index_loop, """
+loop
+    lda addr1,x : cmp addr2,x | lda addr1,x : cmp zpaddr2,x | lda zpaddr1,x : cmp addr2,x | lda zpaddr1,x : cmp zpaddr2,x | lda addr1,x : eor addr2,x | lda addr1,x : eor zpaddr2,x | lda zpaddr1,x : eor addr2,x | lda zpaddr1,x : eor zpaddr2,x
+found_branch
+    bne differ
+update
+    inx | dex | inx : dey | dex : dey | dey : inx | dey : dex
+compare
+?   cpx #nn | cpy #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+register_snippet(None, comment_compare_y_index_loop, """
+loop
+    lda addr1,y : cmp addr2,y | lda addr1,y : cmp (zpptr2),y | lda (zpptr1),y : cmp addr2,y | lda (zpptr1),y : cmp (zpptr2),y | lda addr1,y : eor addr2,y | lda addr1,y : eor (zpptr2),y | lda (zpptr1),y : eor addr2,y | lda (zpptr1),y : eor (zpptr2),y
+found_branch
+    bne differ
+update
+    iny | dey | iny : dex | dey : dex | dex : iny | dex : dey
+compare
+?   cpy #nn | cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+# Loops that look through bytes for one, indexing with one register and
+# counting with it or with the other: comparing A with each byte ('cmp
+# table,x'), loading each to look for 0 ('lda table,x'), or loading each and
+# comparing it with a value ('lda table,x : cmp #13'), and leaving the loop
+# when it's found (BEQ), or when a byte other than that is found (BNE).
+# Commented e.g. 'Search 16 bytes from table for A' (see
+# comment_search_loop()). (Not traced, as above.)
 register_snippet(None, comment_search_x_index_loop, """
 loop
     lda addr1,x : cmp #value | lda zpaddr1,x : cmp #value | cmp addr1,x | cmp zpaddr1,x | lda addr1,x | lda zpaddr1,x
 found_branch
     beq found | bne found
 update
-    inx | dex
+    inx | dex | inx : dey | dex : dey | dey : inx | dey : dex
 compare
-?   cpx #nn
+?   cpx #nn | cpy #nn
 branch
     bne loop | bpl loop | bcc loop
 """)
@@ -1243,9 +1395,9 @@ loop
 found_branch
     beq found | bne found
 update
-    iny | dey
+    iny | dey | iny : dex | dey : dex | dex : iny | dex : dey
 compare
-?   cpy #nn
+?   cpy #nn | cpx #nn
 branch
     bne loop | bpl loop | bcc loop
 """)

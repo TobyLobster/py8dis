@@ -29,14 +29,15 @@ class TraceState:
         self.references                       = None    # dictionary of references keyed by binary location: for each label's BinaryLocation, a list of the BinaryLocations that refer to it (made by Cpu.generate_references(), during tracing)
         self.analysis_hooks                   = []      # functions to call once the code is traced and its CPU states known (after the CPU's own analysis), e.g. from acorn.py and cpm.py
 
-def add_subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id):
+def add_subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id, zero_page_written=None):
     """Record a subroutine for the current session (see
     commands.subroutine(), which also writes its header comment). After
     tracing, the CPU calls each subroutine's hook for each call to it (see
     find_subroutine_calls() in cpu6502.py and cpuz80.py), to comment the
     calls, and jsonoutput.py lists the subroutines. 'entry' and 'exit' are
-    the on_entry and on_exit dictionaries."""
-    session.current().trace.subroutines_list.append(subroutine.Subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id))
+    the on_entry and on_exit dictionaries, and 'zero_page_written' the zero
+    page addresses it may write (a frozenset), or None."""
+    session.current().trace.subroutines_list.append(subroutine.Subroutine(runtime_addr, name, title, description, entry, exit, hook_function, move_id, zero_page_written))
 
 def __getattr__(name):
     """For control files that read the tracing state as module variables:

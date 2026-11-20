@@ -94,6 +94,27 @@ printed
     lda #'!'
     jsr chrout
 
+    ; Print three digits: CHROUT leaves X as it was, so X is 0 to 2 at the
+    ; LDA (the digits are a table of three bytes)
+    ldx #0
+digits_loop
+    lda digits,x
+    jsr chrout
+    inx
+    cpx #3
+    bne digits_loop
+
+    ; CHROUT writes only the Kernal's part of zero page, so $02 is still 0
+    ; after it (the BEQ is always taken)
+    lda #0
+    sta $02
+    lda #'.'
+    jsr chrout
+    lda $02
+    beq +
+    nop
++
+
     ; Move the cursor, then read where it is
     clc
     ldx #5
@@ -203,6 +224,8 @@ filename
 filename_end
 basic_message
     !pet "the answer is ", 0
+digits
+    !pet "123"
 
 cursor_row
     !byte 0

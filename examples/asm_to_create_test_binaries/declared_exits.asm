@@ -1,9 +1,9 @@
 ; What subroutines that py8dis can't follow leave behind, as their
 ; subroutine() declares it (November 2026), for declared_exits (see its
 ; control file): the OS calls whose on_exit acorn.bbc() gives (OSWRCH
-; preserves A, X and Y and clears D, OSRDCH preserves X and Y), a routine
-; outside the binary, and one in it that jumps through a vector. Assemble
-; with:
+; preserves A, X and Y and clears D, OSRDCH preserves X and Y, and both
+; write only the OS's part of zero page), a routine outside the binary, and
+; one in it that jumps through a vector. Assemble with:
 ;
 ;   acme -o ../orig/declared_exits.orig declared_exits.asm
 ;
@@ -11,6 +11,7 @@
 
 oswrch = $ffee
 osrdch = $ffe0
+osword = $fff1
 
     * = $2000
 
@@ -53,7 +54,29 @@ start
     ldy #9
     jsr vectored
     sty $74                 ; Y=9
-    rts
+
+    ; 6. Zero page: OSWRCH writes only the OS's part of it (&90 to &FF), so
+    ;    $80 is still 0 after it; the routine outside the binary is
+    ;    declared to write only $81, so $80 is still 0 after it too, but $81
+    ;    isn't known; and OSWORD may write anywhere (its control block can
+    ;    be in zero page), so $80 isn't known after it
+    lda #0
+    sta $80
+    sta $81
+    lda #'B'
+    jsr oswrch
+    lda $80
+    beq +                   ; ALWAYS branch
++   jsr $3000
+    lda $80
+    beq +                   ; ALWAYS branch
++   lda $81
+    beq +
++   lda #0
+    jsr osword
+    lda $80
+    beq +
++   rts
 
 vectored
     jmp ($0230)

@@ -3,7 +3,9 @@
 ; conditional branch into the bytes after it, but once py8dis knows the
 ; branch is always taken, and the code reads those bytes as a table, and as
 ; code they run straight into an opcode that doesn't exist, they're data.
-; Assemble with:
+; And where the control file marks such bytes as data, the instructions
+; tracing found there aren't shown in '; overlapping' comments. Assemble
+; with:
 ;
 ;   acme -o ../orig/data_after_branch.orig data_after_branch.asm
 ;
@@ -15,6 +17,8 @@ start
     jsr clearly_data
     jsr ends_in_rts
     jsr reached_elsewhere
+    jsr marked_data
+    jsr marked_data_with_jsr
     rts
 
 ; 1. The BEQ is always taken (X is 0), and table1 is read with Y 0 to 3. As
@@ -60,4 +64,24 @@ reached_elsewhere
     beq +
 table3
     !byte $ea, $02, $33, $44
++   rts
+
+; 4. The BEQ is always taken, and the control file marks the bytes after it
+;    as data. As code, they're 'sty $86 : sty $e298' then $02: tracing ran
+;    on into them, but they get no '; overlapping' comments (and no labels
+;    for $86 and $e298)
+marked_data
+    ldx #0
+    beq +
+table4
+    !byte $84, $86, $8c, $98, $e2, $02
++   rts
+
+; 5. The same, but as code the bytes are 'sty $86 : jsr $3000': the JSR's
+;    target was traced, so both keep their comments
+marked_data_with_jsr
+    ldx #0
+    beq +
+table5
+    !byte $84, $86, $20, $00, $30, $02
 +   rts

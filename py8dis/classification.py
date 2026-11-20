@@ -164,6 +164,12 @@ class _InsideAClassification:
     def __repr__(self):
         return "INSIDE_A_CLASSIFICATION"
 
+    def is_code(self, binary_addr):
+        """False: a byte inside a classification isn't the start of an
+        instruction (e.g. a jump table entry that points inside a string, or
+        to an instruction's operand, doesn't point to code)."""
+        return False
+
 INSIDE_A_CLASSIFICATION = _InsideAClassification()
 
 class Byte:

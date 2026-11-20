@@ -556,29 +556,32 @@ def _hex4(n):
     """A 16-bit number in hex, as the assembler writes it, e.g. $d011."""
     return config.get_assembler().hex4(n)
 
-def _comment_registers(runtime_addr, state, subroutine, entry=True, exit=True):
+def _comment_registers(runtime_addr, state, subroutine, entry=True, exit=True, registers=('a', 'x', 'y')):
     """Comment where the registers are set before the call at runtime_addr,
     and used after it, from the subroutine's on_entry and on_exit (as the
     6502's default subroutine hook does), e.g. 'A=logical file number' on
     the 'lda #15' before it. With entry=False or exit=False, those
-    comments are left out (for a hook that makes its own). Nothing is
-    commented for the subroutine's own code (runtime_addr being the
-    subroutine's address)."""
+    comments are left out (for a hook that makes its own); only the
+    'registers' are commented on entry. A description in brackets (e.g.
+    '(preserved)') isn't. Nothing is commented for the subroutine's own
+    code (runtime_addr being the subroutine's address)."""
     if subroutine.runtime_addr == runtime_addr:
         return
+    def wanted(text):
+        return text and not text.startswith("(")
     if entry and subroutine.on_entry:
         # (On the instruction that last loaded or changed the register)
-        for reg in ('a', 'x', 'y'):
+        for reg in registers:
             reg_addr = state.optimistic[reg].previous_adjust
             text = subroutine.on_entry.get(reg)
-            if reg_addr is not None and text:
+            if reg_addr is not None and wanted(text):
                 disassembly.comment_binary(reg_addr, reg.upper() + "=" + text, align=Align.INLINE, word_wrap=False, auto_generated=True)
     if exit and subroutine.on_exit:
         # (On the instruction after the call that next uses the register)
         for reg in ('a', 'x', 'y'):
             text = subroutine.on_exit.get(reg)
             next_use = state.next_use[reg]
-            if next_use is not None and text:
+            if next_use is not None and wanted(text):
                 disassembly.comment(movemanager.b2r(next_use), reg.upper() + "=" + text, align=Align.INLINE, auto_generated=True)
 
 def _comment_call(runtime_addr, subroutine, text):
@@ -679,12 +682,15 @@ def setnam_hook(runtime_addr, state, subroutine):
     as a PETSCII string, labelled 'filename' (if it's loaded and isn't
     classified yet), and comment the call with it, e.g. 'Set the filename
     to "i0"'."""
-    _comment_registers(runtime_addr, state, subroutine)
     length = _known_value(state, 'a')
-    filename_addr = xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
     if length == 0:
+        # (X and Y don't matter, and may be left from something else, e.g.
+        # a call to SETLFS that SETNAM's preserve: so only A is commented)
+        _comment_registers(runtime_addr, state, subroutine, registers=('a',))
         _comment_call(runtime_addr, subroutine, "Set no filename")
         return
+    _comment_registers(runtime_addr, state, subroutine)
+    filename_addr = xy_addr(state.pessimistic['x'].get_previous_load_imm_operand(), state.pessimistic['y'].get_previous_load_imm_operand())
     if length is None or filename_addr is None:
         _comment_call(runtime_addr, subroutine, subroutine.title)
         return
@@ -2424,7 +2430,15 @@ def _set_up(command, machine, names, rom_labels):
     # Kernal ROM, see kernal_rom())
     for call in machine.jump_table:
         hooks = _hooks if machine.call_hooks is None else machine.call_hooks
-        subroutine(call.addr, official_name(call.name), call.title, None, call.on_entry, call.on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)), is_entry_point=False)
+        on_exit, zero_page = call.on_exit, None
+        if machine.name in ("c64", "vic20") and call.name in kernal_preserved_registers:
+            # (What the call leaves unchanged: see kernal_preserved_registers)
+            on_exit = dict(on_exit or {})
+            for reg in kernal_preserved_registers[call.name]:
+                on_exit.setdefault(reg, "(preserved)")
+            zero_page = kernal_zero_page
+        subroutine(call.addr, official_name(call.name), call.title, None, call.on_entry, on_exit, hook=_unless_mapped_out(hooks.get(call.name, default_hook)),
+                   is_entry_point=False, zero_page_written=zero_page)
     # A call that prints the string after it (PRIMM) continues after the
     # string
     for addr in machine.inline_string_calls:

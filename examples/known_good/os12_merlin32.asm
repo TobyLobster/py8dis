@@ -4695,6 +4695,7 @@ cd7e1
 ; $d7e8 referenced 1 time by $d801
 loop_cd7e8
     ldy #7                                                            ; d7e8: a0 07       ..
+    ; Compare 8 bytes from l0328 with (l00de)
 ; $d7ea referenced 1 time by $d7f2
 loop_cd7ea
     lda l0328,y                                                       ; d7ea: b9 28 03    .(.
@@ -11047,6 +11048,9 @@ OSWRCH
 OSWORD
     jmp (wordv)                                                       ; fff1: 6c 0c 02    l..
 
+; ***************************************************************************************
+; On Exit:
+;     A is preserved
 ; ***************************************************************************************
 ; $fff4 referenced 2 times by $f9a8, $fb99
 OSBYTE

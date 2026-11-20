@@ -9,7 +9,7 @@ address's, in any case, since some assemblers, e.g. 64tass, take 'key' and
 from commands import *
 import commodore
 
-load_prg("orig/c64_names_test.orig", "6510", "edfe1298d5cffb5b0c85432f3b17f40f")
+load_prg("orig/c64_names_test.orig", "6510", "657fc0b303538731752e3d327d294bca")
 commodore.c64(names="commodore")
 label(0x0964, "key")
 go()

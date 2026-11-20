@@ -186,3 +186,60 @@ routine7b
 routine7c
     lda #$7c
     rts
+
+; 8. X is 0 to 3, but the entry for X=3 points into the message after the
+;    routines (the control file marks it as a string, and gives this as an
+;    entry point): the table isn't marked, and py8dis prints a note saying
+;    why, with the control file lines that would mark the first three
+;    entries
+into_data
+    lda $77
+    and #3
+    tax
+    lda table8_high,x
+    pha
+    lda table8_low,x
+    pha
+    rts
+
+table8_low
+    !byte <(routine8a - 1), <(routine8b - 1), <(routine8c - 1), <(message8 + 1)
+table8_high
+    !byte >(routine8a - 1), >(routine8b - 1), >(routine8c - 1), >(message8 + 1)
+
+routine8a
+    lda #$8a
+    rts
+routine8b
+    lda #$8b
+    rts
+routine8c
+    lda #$8c
+    rts
+message8
+    !text "HELLO", 0
+
+; 9. A table of words, but X can be 0 to 3, not just even, so the entries
+;    for X=0 and X=1 overlap (the control file gives this as an entry
+;    point): the table isn't marked, and py8dis prints a note saying why,
+;    with the control file lines that would mark the entries for X=0 and
+;    X=2
+odd_index
+    lda $78
+    and #3
+    tax
+    lda table9+1,x
+    pha
+    lda table9,x
+    pha
+    rts
+
+table9
+    !word routine9a - 1, routine9b - 1
+
+routine9a
+    lda #$9a
+    rts
+routine9b
+    lda #$9b
+    rts

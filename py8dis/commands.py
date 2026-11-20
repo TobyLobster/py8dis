@@ -786,7 +786,7 @@ def _on_exit_lines(on_exit):
         lines.append(names + (" is" if len(preserved) == 1 else " are") + " preserved")
     return lines
 
-def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True):
+def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True, zero_page_written=None):
     """
     Define a subroutine.
 
@@ -813,6 +813,14 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
     for (arg, value) in (("on_entry", on_entry), ("on_exit", on_exit)):
         if value is not None and not isinstance(value, dict):
             utils.die("subroutine({0}, ...): {1} must be a dictionary (e.g. {{'a': 'the value'}}), not {2!r}".format(_hex(runtime_addr), arg, value))
+    if zero_page_written is not None:
+        try:
+            addresses = frozenset(zero_page_written)
+        except TypeError:
+            addresses = None
+        if addresses is None or not all(utils.is_integer_type(a) and 0 <= a <= 0xff for a in addresses):
+            utils.die("subroutine({0}, ...): zero_page_written must be the zero page addresses (0 to 255) that the subroutine may write, e.g. range(0x90, 0x100), not {1!r}".format(_hex(runtime_addr), zero_page_written))
+        zero_page_written = addresses
     if name is not None and len(name)>0:
         if is_entry_point:
             _cpu("subroutine")
@@ -865,7 +873,7 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
             auto_comment(runtime_addr, middle)
             if config.get_subroutine_footer() is not None:
                 auto_comment(runtime_addr, config.get_subroutine_footer(), word_wrap=False)
-    trace.add_subroutine(runtime_addr, name, title, description, on_entry, on_exit, hook, move_id)
+    trace.add_subroutine(runtime_addr, name, title, description, on_entry, on_exit, hook, move_id, zero_page_written)
 
 def _convert_inline_to_align_internal(inline, align, command="comment"):
     """Where a comment goes, from a comment command's 'inline' and 'align'

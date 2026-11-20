@@ -236,7 +236,7 @@ A hook is given runtime addresses, so it reads memory with `get_u8_runtime()` et
 
 ### subroutine
 
-`subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True)`
+`subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True, zero_page_written=None)`
 
 Describes a subroutine. All but the address are optional. py8dis writes a header comment before it, and comments the code that calls it:
 
@@ -255,6 +255,7 @@ Describes a subroutine. All but the address are optional. py8dis writes a header
 ```
 
 - `on_entry` and `on_exit` are dictionaries of a description for each register, e.g. `on_entry={'a': "number to print"}`. A description in brackets, e.g. `{'x': "(preserved)"}`, goes in the header but not in the comments on calls. In the header, the registers and flags whose description is `(preserved)` are together on one line after the others, e.g. `X and Y are preserved` (as in py8dis's own "On Exit" notes), and a flag's `(clear)` or `(set)` is written `D: clear`. On the 6502, some `on_exit` descriptions also say what's known after a call: exactly `(preserved)` (for a register or a flag: `a`, `x`, `y`, `n`, `v`, `d`, `i`, `z` or `c`) says it's as it was before the call, and `(clear)` or `(set)` (for a flag) what it is after it. These are taken as true wherever the subroutine is, even outside the binary (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)).
+- `zero_page_written` (6502 only) is the zero page addresses the subroutine may write, e.g. `range(0x90, 0x100)`, if it isn't all of them: what's known about the rest of zero page is kept after a call to it, even if it's outside the binary (otherwise nothing is). For a subroutine in the binary, py8dis works out what it writes itself, and this limits it (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)).
 - `is_entry_point` (True by default) traces the subroutine as code.
 - `hook` decides how calls are commented. By default, each call is commented with the title, and for the 6502, the instructions that set the registers before each call are commented with the descriptions (e.g. `; A=number to print`). `hook=False` turns this off. A hook of your own is called as `hook(runtime_addr, state, subroutine)` for each call to the subroutine (for the 8080 and Z80, a CALL, RST or jump to it) and for the code at its address, with the CPU's state before the instruction (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)).
 

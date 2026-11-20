@@ -3337,6 +3337,7 @@ c929f
 ; $92a4 referenced 2 times by $9998, $9a9b
 sub_c92a4
     ldx #4                                                            ; 92a4: a2 04       ..
+    ; Compare 4 bytes from l00b0 with l00b4
 ; $92a6 referenced 1 time by $92ad
 loop_c92a6
     lda l00af,x                                                       ; 92a6: b5 af       ..
@@ -4564,6 +4565,7 @@ loop_c99a3
     sta l00c0                                                         ; 99b0: 85 c0       ..
     jsr c95dd                                                         ; 99b2: 20 dd 95     ..
     ldy #3                                                            ; 99b5: a0 03       ..
+    ; Compare 4 bytes from l00c8 with l00b4
 ; $99b7 referenced 1 time by $99c0
 loop_c99b7
     lda l00c8,y                                                       ; 99b7: b9 c8 00    ...
@@ -5726,6 +5728,7 @@ loop_ca04d
     ldx #3                                                            ; a062: a2 03       ..
     ldy #5                                                            ; a064: a0 05       ..
     sec                                                               ; a066: 38          8
+    ; Search 4 bytes from (l00bb)+5 for a non-zero byte
 ; $a067 referenced 1 time by $a06d
 loop_ca067
     lda (l00bb),y                                                     ; a067: b1 bb       ..
@@ -10161,6 +10164,7 @@ sub_cbb77
     lda #2                                                            ; bb89: a9 02       ..
     jsr OSARGS                                                        ; bb8b: 20 da ff     ..            ; Get length of file into zero page address X (A=2)
     ldy #3                                                            ; bb8e: a0 03       ..
+    ; Compare 4 bytes from l00aa with (l00ae)
 ; $bb90 referenced 1 time by $bb98
 loop_cbb90
     lda l00aa,y                                                       ; bb90: b9 aa 00    ...

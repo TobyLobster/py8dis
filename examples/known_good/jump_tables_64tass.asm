@@ -9,6 +9,8 @@ l0073   = $0073
 l0074   = $0074
 l0075   = $0075
 l0076   = $0076
+l0077   = $0077
+l0078   = $0078
 l0080   = $0080
 l0081   = $0081
 
@@ -224,6 +226,47 @@ l20d4
 l20d7
     .text "   "                                                       ; 20d7: 20 20 20
     .byte $a9, $7a, $60, $a9, $7b, $60, $a9, $7c, $60                 ; 20da: a9 7a 60... .z`
+
+into_data
+    lda l0077                                                         ; 20e3: a5 77       .w
+    and #3                                                            ; 20e5: 29 03       ).
+    tax                                                               ; 20e7: aa          .
+    lda l20f5,x                                                       ; 20e8: bd f5 20    ..
+    pha                                                               ; 20eb: 48          H
+    lda l20f1,x                                                       ; 20ec: bd f1 20    ..
+    pha                                                               ; 20ef: 48          H
+    rts                                                               ; 20f0: 60          `
+
+; A table of 4 bytes, indexed by X (0 to 3), read at $20ec
+; $20f1 referenced 1 time by $20ec
+l20f1
+    .byte $f8, $fb, $fe, 3                                            ; 20f1: f8 fb fe... ...
+; A table of 4 bytes, indexed by X (0 to 3), read at $20e8
+; $20f5 referenced 1 time by $20e8
+l20f5
+    .byte $20, $20, $20, $21                                          ; 20f5: 20 20 20...
+    .byte $a9, $8a, $60, $a9, $8b, $60, $a9, $8c, $60                 ; 20f9: a9 8a 60... ..`
+    .text "HELLO", 0                                                  ; 2102: 48 45 4c... HEL
+
+odd_index
+    lda l0078                                                         ; 2108: a5 78       .x
+    and #3                                                            ; 210a: 29 03       ).
+    tax                                                               ; 210c: aa          .
+    lda l2117,x                                                       ; 210d: bd 17 21    ..!
+    pha                                                               ; 2110: 48          H
+    lda l2116,x                                                       ; 2111: bd 16 21    ..!
+    pha                                                               ; 2114: 48          H
+    rts                                                               ; 2115: 60          `
+
+; A table of 4 bytes, indexed by X (0 to 3), read at $2111
+; $2116 referenced 1 time by $2111
+l2116
+    .byte $19                                                         ; 2116: 19          .
+; A table of 4 bytes, indexed by X (0 to 3), read at $210d
+; $2117 referenced 1 time by $210d
+l2117
+    .byte $21, $1c, $21, $a9                                          ; 2117: 21 1c 21... !.!
+    .byte $9a, $60, $a9, $9b, $60                                     ; 211b: 9a 60 a9... .`.
 pydis_end
 
 .cerror (<sub_c20a8) != $a8, "Assertion failed: <sub_c20a8 == $a8"
@@ -255,6 +298,8 @@ pydis_end
 ;     l0074:       1
 ;     l0075:       1
 ;     l0076:       1
+;     l0077:       1
+;     l0078:       1
 ;     l0081:       1
 ;     l2049:       1
 ;     l204a:       1
@@ -271,6 +316,10 @@ pydis_end
 ;     l209c:       1
 ;     l20d4:       1
 ;     l20d7:       1
+;     l20f1:       1
+;     l20f5:       1
+;     l2116:       1
+;     l2117:       1
 ;     sub_c2013:   1
 ;     sub_c2024:   1
 ;     sub_c2036:   1
@@ -289,6 +338,8 @@ pydis_end
 ;     l0074
 ;     l0075
 ;     l0076
+;     l0077
+;     l0078
 ;     l0080
 ;     l0081
 ;     l2049
@@ -306,6 +357,10 @@ pydis_end
 ;     l209c
 ;     l20d4
 ;     l20d7
+;     l20f1
+;     l20f5
+;     l2116
+;     l2117
 ;     return_1
 ;     sub_c2013
 ;     sub_c2024
@@ -328,13 +383,13 @@ pydis_end
 
 ; Stats:
 ;
-;     Total size (Code + Data) = 227 bytes
-;     Code                     = 172 bytes (76%)
-;     Data                     = 55 bytes (24%)
+;     Total size (Code + Data) = 288 bytes
+;     Code                     = 200 bytes (69%)
+;     Data                     = 88 bytes (31%)
 ;
-;     Number of instructions   = 93
-;     Number of data bytes     = 38 bytes
+;     Number of instructions   = 109
+;     Number of data bytes     = 65 bytes
 ;     Number of data words     = 14 bytes
-;     Number of string bytes   = 3 bytes
-;     Number of strings        = 1
+;     Number of string bytes   = 9 bytes
+;     Number of strings        = 2
 

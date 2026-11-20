@@ -587,7 +587,10 @@ def _cpu_state(disposition):
     """The 6502's state (a CpuStateDisposition) for the JSON: what's known,
     with None where it isn't: A, X and Y as numbers, and the flags N, V, D,
     I, Z and C as True or False. A register with only some of its bits
-    known has them as well, as e.g. 'a_bits': '0000----' after 'and #$0f'."""
+    known has them as well, as e.g. 'a_bits': '0000----' after 'and #$0f'.
+    Then 'zero_page', if any bit of zero page is known: for each byte with a
+    bit known, its 'address' and 'value' (None if it isn't known), and if
+    only some of its bits are known, those as 'bits'."""
     result = {}
     for reg in "axy":
         result[reg] = disposition[reg].value
@@ -597,6 +600,18 @@ def _cpu_state(disposition):
         # (Anything else, e.g. None, means the flag isn't known)
         value = disposition[flag]
         result[flag] = bool(value) if value in (True, False, 0, 1) else None
+    zero_page = []
+    for address in sorted(disposition.zp):
+        possible = disposition.zp[address]
+        value = valuesets.value(possible)
+        if value is not None:
+            zero_page.append({ "address": address, "value": value })
+        else:
+            bits = valuesets.show_bits(possible)
+            if bits != "--------":
+                zero_page.append({ "address": address, "value": None, "bits": bits })
+    if zero_page:
+        result["zero_page"] = zero_page
     return result
 
 

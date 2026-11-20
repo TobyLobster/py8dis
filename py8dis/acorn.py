@@ -828,6 +828,20 @@ def memory_regions():
 _OSWRCH_EXIT = {'a': "(preserved)", 'x': "(preserved)", 'y': "(preserved)", 'd': "(clear)"}
 _OSRDCH_EXIT = {'a': "the character read", 'x': "(preserved)", 'y': "(preserved)", 'c': "set if Escape was pressed", 'd': "(clear)"}
 
+# OSBYTE leaves A unchanged, as the Advanced User Guide gives it for each
+# call (and as MOS 1.20's code does, getting it back from the stack on the
+# way out); X, Y and C depend on the call.
+_OSBYTE_EXIT = {'a': "(preserved)"}
+
+# The part of zero page that the MOS and the filing systems use, &90 to &FF
+# (the Advanced User Guide gives &00 to &8F to the current language, and the
+# user). The calls that only read and write characters, and OSBYTE, write
+# nothing else there, so what's known about the rest is kept after a call
+# to them (see subroutine()'s zero_page_written). (Not OSWORD, OSFILE,
+# OSARGS, OSGBPB or OSCLI, which write to a control block, which can be in
+# zero page, or can run anything.)
+_OS_ZERO_PAGE = range(0x90, 0x100)
+
 def mos_labels():
     """Set up what all the Acorn machines share: name the MOS's entry points
     (each with a subroutine hook to comment the calls to it), the OS vectors
@@ -862,21 +876,21 @@ def mos_labels():
     optional_label(0xffc5, os_call_name("gsread"))
 
     subroutine(0xffb9, os_call_name("osrdsc"),  None, None, hook=osrdsc_hook, is_entry_point=False)
-    subroutine(0xffbc, os_call_name("vduchr"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xffbc, os_call_name("vduchr"),  None, None, hook=oswrch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
     subroutine(0xffbf, os_call_name("oseven"),  None, None, hook=oseven_hook, is_entry_point=False)
     subroutine(0xffce, os_call_name("osfind"),  None, None, hook=osfind_hook, is_entry_point=False)
-    subroutine(0xffc8, os_call_name("nvrdch"),  None, None, hook=osrdch_hook, is_entry_point=False)
-    subroutine(0xffcb, os_call_name("nvwrch"),  None, None, hook=oswrch_hook, is_entry_point=False)
+    subroutine(0xffc8, os_call_name("nvrdch"),  None, None, hook=osrdch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
+    subroutine(0xffcb, os_call_name("nvwrch"),  None, None, hook=oswrch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
     subroutine(0xffd1, os_call_name("osgbpb"),  None, None, hook=osgbpb_hook, is_entry_point=False)
     subroutine(0xffd4, os_call_name("osbput"),  None, None, hook=osbput_hook, is_entry_point=False)
     subroutine(0xffd7, os_call_name("osbget"),  None, None, hook=osbget_hook, is_entry_point=False)
     subroutine(0xffda, os_call_name("osargs"),  None, None, hook=osargs_hook, is_entry_point=False)
-    subroutine(0xffe0, os_call_name("osrdch"),  None, None, on_exit=_OSRDCH_EXIT, hook=osrdch_hook, is_entry_point=False)
-    subroutine(0xffe3, os_call_name("osasci"),  None, None, on_exit=_OSWRCH_EXIT, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xffe7, os_call_name("osnewl"),  None, None, on_exit=_OSWRCH_EXIT, hook=osnewl_hook, is_entry_point=False)
+    subroutine(0xffe0, os_call_name("osrdch"),  None, None, on_exit=_OSRDCH_EXIT, hook=osrdch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
+    subroutine(0xffe3, os_call_name("osasci"),  None, None, on_exit=_OSWRCH_EXIT, hook=oswrch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
+    subroutine(0xffe7, os_call_name("osnewl"),  None, None, on_exit=_OSWRCH_EXIT, hook=osnewl_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
     subroutine(0xffec, os_call_name("oswrcr"),  None, None, hook=oswrcr_hook, is_entry_point=False)
-    subroutine(0xffee, os_call_name("oswrch"),  None, None, on_exit=_OSWRCH_EXIT, hook=oswrch_hook, is_entry_point=False)
-    subroutine(0xfff4, os_call_name("osbyte"),  None, None, hook=osbyte_hook, is_entry_point=False)
+    subroutine(0xffee, os_call_name("oswrch"),  None, None, on_exit=_OSWRCH_EXIT, hook=oswrch_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
+    subroutine(0xfff4, os_call_name("osbyte"),  None, None, on_exit=_OSBYTE_EXIT, hook=osbyte_hook, is_entry_point=False, zero_page_written=_OS_ZERO_PAGE)
     subroutine(0xfff1, os_call_name("osword"),  None, None, hook=osword_hook, is_entry_point=False)
     subroutine(0xffdd, os_call_name("osfile"),  None, None, hook=osfile_hook, is_entry_point=False)
     subroutine(0xfff7, os_call_name("oscli"),   None, None, hook=oscli_hook,  is_entry_point=False)

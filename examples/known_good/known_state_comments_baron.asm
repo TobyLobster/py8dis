@@ -40,13 +40,13 @@ section pydis, org = &2000, filename = "known_state_comments_baron"
     iny                                                               ; 200c: c8          .   A:-- X:-- Y:-- ------
     bne loop_c200c                                                    ; 200d: d0 fd       ..  A:-- X:-- Y:00 n---Z-
     tya                                                               ; 200f: 98          .   A:00 X:-- Y:00 n---Z- ; A=0
-    sta l0074                                                         ; 2010: 85 74       .t  A:00 X:-- Y:00 n---Z-
-    lda l0075                                                         ; 2012: a5 75       .u  A:-- X:-- Y:00 ------
-    bcc return_1                                                      ; 2014: 90 48       .H  A:-- X:-- Y:00 -----C
-    ror a                                                             ; 2016: 6a          j   A:-- X:-- Y:00 N---z- ; Rotate in a set bit
-    rol a                                                             ; 2017: 2a          *   A:-- X:-- Y:00 -----C ; Rotate set bit out (sets carry)
-    sta l0076                                                         ; 2018: 85 76       .v  A:-- X:-- Y:00 -----C
-    rol l0082                                                         ; 201a: 26 82       &.  A:-- X:-- Y:00 ----z- ; Rotate in a set bit
+    sta l0074                                                         ; 2010: 85 74       .t  A:00 X:-- Y:00 n---Z- [74]:00
+    lda l0075                                                         ; 2012: a5 75       .u  A:-- X:-- Y:00 ------ [74]:00
+    bcc return_1                                                      ; 2014: 90 48       .H  A:-- X:-- Y:00 -----C [74]:00
+    ror a                                                             ; 2016: 6a          j   A:-- X:-- Y:00 N---z- [74]:00 ; Rotate in a set bit
+    rol a                                                             ; 2017: 2a          *   A:-- X:-- Y:00 -----C [74]:00 ; Rotate set bit out (sets carry)
+    sta l0076                                                         ; 2018: 85 76       .v  A:-- X:-- Y:00 -----C [74]:00
+    rol l0082                                                         ; 201a: 26 82       &.  A:-- X:-- Y:00 ----z- [74]:00 ; Rotate in a set bit
     rts                                                               ; 201c: 60          `   A:-- X:-- Y:-- ------
 
 .bits

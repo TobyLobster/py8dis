@@ -144,7 +144,7 @@ l09a9   = $09a9
 l4fa9   = $4fa9
 l8000   = $8000
 l8002   = $8002
-l8003   = $8003
+l8004   = $8004
 l80a9   = $80a9
 
 ; BASIC ROM ($a000-$bfff)
@@ -3397,11 +3397,11 @@ cf6f5
 
 ; $f7b4 referenced 1 time by $f163
 cf7b4
-lf7b6 = cf7b4+2
     jmp ACPTR                                                         ; f7b4: 4c a5 ff    l.. ; Read a byte from the serial bus
 
 ; $f7b6 referenced 1 time by $f929
 ; A table of 5 bytes, indexed by X (1 to 5), read at $f929
+lf7b7
     .text "CBM80"                                                     ; f7b7: c3 c2 cd... CBM
 
 ; $f7bc referenced 1 time by $f689
@@ -3773,10 +3773,11 @@ cf921
 ; $f924 referenced 2 times by $fcec, $fe4c
 sub_cf924
     ldx #5                                                            ; f924: a2 05       ..
+    ; Compare 5 bytes from l8004 with lf7b7
 ; $f926 referenced 1 time by $f92f
 loop_cf926
-    lda l8003,x                                                       ; f926: bd 03 80    ...
-    cmp lf7b6,x                                                       ; f929: dd b6 f7    ...
+    lda l8004 - 1,x                                                   ; f926: bd 03 80    ...
+    cmp lf7b7 - 1,x                                                   ; f929: dd b6 f7    ...
     bne return_16                                                     ; f92c: d0 03       P.
     dex                                                               ; f92e: ca          J
     bne loop_cf926                                                    ; f92f: d0 f5       P.
@@ -5145,6 +5146,9 @@ VECTOR
 ; 
 ; On Entry:
 ;     A: message flags
+; 
+; On Exit:
+;     X and Y are preserved
 ; ***************************************************************************************
 SETMSG
     jmp ce51e                                                         ; ff90: 4c 1e e5    l..
@@ -5154,6 +5158,9 @@ SETMSG
 ; 
 ; On Entry:
 ;     A: secondary address
+; 
+; On Exit:
+;     X and Y are preserved
 ; ***************************************************************************************
 SECOND
     jmp ce6b7                                                         ; ff93: 4c b7 e6    l..
@@ -5174,6 +5181,9 @@ TKSA
 ; On Entry:
 ;     X: top of memory (low byte)
 ;     Y: top of memory (high byte)
+; 
+; On Exit:
+;     A is preserved
 ; ***************************************************************************************
 MEMTOP
     jmp cfe25                                                         ; ff99: 4c 25 fe    l%.
@@ -5185,6 +5195,9 @@ MEMTOP
 ; On Entry:
 ;     X: bottom of memory (low byte)
 ;     Y: bottom of memory (high byte)
+; 
+; On Exit:
+;     A is preserved
 ; ***************************************************************************************
 MEMBOT
     jmp cf241                                                         ; ff9c: 4c 41 f2    la.
@@ -5210,6 +5223,7 @@ SETTMO
 ; 
 ; On Exit:
 ;     A: byte read
+;     Y is preserved
 ; ***************************************************************************************
 ; $ffa5 referenced 1 time by $f7b4
 ACPTR
@@ -5220,6 +5234,9 @@ ACPTR
 ; 
 ; On Entry:
 ;     A: byte to send
+; 
+; On Exit:
+;     A, X and Y are preserved
 ; ***************************************************************************************
 ; $ffa8 referenced 1 time by $f919
 CIOUT
@@ -5242,6 +5259,9 @@ UNLSN
 ; 
 ; On Entry:
 ;     A: device number
+; 
+; On Exit:
+;     X and Y are preserved
 ; ***************************************************************************************
 LISTEN
     jmp cf4cd                                                         ; ffb1: 4c cd f4    lM.
@@ -5260,6 +5280,7 @@ TALK
 ; 
 ; On Exit:
 ;     A: I/O status
+;     X and Y are preserved
 ; ***************************************************************************************
 READST
     jmp cf8d7                                                         ; ffb7: 4c d7 f8    lW.
@@ -5271,6 +5292,9 @@ READST
 ;     A: logical file number
 ;     X: device number
 ;     Y: secondary address
+; 
+; On Exit:
+;     A, X and Y are preserved
 ; ***************************************************************************************
 SETLFS
     jmp cf7f6                                                         ; ffba: 4c f6 f7    l..
@@ -5282,6 +5306,9 @@ SETLFS
 ;     A: filename length
 ;     X: filename address (low byte)
 ;     Y: filename address (high byte)
+; 
+; On Exit:
+;     A, X and Y are preserved
 ; ***************************************************************************************
 SETNAM
     jmp cf7fd                                                         ; ffbd: 4c fd f7    l..
@@ -5307,6 +5334,9 @@ CLOSE
 ; 
 ; On Entry:
 ;     X: logical file number
+; 
+; On Exit:
+;     Y is preserved
 ; ***************************************************************************************
 CHKIN
     jmp (chkin_vector)                                                ; ffc6: 6c 1e 03    ...
@@ -5316,12 +5346,18 @@ CHKIN
 ; 
 ; On Entry:
 ;     X: logical file number
+; 
+; On Exit:
+;     Y is preserved
 ; ***************************************************************************************
 CHKOUT
     jmp (chkout_vector)                                               ; ffc9: 6c 20 03    . .
 
 ; ***************************************************************************************
 ; Restore the default input and output channels
+; 
+; On Exit:
+;     Y is preserved
 ; ***************************************************************************************
 CLRCHN
     jmp (clrchn_vector)                                               ; ffcc: 6c 22 03    .".
@@ -5340,6 +5376,9 @@ CHRIN
 ; 
 ; On Entry:
 ;     A: character to output
+; 
+; On Exit:
+;     X and Y are preserved
 ; ***************************************************************************************
 ; $ffd2 referenced 8 times by $e605, $e96d, $e978, $f7c3, $fafc, $fb08, $fedd, $ff34
 CHROUT
@@ -5411,6 +5450,9 @@ GETIN
 
 ; ***************************************************************************************
 ; Close all files
+; 
+; On Exit:
+;     Y is preserved
 ; ***************************************************************************************
 CLALL
     jmp (clall_vector)                                                ; ffe7: 6c 2c 03    .,.
@@ -5428,6 +5470,7 @@ UDTIM
 ; On Exit:
 ;     X: number of columns
 ;     Y: number of rows
+;     A is preserved
 ; ***************************************************************************************
 SCREEN
     jmp ce5c9                                                         ; ffed: 4c c9 e5    lI.
@@ -5449,6 +5492,7 @@ PLOT
 ; On Exit:
 ;     X: I/O base address (low byte)
 ;     Y: I/O base address (high byte)
+;     A is preserved
 ; ***************************************************************************************
 IOBASE
     ldy #$dc                                                          ; fff3: a0 dc       ..
@@ -5512,6 +5556,8 @@ pydis_end
 .cerror (default_save_handler) != $f5ed, "Assertion failed: default_save_handler == $f5ed"
 .cerror (default_stop_handler) != $f6ed, "Assertion failed: default_stop_handler == $f6ed"
 .cerror (irq_entry) != $ea53, "Assertion failed: irq_entry == $ea53"
+.cerror (l8004 - 1) != $8003, "Assertion failed: l8004 - 1 == $8003"
+.cerror (lf7b7 - 1) != $f7b6, "Assertion failed: lf7b7 - 1 == $f7b6"
 .cerror (nmi_entry) != $f281, "Assertion failed: nmi_entry == $f281"
 .cerror (reset_entry) != $fce2, "Assertion failed: reset_entry == $fce2"
 .cerror (screen_line_links) != $d9, "Assertion failed: screen_line_links == $d9"
@@ -6085,7 +6131,6 @@ pydis_end
 ;     l02a9:                         1
 ;     l08a9:                         1
 ;     l8002:                         1
-;     l8003:                         1
 ;     la000:                         1
 ;     la002:                         1
 ;     le8da:                         1
@@ -6095,7 +6140,6 @@ pydis_end
 ;     lebc8:                         1
 ;     lebe7:                         1
 ;     lf33f:                         1
-;     lf7b6:                         1
 ;     lf81b:                         1
 ;     lf823:                         1
 ;     lf82b:                         1
@@ -6627,7 +6671,7 @@ pydis_end
 ;     l4fa9
 ;     l8000
 ;     l8002
-;     l8003
+;     l8004
 ;     l80a9
 ;     la000
 ;     la002
@@ -6638,7 +6682,7 @@ pydis_end
 ;     lebc8
 ;     lebe7
 ;     lf33f
-;     lf7b6
+;     lf7b7
 ;     lf80b
 ;     lf81b
 ;     lf823
