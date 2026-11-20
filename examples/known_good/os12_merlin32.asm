@@ -9621,7 +9621,7 @@ cf56a
     and l00e3                                                         ; f56b: 25 e3       %.
 ; $f56d referenced 1 time by $f57f
 loop_cf56d
-    ora cf581,y                                                       ; f56d: 19 81 f5    ...
+    ora lf581,y                                                       ; f56d: 19 81 f5    ...
     sta l00e3                                                         ; f570: 85 e3       ..
     rts                                                               ; f572: 60          `
 
@@ -9643,10 +9643,10 @@ cf57e
     tay                                                               ; f57e: a8          .   ; Y=0
     beq loop_cf56d                                                    ; f57f: f0 ec       ..  ; ALWAYS branch
 
+; A table of 7 bytes, indexed by Y (0 to 6), read at $f56d
 ; $f581 referenced 1 time by $f56d
-cf581
-    lda (l0000,x)                                                     ; f581: a1 00       ..
-    dfb $22, $11, 0, $88, $cc                                         ; f583: 22 11 00... "..
+lf581
+    dfb $a1, 0, $22, $11, 0, $88, $cc                                 ; f581: a1 00 22... .."
 
 ; $f588 referenced 2 times by $dcb0, $fae2
 cf588
@@ -11298,7 +11298,6 @@ pydis_end
 ;     cea8f:                                    5
 ;     cf884:                                    5
 ;     crtc_address_register:                    5
-;     l0000:                                    5
 ;     l00ba:                                    5
 ;     l00e0:                                    5
 ;     l00e3:                                    5
@@ -11352,6 +11351,7 @@ pydis_end
 ;     ceebb:                                    4
 ;     cf209:                                    4
 ;     cf61b:                                    4
+;     l0000:                                    4
 ;     l00b2:                                    4
 ;     l00b3:                                    4
 ;     l00b9:                                    4
@@ -12234,7 +12234,6 @@ pydis_end
 ;     cf578:                                    1
 ;     cf57a:                                    1
 ;     cf57e:                                    1
-;     cf581:                                    1
 ;     cf596:                                    1
 ;     cf5b0:                                    1
 ;     cf5bd:                                    1
@@ -12499,6 +12498,7 @@ pydis_end
 ;     lf079:                                    1
 ;     lf1a3:                                    1
 ;     lf1a4:                                    1
+;     lf581:                                    1
 ;     lffb3:                                    1
 ;     lffb7:                                    1
 ;     loop_cc737:                               1
@@ -13385,7 +13385,6 @@ pydis_end
 ;     cf578
 ;     cf57a
 ;     cf57e
-;     cf581
 ;     cf588
 ;     cf596
 ;     cf5a9
@@ -13932,6 +13931,7 @@ pydis_end
 ;     lf079
 ;     lf1a3
 ;     lf1a4
+;     lf581
 ;     lffb3
 ;     lffb7
 ;     loop_cc737
@@ -14337,11 +14337,11 @@ pydis_end
 ; Stats:
 ;
 ;     Total size (Code + Data) = 16384 bytes
-;     Code                     = 12786 bytes (78%)
-;     Data                     = 3598 bytes (22%)
+;     Code                     = 12784 bytes (78%)
+;     Data                     = 3600 bytes (22%)
 ;
-;     Number of instructions   = 6186
-;     Number of data bytes     = 2294 bytes
+;     Number of instructions   = 6185
+;     Number of data bytes     = 2296 bytes
 ;     Number of data words     = 182 bytes
 ;     Number of string bytes   = 1122 bytes
 ;     Number of strings        = 62

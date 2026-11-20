@@ -267,6 +267,7 @@ class SnippetHelper:
             # also adds a label (even if without a name) which we don't want since this causes 
             # optimistic state tracking to restart at the label.
             session.current().cpu.entry_points.append(binary_addr)
+            session.current().cpu.root_entry_points.add(binary_addr)
 
     def reject(self):
         """Ignore this match (see SnippetRejected). Call it before making any

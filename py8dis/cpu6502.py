@@ -5152,6 +5152,114 @@ class Cpu6502(cpu.Cpu):
                     table_bytes.add(movemanager.r2b(memorymanager.RuntimeAddr(table + v))[0])
         return indexes
 
+    def drop_traced_data(self):
+        """Take back the code that tracing found by running on past a
+        conditional branch that's always taken (see
+        OpcodeConditionalBranch.update_cpu_state()), when it's clearly data:
+        the code reads it as a table (see _table_uses()), and as code it runs
+        straight into an opcode that doesn't exist (or, on the 6510, one
+        that halts the CPU), all within the table. E.g. OS 1.20's 'tay : beq
+        loop' (Y is 0), then 'a1 00 22 11 ...', which 'ora table,y' reads:
+        'lda ($00,x)', then $22, which isn't an opcode. Called by trace() once
+        the CPU states are known; returns whether any code was taken back
+        (it's left unclassified, for find_data_tables() to mark as a table).
+
+        Only instructions that just read or write memory, or change the
+        registers (not a branch, jump, call or return) are taken back, and
+        none that code can reach some other way: a jump, call or branch to
+        any of their bytes, or an entry point there (see
+        root_entry_points). Their references to labels are taken back too
+        (a label left with no references and no name is removed).
+        Turned off with config.set_find_data_tables(False)."""
+        if not config.get_find_data_tables():
+            return False
+        uses, _ = self._table_uses()
+        # The tables the code reads: (first, last) runtime addresses
+        tables = [(base + values[0], base + values[-1]) for base, table_uses in uses.items()
+                  for _, _, values, kind in table_uses if kind == "read"]
+        if not tables:
+            return False
+        classifications = session.current().classifications.classifications
+        memory_binary = session.current().memory.binary
+        labels = session.current().labels.labels
+        plain = (self.OpcodeImplied, self.OpcodeImmediate, self.OpcodeZp, self.OpcodeDataAbs)
+
+        def reached(binary_addr, length):
+            """Whether code can come to any of the bytes some other way than
+            running on into them: an entry point, or a jump, call or branch
+            there (or anything but an instruction referring to it, e.g. a
+            table of addresses)."""
+            for i in range(length):
+                b = binary_addr + i
+                if b in self.root_entry_points or b in self.explicit_entry_points:
+                    return True
+                runtime_addr = movemanager.b2r(BinaryAddr(b))
+                label = labels.get(runtime_addr)
+                if label is None:
+                    continue
+                for ref in label.references:
+                    c = classifications[ref.binary_addr]
+                    if not isinstance(c, self.Opcode):
+                        return True
+                    if c.could_be_call_to_subroutine() and c.target(ref.binary_addr) == runtime_addr:
+                        return True
+            return False
+
+        dropped = []
+        for b in sorted(self.traced_entry_points):
+            c = classifications[b]
+            state = self.cpu_states[b]
+            if not isinstance(c, self.OpcodeConditionalBranch) or state is None or not state.always_branch:
+                continue
+            # The instructions after it, up to the opcode that doesn't exist
+            # (or one that halts the CPU)
+            chain = []
+            f = b + c.length()
+            while f < 0x10000:
+                fc = classifications[f]
+                if fc is None:
+                    if memory_binary[f] is None or self.opcode_at(BinaryAddr(f)) is not None:
+                        chain = None
+                    break
+                if isinstance(fc, self.Opcode) and getattr(fc, "cycles", None) == "halts":
+                    chain.append(f)
+                    f += fc.length() - 1
+                    break
+                if not isinstance(fc, plain) or fc.is_block_end() or f not in self.traced_entry_points:
+                    chain = None
+                    break
+                chain.append(f)
+                f += fc.length()
+            if not chain or f >= 0x10000:
+                continue
+            # (All in a table the code reads, through the byte where it stops)
+            first = movemanager.b2r(BinaryAddr(chain[0]))
+            last = movemanager.b2r(BinaryAddr(f))
+            if last < first or not any(lo <= first and last <= hi for lo, hi in tables):
+                continue
+            if any(reached(e, classifications[e].length()) for e in chain):
+                continue
+            dropped.extend(chain)
+        if not dropped:
+            return False
+
+        # Take the instructions back, and their references
+        dropped_set = set(dropped)
+        for e in dropped:
+            length = classifications[e].length()
+            for i in range(length):
+                classifications[e + i] = None
+            self.traced_entry_points.discard(e)
+            self.cpu_states[e] = None
+        for runtime_addr in list(labels):
+            label = labels[runtime_addr]
+            references = [ref for ref in label.references if ref.binary_addr not in dropped_set]
+            if len(references) != len(label.references):
+                label.references[:] = references
+                if not references and not any(label.explicit_names.values()) and not any(label.local_labels.values()):
+                    del labels[runtime_addr]
+        return True
+
     def find_data_tables(self):
         """Mark the tables of data that the code reads (or writes) with an
         index whose possible values are known, after tracing: first tables
@@ -5211,6 +5319,52 @@ class Cpu6502(cpu.Cpu):
     _MEMORY_WRITES = {"sta", "stx", "sty", "stz"}
     _MEMORY_CHANGES = {"asl", "lsr", "rol", "ror", "inc", "dec", "trb", "tsb"}
 
+    def _table_uses(self):
+        """The instructions that use tables with an index whose possible
+        values are known (at least two, and at most
+        MAX_DATA_TABLE_INDEX_VALUES), for _size_data_tables(): (uses,
+        pointer_uses), where uses is {the runtime address of the operand
+        (or where the pointer points, for '(ptr),y'): [(the instruction's
+        binary address, the index register, its possible values (a list),
+        how it uses the table: 'read', 'written' or 'changed')]}, and
+        pointer_uses is {where the pointer points: [(the instruction's binary
+        address, the pointer's address)]} for those through a pointer."""
+        memory_binary = session.current().memory.binary
+        # Each use of a table: by its operand's runtime address, [(the
+        # instruction's binary address, the index register, its possible
+        # values, how it uses the table)]
+        uses = collections.defaultdict(list)
+        # The tables used through a pointer: by the runtime address it points
+        # to, [(the instruction's binary address, the pointer's address)]
+        pointer_uses = collections.defaultdict(list)
+        for run in self.straight_runs():
+            for j, binary_addr in enumerate(run):
+                c = classification.get_classification(binary_addr)
+                if c.addr_mode in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
+                    if self.is_operand_modified(binary_addr, 2):
+                        continue
+                    reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
+                    base = memorymanager.get_u16_binary(binary_addr + 1)
+                elif c.addr_mode == self.mode_indirect_indexed:
+                    # ('(ptr),y' with the pointer known, e.g. after 'lda
+                    # #<table : sta ptr : lda #>table : sta ptr+1')
+                    reg = "y"
+                    base = self.known_before(run, j).pointer(memory_binary[binary_addr + 1])
+                    if base is None or self.is_operand_modified(binary_addr):
+                        continue
+                else:
+                    continue
+                possible = self.known_before(run, j)[reg].possible
+                if valuesets.value(possible) is not None or valuesets.count(possible) > self.MAX_DATA_TABLE_INDEX_VALUES:
+                    continue
+                if c.addr_mode == self.mode_indirect_indexed:
+                    pointer_uses[base].append((binary_addr, memory_binary[binary_addr + 1]))
+                mnemonic = c.mnemonic.lower()
+                kind = "written" if mnemonic in self._MEMORY_WRITES else "changed" if mnemonic in self._MEMORY_CHANGES else "read"
+                uses[base].append((binary_addr, reg, valuesets.values(possible), kind))
+
+        return uses, pointer_uses
+
     def _size_data_tables(self):
         """Mark the tables of bytes that the code reads, writes or changes
         with 'table,x' or 'table,y' (or '(ptr),y', where the pointer in
@@ -5257,38 +5411,7 @@ class Cpu6502(cpu.Cpu):
                 return None
             return binary_addr
 
-        # Each use of a table: by its operand's runtime address, [(the
-        # instruction's binary address, the index register, its possible
-        # values, how it uses the table)]
-        uses = collections.defaultdict(list)
-        # The tables used through a pointer: by the runtime address it points
-        # to, [(the instruction's binary address, the pointer's address)]
-        pointer_uses = collections.defaultdict(list)
-        for run in self.straight_runs():
-            for j, binary_addr in enumerate(run):
-                c = classification.get_classification(binary_addr)
-                if c.addr_mode in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
-                    if self.is_operand_modified(binary_addr, 2):
-                        continue
-                    reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
-                    base = memorymanager.get_u16_binary(binary_addr + 1)
-                elif c.addr_mode == self.mode_indirect_indexed:
-                    # ('(ptr),y' with the pointer known, e.g. after 'lda
-                    # #<table : sta ptr : lda #>table : sta ptr+1')
-                    reg = "y"
-                    base = self.known_before(run, j).pointer(memory_binary[binary_addr + 1])
-                    if base is None or self.is_operand_modified(binary_addr):
-                        continue
-                else:
-                    continue
-                possible = self.known_before(run, j)[reg].possible
-                if valuesets.value(possible) is not None or valuesets.count(possible) > self.MAX_DATA_TABLE_INDEX_VALUES:
-                    continue
-                if c.addr_mode == self.mode_indirect_indexed:
-                    pointer_uses[base].append((binary_addr, memory_binary[binary_addr + 1]))
-                mnemonic = c.mnemonic.lower()
-                kind = "written" if mnemonic in self._MEMORY_WRITES else "changed" if mnemonic in self._MEMORY_CHANGES else "read"
-                uses[base].append((binary_addr, reg, valuesets.values(possible), kind))
+        uses, pointer_uses = self._table_uses()
 
         def describe_values(values):
             """The values an index can have, as text, e.g. '0 to 7', '0 or
