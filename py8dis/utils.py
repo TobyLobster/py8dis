@@ -23,6 +23,8 @@ output and the indent); almost every other module uses this one.
 """
 
 import collections
+import contextlib
+import gc
 import linecache
 import os
 import re
@@ -421,3 +423,21 @@ def find_external_callstack():
         return os.path.dirname(path) == library_path and path != main_file
     frames = get_callstack()
     return [f for f in frames if not is_py8dis_file(f.filename)]
+
+
+@contextlib.contextmanager
+def cyclic_gc_paused():
+    """A context in which Python's cyclic garbage collector doesn't run (it's
+    turned back on afterwards, if it was on). Working out the CPU states and
+    the output makes and drops a great many objects, which would set it off
+    again and again, each time going through all the objects that are kept
+    (the classifications, labels, states and so on): a third of the time,
+    for a big ROM. Those dropped are freed as usual: few of them are in
+    cycles, which are collected once it's back on."""
+    was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        yield
+    finally:
+        if was_enabled:
+            gc.enable()

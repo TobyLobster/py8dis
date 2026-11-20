@@ -176,13 +176,13 @@ class Cpu65C02(Cpu6502):
 
     def update_bit_immediate(self, binary_addr, state):
         """BIT #imm: only Z changes (see CpuStateDisposition.bit_immediate())."""
-        state.optimistic.bit_immediate(binary_addr)
-        state.pessimistic.bit_immediate(binary_addr)
+        for d in state.dispositions:
+            d.bit_immediate(binary_addr)
 
     def update_clear_z(self, binary_addr, state):
         """Z becomes unknown (TSB and TRB, which only change Z)."""
-        state.optimistic['z'] = None
-        state.pessimistic['z'] = None
+        for d in state.dispositions:
+            d['z'] = None
 
     def is_branch_to(self, binary_addr, target_runtime_addr):
         """As the 6502's (see Cpu6502.is_branch_to()), and BRA too."""

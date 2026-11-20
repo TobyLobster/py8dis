@@ -130,6 +130,10 @@ class Moves:
         # the cache was made. (Moves are only ever added, so this is enough.)
         self.cache_move_definitions_len = None
 
+        # The runtime address of each binary address that b2r() has worked
+        # out, by binary address (emptied when a move is added)
+        self.runtime_addrs = {}
+
 def add_move(dest_runtime_addr, src_binary_addr, length):
     """Register the existence of a 'move' at runtime that relocates memory
     from `src_binary_addr` to `dest_runtime_addr` for `length` bytes.
@@ -167,6 +171,9 @@ def add_move(dest_runtime_addr, src_binary_addr, length):
     for i in range(length):
         move_id_for_binary_addr[src_binary_addr + i] = move_id
 
+    # (The runtime addresses b2r() has kept may have changed)
+    moves.runtime_addrs.clear()
+
     #utils.debug("Move {0} added. Dest = {1}, Src = {2}, Len = {3}".format(move_id, hex(dest_runtime_addr), hex(source), length))
     return move_id
 
@@ -184,16 +191,30 @@ def b2r(binary_addr):
     """
 
     assert isinstance(binary_addr, BinaryAddr)
-    assert memorymanager.is_valid_binary_addr(binary_addr)
-
-    # Gather information about the move
+    assert 0 <= binary_addr < 0x10000
+    # (It's called very often, so each answer is kept, until a move is added)
     moves = session.current().moves
+    runtime_addr = moves.runtime_addrs.get(binary_addr)
+    if runtime_addr is None:
+        runtime_addr = moves.runtime_addrs[binary_addr] = _b2r(moves, binary_addr)
+    return runtime_addr
+
+def b2r_int(binary_addr):
+    """b2r() for a binary address given as a plain int (in memory: it isn't
+    checked), which is quicker in a loop over many of them."""
+    moves = session.current().moves
+    runtime_addr = moves.runtime_addrs.get(binary_addr)
+    if runtime_addr is None:
+        runtime_addr = moves.runtime_addrs[binary_addr] = _b2r(moves, BinaryAddr(binary_addr))
+    return runtime_addr
+
+def _b2r(moves, binary_addr):
+    """b2r() worked out: the address in the move the byte is in."""
     move_id = moves.move_id_for_binary_addr[binary_addr]
     if move_id == BASE_MOVE_ID:
-        # (A quick path for the common case: the base move doesn't move anything)
+        # (The base move doesn't move anything)
         return RuntimeAddr(int(binary_addr))
-    md = moves.move_definitions[move_id]
-    return md.convert_binary_to_runtime_addr(binary_addr)
+    return moves.move_definitions[move_id].convert_binary_to_runtime_addr(binary_addr)
 
 def move_ids_for_runtime_addr(runtime_addr):
     """

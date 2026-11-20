@@ -64,7 +64,9 @@ class BinaryAddr(int):
         return int.__new__(cls, value)
 
     def __add__(self, other):
-        return BinaryAddr(int.__add__(self, other))
+        # (The sum is a plain int, so needn't be checked as BinaryAddr()
+        # checks its argument)
+        return int.__new__(BinaryAddr, int.__add__(self, other))
 
 class RuntimeAddr(int):
     """A runtime address: where a byte is when the code runs, after any moves
@@ -77,7 +79,7 @@ class RuntimeAddr(int):
         return int.__new__(cls, value)
 
     def __add__(self, other):
-        return RuntimeAddr(int.__add__(self, other))
+        return int.__new__(RuntimeAddr, int.__add__(self, other))
 
 # Address validation
 def is_valid_runtime_addr(runtime_addr, allow_final_address = False):
@@ -184,7 +186,7 @@ class BinaryLocation:
     def __init__(self, binary_addr, move_id):
         assert binary_addr is not None
         assert move_id is not None
-        self.binary_addr = BinaryAddr(binary_addr)
+        self.binary_addr = binary_addr if type(binary_addr) is BinaryAddr else BinaryAddr(binary_addr)
         self.move_id = move_id
 
     def __str__(self) -> str:

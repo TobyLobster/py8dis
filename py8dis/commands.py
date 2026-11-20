@@ -1700,6 +1700,14 @@ def go(print_output=True, post_trace_steps=None, autostring_min_length=3):
     been loaded, or if go() is called inside a 'with move(...):' block.
     """
 
+    # (Without the cyclic garbage collector, which would slow it down a lot:
+    # see utils.cyclic_gc_paused())
+    with utils.cyclic_gc_paused():
+        return _go(print_output, post_trace_steps, autostring_min_length)
+
+def _go(print_output, post_trace_steps, autostring_min_length):
+    """go() itself."""
+
     # Once we start tracing, we're taking a "static" view of the code and we
     # don't want any leftover user hints about how to convert runtime addresses
     # to binary addresses confusing things.

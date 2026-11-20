@@ -222,7 +222,7 @@ class Cpu6510(Cpu6502):
 
     def update_ANC(self, binary_addr, state):
         """ANC #imm: A = A AND imm, with C set to N (as if shifted out)"""
-        for s in (state.optimistic, state.pessimistic):
+        for s in state.dispositions:
             s.update_AND_immediate(binary_addr)
             s['c'] = s['n']
 
@@ -231,7 +231,7 @@ class Cpu6510(Cpu6502):
         says (see valuesets.py)"""
         memory_binary = session.current().memory.binary
         imm = memory_binary[binary_addr + 1]
-        for s in (state.optimistic, state.pessimistic):
+        for s in state.dispositions:
             result, carry = valuesets.lsr(valuesets.and_(s['a'].possible, imm))
             s.set_result('a', result)
             s['c'] = carry
@@ -241,7 +241,7 @@ class Cpu6510(Cpu6502):
         does (ignoring the carry in and the D flag)"""
         memory_binary = session.current().memory.binary
         imm = memory_binary[binary_addr + 1]
-        for s in (state.optimistic, state.pessimistic):
+        for s in state.dispositions:
             a, x = s['a'].value, s['x'].value
             if a is not None and x is not None:
                 t = a & x

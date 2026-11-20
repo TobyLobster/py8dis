@@ -148,6 +148,11 @@ class Classifications:
         # the labels are named.
         self.name_values = None
 
+        # The constants by name, for check_expr(): (the list of constants,
+        # how many there were, {name: constant} or None) (see
+        # _constant_named())
+        self.constants_by_name = None
+
 # `INSIDE_A_CLASSIFICATION` is a unique marker object.
 #
 # We assign this value to the second and subsequent bytes of a multi-byte
@@ -355,17 +360,44 @@ def check_expr(expr, value, message, width=None):
     evaluate, e.g. expression strings written by the user.)"""
 
     # Don't clutter the output with pedantic 'constant = value' assertions
-    for constant in session.current().disassembly.constants:
-        if expr == constant.name:
-            if constant.format == Format.CHAR:
-                return
-            elif constant.format == Format.STRING:
-                return
-            elif (constant.value != value):
-                utils.die("Constant '{0}' found to be {1} but expected to be {2} {3}".format(expr, constant.value, value, message))
+    constant = _constant_named(expr)
+    if constant is not None:
+        if constant.format == Format.CHAR:
             return
+        elif constant.format == Format.STRING:
+            return
+        elif (constant.value != value):
+            utils.die("Constant '{0}' found to be {1} but expected to be {2} {3}".format(expr, constant.value, value, message))
+        return
 
     config.get_assembler().assert_expr(expr, value)
+
+def _constant_named(expr):
+    """The first constant whose name 'expr' is equal to (see
+    expression.Expr.__eq__()), or None. (check_expr() is called for every
+    expression in the output, and some machines have hundreds of
+    constants, so while their names are all plain strings, they're looked
+    up by name.)"""
+    constants = session.current().disassembly.constants
+    cache = session.current().classifications.constants_by_name
+    if cache is None or cache[0] is not constants or cache[1] != len(constants):
+        by_name = None
+        if all(type(c.name) is str for c in constants):
+            by_name = {}
+            for c in constants:
+                by_name.setdefault(c.name, c)
+        cache = session.current().classifications.constants_by_name = (constants, len(constants), by_name)
+    by_name = cache[2]
+    if by_name is not None:
+        if type(expr) is str:
+            return by_name.get(expr)
+        if isinstance(expr, expression.Expr):
+            # (An expression with a LazyString in it equals only itself)
+            return None if expr.is_lazy() else by_name.get(expr.render())
+    for c in constants:
+        if expr == c.name:
+            return c
+    return None
 
 def _evaluate_and_check(binary_addr, expr, expected_value, width):
     """Check an expression's value, if py8dis can work it out (i.e. it doesn't

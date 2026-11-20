@@ -150,6 +150,20 @@ def addr(label_name):
                     return addr
     return None
 
+def addresses_by_name():
+    """The runtime address of each label name, as addr() gives it (the
+    lowest address with that explicit name or local label name), as a dict,
+    worked out in one go: for looking up many names at once."""
+    result = {}
+    for addr, label in sorted(session.current().labels.labels.items()):
+        for name_list in label.explicit_names.values():
+            for name in name_list:
+                result.setdefault(name.text, addr)
+        for local_labels in label.local_labels.values():
+            for local_label in local_labels:
+                result.setdefault(local_label.name, addr)
+    return result
+
 def assign_local_label_output_names():
     """Make sure each local label name is only defined for one address.
 

@@ -680,7 +680,16 @@ def test_zero_page(rng, trials=300):
                     addresses = set(effective_address(mode, operand_bytes, st, st['memory']) for st in states)
                     address = next(iter(addresses))
                     reads = operation not in ("sta", "stx", "sty", "stz")
-                    if (len(addresses) == 1 and address < 0x100 and (address in zp or not reads)
+                    # (Through a pointer, py8dis knows where only if it knows
+                    # the pointer: the other bytes of zero page are the same
+                    # in each state, but not known)
+                    if mode in ("izy", "izx", "iz"):
+                        x_values = valuesets.values(regs['x'])
+                        p = (operand_bytes[0] + (x_values[0] if mode == "izx" else 0)) & 0xff
+                        pointer_known = (mode != "izx" or len(x_values) == 1) and p in zp and (p + 1) & 0xff in zp
+                    else:
+                        pointer_known = True
+                    if (len(addresses) == 1 and address < 0x100 and (address in zp or not reads) and pointer_known
                             and (operation in exact_operations or (operation in one_value_operations and valuesets.value(zp[address]) is not None))):
                         if all(execute(opcode, operand_bytes, st, st['memory']) for st in states):
                             check_disposition_exact("exact", after_instruction.pessimistic, states, inputs)
@@ -688,13 +697,16 @@ def test_zero_page(rng, trials=300):
                                 want = functools.reduce(lambda x, y: x | y, (1 << st['memory'][a] for st in states))
                                 check_exact("exact $%02x" % a, after_instruction.pessimistic.zp.get(a, valuesets.FULL), want, inputs)
                             count += 1
+            # (The values each register and known byte could have)
+            reg_values = {reg: valuesets.values(regs[reg]) for reg in "axy"}
+            zp_values = {address: valuesets.values(possible) for address, possible in zp.items()}
             for _ in range(48):
-                concrete = {reg: rng.choice(valuesets.values(regs[reg])) for reg in "axy"}
+                concrete = {reg: rng.choice(reg_values[reg]) for reg in "axy"}
                 for flag in "nvdizc":
                     concrete[flag] = rng.choice([False, True]) if flags[flag] is None else flags[flag]
-                zero_page = [rng.randrange(256) for _ in range(256)]
-                for address, possible in zp.items():
-                    zero_page[address] = rng.choice(valuesets.values(possible))
+                zero_page = list(rng.randbytes(256))
+                for address, values in zp_values.items():
+                    zero_page[address] = rng.choice(values)
                 memory = Memory(rng, zero_page)
                 if not execute(opcode, operand_bytes, concrete, memory):
                     continue
@@ -718,7 +730,7 @@ def all_zero_page_states(regs, flags, zp, rng, limit=2048):
     states = all_states(regs, flags, limit)
     if states is None:
         return None
-    base = [rng.randrange(256) for _ in range(256)]
+    base = list(rng.randbytes(256))
     states = [dict(st, zero_page=list(base)) for st in states]
     for address, possible in sorted(zp.items()):
         vs = valuesets.values(possible)
@@ -917,7 +929,7 @@ def test_joining(rng, programs=150):
             for flag in "nvizc":
                 s[flag] = rng.choice([False, True])
             s['d'] = False
-            memory = Memory(rng, [rng.randrange(256) for _ in range(256)])
+            memory = Memory(rng, list(rng.randbytes(256)))
             for result in run(program_bytes, s, memory):
                 if result is None:
                     continue
@@ -1249,7 +1261,7 @@ def test_subroutines(rng, programs=200):
             for flag in "nvizc":
                 s[flag] = rng.choice([False, True])
             s['d'] = False
-            memory = Memory(rng, [rng.randrange(256) for _ in range(256)])
+            memory = Memory(rng, list(rng.randbytes(256)))
             for here, taken, returned in run_with_stack(program_bytes, s, memory):
                 if returned is not None:
                     # The state after the JSR, now that the call has returned

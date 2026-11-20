@@ -42,6 +42,15 @@ BPL or BMI, bit 7 of the register that set N: see z_source() and
 CpuStateDisposition.n_from); and nothing is known after a JSR, JMP or RTS.
 docs/cpus.md describes this for users.
 
+This is most of the time a disassembly takes, so: the states are worked out
+again (after tracing from entry points found from what the code does) only
+if something they depend on has changed (see _state_inputs()); joining the
+states at labels works out only the pessimistic version, the optimistic one
+coming from going straight through (see CpuState.dispositions); what doesn't
+depend on the state is kept for each instruction while they're worked out
+(see instruction_info() and _instruction_effects()); and go() runs without
+Python's cyclic garbage collector (see utils.cyclic_gc_paused()).
+
 Analysis. The functions in code_analysis_fns use the CPU states to comment
 calls to subroutines described with subroutine() (find_subroutine_calls()),
 name constants given with substitute_constants() (substitute_constants(),
@@ -226,6 +235,9 @@ class RegState:
     its two parts; 'lo' and 'hi' are the least and greatest values; and
     possible_values() lists them all."""
 
+    # (Made and copied very often, so with no per-instance __dict__)
+    __slots__ = ("possible", "previous_load_imm", "previous_load", "previous_adjust", "previous_use")
+
     def __init__(self):
         """Nothing is known to start with."""
         self.clear()
@@ -284,8 +296,18 @@ class RegState:
     def copy(self):
         """A fast copy (all the attributes are immutable values)."""
         result = RegState.__new__(RegState)
-        result.__dict__.update(self.__dict__)
+        result.possible = self.possible
+        result.previous_load_imm = self.previous_load_imm
+        result.previous_load = self.previous_load
+        result.previous_adjust = self.previous_adjust
+        result.previous_use = self.previous_use
         return result
+
+    def same(self, other):
+        """Whether the two say the same."""
+        return (self.possible == other.possible and self.previous_load_imm == other.previous_load_imm
+                and self.previous_load == other.previous_load and self.previous_adjust == other.previous_adjust
+                and self.previous_use == other.previous_use)
 
     def get_previous_load_imm_operand(self):
         """The binary address of the immediate operand that the register's
@@ -368,7 +390,11 @@ class CpuStateDisposition:
     def copy(self):
         """A fast copy (much faster than copy.deepcopy())."""
         result = CpuStateDisposition.__new__(CpuStateDisposition)
-        result._d = {key: (value.copy() if isinstance(value, RegState) else value) for key, value in self._d.items()}
+        d = self._d.copy()
+        d["a"] = d["a"].copy()
+        d["x"] = d["x"].copy()
+        d["y"] = d["y"].copy()
+        result._d = d
         result.z_from = self.z_from
         result.n_from = self.n_from
         result.c_from = self.c_from
@@ -559,10 +585,12 @@ class CpuStateDisposition:
     @staticmethod
     def same(a, b):
         """Whether two CpuStateDispositions (or None) say the same."""
+        if a is b:
+            return True
         if a is None or b is None:
-            return a is b
+            return False
         for reg in "axy":
-            if a._d[reg].__dict__ != b._d[reg].__dict__:
+            if not a._d[reg].same(b._d[reg]):
                 return False
         return (all(a._d[flag] == b._d[flag] for flag in "nvdizc")
                 and a.z_from == b.z_from and a.n_from == b.n_from and a.c_from == b.c_from and a.zp == b.zp)
@@ -1066,13 +1094,26 @@ class Cpu6502(cpu.Cpu):
             self.pessimistic = CpuStateDisposition()
             self.always_branch = False
             self.next_instruction = None
+            self.pessimistic_only = False
+
+        @property
+        def dispositions(self):
+            """The versions of the state that an instruction's update changes:
+            both, or (while join_states_at_labels() works out what's known
+            for certain) just the pessimistic one, when 'optimistic' is the
+            same object, so that it isn't changed twice."""
+            return (self.pessimistic,) if self.pessimistic_only else (self.optimistic, self.pessimistic)
 
         def copy(self):
             """A fast copy (much faster than copy.deepcopy()). Any attribute
             with a copy() method (e.g. the dispositions, or a dict) is copied
             with it, others are immutable values."""
             result = type(self).__new__(type(self))
-            result.__dict__ = {key: (value.copy() if hasattr(value, "copy") else value) for key, value in self.__dict__.items()}
+            d = self.__dict__.copy()
+            for key, value in d.items():
+                if value is not None and value is not True and value is not False and hasattr(value, "copy"):
+                    d[key] = value.copy()
+            result.__dict__ = d
             return result
 
         def clear(self, *, pessimistic_only):
@@ -1120,6 +1161,17 @@ class Cpu6502(cpu.Cpu):
         # True while join_states_at_labels() works out the states (so the
         # opcodes' update_cpu_state() doesn't forget what's known at labels)
         self.joining_states = False
+
+        # What instruction_info() and _instruction_effects() have worked out
+        # for each instruction, by binary address, while
+        # calculate_cpu_states() runs (otherwise None)
+        self.instruction_info_cache = None
+        self.instruction_effects_cache = None
+
+        # What the CPU states were last worked out from (see _state_inputs()),
+        # and the addresses that expressions named then
+        self.state_inputs = None
+        self.expression_addrs = set()
 
         # What's known for certain before each instruction, by binary
         # address, from join_states_at_labels() (or None if it isn't used)
@@ -1589,6 +1641,8 @@ class Cpu6502(cpu.Cpu):
                 'x': reg_change[1],
                 'y': reg_change[2]
             }
+            # (Those that change, for regular_update())
+            self.reg_changes_items = tuple((reg, change) for reg, change in self.reg_changes.items() if change != '-')
 
             self.update         = update
             self.indent_level   = 0
@@ -1632,29 +1686,24 @@ class Cpu6502(cpu.Cpu):
             """
             binary_addr = BinaryAddr(binary_addr)
             state.always_branch = False
-            for reg in ('a','x','y'):
-                c = self.reg_changes[reg]
+            dispositions = state.dispositions
+            for reg, c in self.reg_changes_items:
                 if c == 'O' or c == 'T':
-                    state.optimistic[reg].value               = None        # Current value, if known
-                    state.optimistic[reg].previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state.optimistic[reg].previous_load       = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state.optimistic[reg].previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
-
-                    state.pessimistic[reg].value              = None        # Current value, if known
-                    state.pessimistic[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state.pessimistic[reg].previous_load      = binary_addr # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state.pessimistic[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
-                if c == 'A':
-                    state.optimistic[reg].previous_load_imm   = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state.optimistic[reg].previous_load       = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state.optimistic[reg].previous_adjust     = binary_addr # The address of the previous load or adjust instruction if present
-
-                    state.pessimistic[reg].previous_load_imm  = None        # The address of the previous load immediate instruction if no adjustments made since
-                    state.pessimistic[reg].previous_load      = None        # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
-                    state.pessimistic[reg].previous_adjust    = binary_addr # The address of the previous load or adjust instruction if present
-                if c == 'U':
-                    state.optimistic[reg].previous_use        = binary_addr # The address of the previous use of the register if present
-                    state.pessimistic[reg].previous_use       = binary_addr # The address of the previous use of the register if present
+                    for d in dispositions:
+                        r = d._d[reg]
+                        r.possible           = valuesets.FULL   # Current value, if known (nothing)
+                        r.previous_load_imm  = None             # The address of the previous load immediate instruction if no adjustments made since
+                        r.previous_load      = binary_addr      # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                        r.previous_adjust    = binary_addr      # The address of the previous load or adjust instruction if present
+                elif c == 'A':
+                    for d in dispositions:
+                        r = d._d[reg]
+                        r.previous_load_imm  = None             # The address of the previous load immediate instruction if no adjustments made since
+                        r.previous_load      = None             # The address of the previous load (immediate or otherwise) instruction if no adjustments made since
+                        r.previous_adjust    = binary_addr      # The address of the previous load or adjust instruction if present
+                elif c == 'U':
+                    for d in dispositions:
+                        d._d[reg].previous_use = binary_addr    # The address of the previous use of the register if present
 
         def clear_pessimistic_state_if_label_here(self, binary_addr, state):
             """Forget what's known for certain if the instruction has a label
@@ -1684,14 +1733,29 @@ class Cpu6502(cpu.Cpu):
             is known after the instruction."""
             # if there's a label at this address, then we lose all known pessimistic state.
             # This is because somewhere will be jumping to the label with unknown state.
-            self.clear_pessimistic_state_if_label_here(binary_addr, state)
+            cpu = session.current().cpu
+            if not cpu.joining_states:
+                self.clear_pessimistic_state_if_label_here(binary_addr, state)
+            if self.update is None:
+                # (After a call to a subroutine whose subroutine() declares
+                # what it leaves, that's known; otherwise nothing is)
+                declared = cpu.declared_exits().get(self.target(binary_addr)) if isinstance(self, Cpu6502.OpcodeJsr) else None
+                if declared is None:
+                    state.clear(pessimistic_only=False)
+                else:
+                    for d in state.dispositions:
+                        d.apply_exit(*declared)
+                return
 
-            # otherwise we update state if there's an update function
-            if self.update is not None and self.addr_mode == Cpu6502.mode_immediate and session.current().cpu.is_operand_modified(binary_addr):
+            # (What Z and C say afterwards, whether code starts inside it, and
+            # whether code changes its immediate operand: see
+            # Cpu6502.instruction_info())
+            _, z_from, c_from, entered_inside, operand_modified = cpu.instruction_info(self, binary_addr)
+            if operand_modified:
                 # Code changes the operand (e.g. 'sta ldx_instruction+1'), so
                 # its value isn't known: as for an operand from memory
                 self.regular_update(binary_addr, state)
-                for disposition in (state.optimistic, state.pessimistic):
+                for disposition in state.dispositions:
                     for reg in "axy":
                         if self.reg_changes[reg] == "A":
                             disposition[reg].value = None
@@ -1700,22 +1764,19 @@ class Cpu6502(cpu.Cpu):
                     disposition.z_from = None
                     disposition.n_from = None
                     disposition.c_from = None
-            elif self.update is not None:
+            else:
                 self.regular_update(binary_addr, state)
-                cpu = session.current().cpu
                 before = cpu.zero_page_snapshot(self, binary_addr, state)
                 self.update(binary_addr, state)
-                z_from = Cpu6502.z_source(self, binary_addr)
                 if z_from is not Cpu6502.Z_UNCHANGED:
-                    state.optimistic.z_from = z_from
-                    state.pessimistic.z_from = z_from
+                    for d in state.dispositions:
+                        d.z_from = z_from
                     # (N is bit 7 of the same result, or of a compare with
                     # 0; on the 6502 an instruction that changes N changes Z)
                     n_from = z_from[0] if z_from is not None and z_from[1] == 0 else None
-                    state.optimistic.n_from = n_from
-                    state.pessimistic.n_from = n_from
-                c_from = Cpu6502.c_source(self, binary_addr)
-                for disposition in (state.optimistic, state.pessimistic):
+                    for d in state.dispositions:
+                        d.n_from = n_from
+                for disposition in state.dispositions:
                     # A 'pending' Z or C says something only while the other
                     # is from the same compare: e.g. after 'cmp #n : txa', Z
                     # is from TXA, so a BNE that isn't taken says nothing
@@ -1735,17 +1796,8 @@ class Cpu6502(cpu.Cpu):
                 # BIT trick, e.g. 'bit $02a9' skipping 'lda #2') runs another
                 # instruction there, then continues after this one, so
                 # nothing is known for certain after it
-                if session.current().cpu.is_entered_inside(binary_addr, self.length()):
+                if entered_inside:
                     state.clear(pessimistic_only=True)
-            else:
-                # (After a call to a subroutine whose subroutine() declares
-                # what it leaves, that's known; otherwise nothing is)
-                declared = session.current().cpu.declared_exits().get(self.target(binary_addr)) if isinstance(self, Cpu6502.OpcodeJsr) else None
-                if declared is None:
-                    state.clear(pessimistic_only=False)
-                else:
-                    state.optimistic.apply_exit(*declared)
-                    state.pessimistic.apply_exit(*declared)
 
         def is_block_end(self):
             """Whether the instruction ends a block of code, i.e. the code
@@ -2327,23 +2379,23 @@ class Cpu6502(cpu.Cpu):
     def make_update_flag(self, flag, b):
         """An update function that sets 'flag' to b (e.g. CLC, SEI)."""
         def update_flag(addr, state):
-            state.optimistic[flag] = b
-            state.pessimistic[flag] = b
+            for d in state.dispositions:
+                d[flag] = b
         return update_flag
 
     def make_decrement(self, reg):
         """An update function that decrements 'reg' (e.g. DEX: see
         CpuStateDisposition.decrement())."""
         def decrement(addr, state):
-            state.pessimistic.decrement(addr, reg)
-            state.optimistic.decrement(addr, reg)
+            for d in state.dispositions:
+                d.decrement(addr, reg)
         return decrement
 
     def make_increment(self, reg):
         """An update function that increments 'reg' (e.g. INX)."""
         def increment(addr, state):
-            state.optimistic.increment(addr, reg)
-            state.pessimistic.increment(addr, reg)
+            for d in state.dispositions:
+                d.increment(addr, reg)
         return increment
 
     def make_load_immediate(self, reg):
@@ -2354,15 +2406,15 @@ class Cpu6502(cpu.Cpu):
         memory_binary = session.current().memory.binary
         def load_immediate(addr, state):
             v = memory_binary[addr+1]
-            state.optimistic.load_immediate(addr, reg, v)
-            state.pessimistic.load_immediate(addr, reg, v)
+            for d in state.dispositions:
+                d.load_immediate(addr, reg, v)
         return load_immediate
 
     def make_transfer(self, src_reg, dest_reg):
         """An update function that copies src_reg to dest_reg (e.g. TAX)."""
         def transfer(addr, state):
-            state.optimistic.transfer(addr, src_reg, dest_reg)
-            state.pessimistic.transfer(addr, src_reg, dest_reg)
+            for d in state.dispositions:
+                d.transfer(addr, src_reg, dest_reg)
         return transfer
 
     def make_branch(self, flag, flag_state):
@@ -2379,8 +2431,8 @@ class Cpu6502(cpu.Cpu):
         #    BNE addr1
         #    BEQ addr2              ; ALWAYS branch
         def update_branch(addr, state):
-            state.optimistic.update_transfer(addr, flag, flag_state)
-            state.pessimistic.update_transfer(addr, flag, flag_state)
+            for d in state.dispositions:
+                d.update_transfer(addr, flag, flag_state)
 
         return update_branch
 
@@ -2392,101 +2444,101 @@ class Cpu6502(cpu.Cpu):
     def update_clear_nz(self, binary_addr, state):
         """N and Z become unknown (e.g. LDA from memory, PLA, INC memory)."""
         assert binary_addr is not None
-        state.optimistic.update_clear_nz(binary_addr)
-        state.pessimistic.update_clear_nz(binary_addr)
+        for d in state.dispositions:
+            d.update_clear_nz(binary_addr)
 
     def update_clear_nza(self, binary_addr, state):
         """N, Z and A become unknown (e.g. ORA, AND and EOR from memory)."""
         assert binary_addr is not None
-        state.optimistic.update_clear_nza(binary_addr)
-        state.pessimistic.update_clear_nza(binary_addr)
+        for d in state.dispositions:
+            d.update_clear_nza(binary_addr)
 
     def update_clear_nzc(self, binary_addr, state):
         """N, Z and C become unknown (shifts and rotates of memory)."""
         assert binary_addr is not None
-        state.optimistic.update_clear_nzc(binary_addr)
-        state.pessimistic.update_clear_nzc(binary_addr)
+        for d in state.dispositions:
+            d.update_clear_nzc(binary_addr)
 
     def update_clear_nzca(self, binary_addr, state):
         """N, Z, C and A become unknown (e.g. ASL A)."""
         assert binary_addr is not None
-        state.optimistic.update_clear_nzca(binary_addr)
-        state.pessimistic.update_clear_nzca(binary_addr)
+        for d in state.dispositions:
+            d.update_clear_nzca(binary_addr)
 
     def update_compare(self, binary_addr, state):
         """A compare (CMP, CPX, CPY): N becomes unknown, and Z and C
         'pending'."""
         assert binary_addr is not None
-        state.optimistic.update_clear_nz_pending_c(binary_addr)
-        state.pessimistic.update_clear_nz_pending_c(binary_addr)
+        for d in state.dispositions:
+            d.update_clear_nz_pending_c(binary_addr)
 
     def update_bit(self, binary_addr, state):
         """BIT: N, V and Z become unknown."""
         assert binary_addr is not None
-        state.optimistic.update_bit(binary_addr)
-        state.pessimistic.update_bit(binary_addr)
+        for d in state.dispositions:
+            d.update_bit(binary_addr)
 
     def update_adc_sbc(self, binary_addr, state):
         """ADC or SBC: A, N, V, Z and C become unknown."""
         assert binary_addr is not None
-        state.optimistic.update_adc_sbc(binary_addr)
-        state.pessimistic.update_adc_sbc(binary_addr)
+        for d in state.dispositions:
+            d.update_adc_sbc(binary_addr)
 
     def update_all_flags(self, binary_addr, state):
         """PLP: all the flags become unknown."""
         assert binary_addr is not None
-        state.optimistic.update_all_flags(binary_addr)
-        state.pessimistic.update_all_flags(binary_addr)
+        for d in state.dispositions:
+            d.update_all_flags(binary_addr)
 
     def make_shift_a(self, kind):
         """An update function for ASL, LSR, ROL or ROR A ('kind' is the
         mnemonic in lower case: see CpuStateDisposition.update_shift_a())."""
         def shift_a(binary_addr, state):
-            state.optimistic.update_shift_a(binary_addr, kind)
-            state.pessimistic.update_shift_a(binary_addr, kind)
+            for d in state.dispositions:
+                d.update_shift_a(binary_addr, kind)
         return shift_a
 
     def make_shift_memory(self, kind):
         """An update function for ASL, LSR, ROL or ROR of memory (see
         CpuStateDisposition.update_shift_memory())."""
         def shift_memory(binary_addr, state):
-            state.optimistic.update_shift_memory(binary_addr, kind)
-            state.pessimistic.update_shift_memory(binary_addr, kind)
+            for d in state.dispositions:
+                d.update_shift_memory(binary_addr, kind)
         return shift_memory
 
     def make_compare_immediate(self, reg):
         """An update function for CMP, CPX or CPY #imm, comparing 'reg' (see
         CpuStateDisposition.compare_immediate())."""
         def compare_immediate(binary_addr, state):
-            state.optimistic.compare_immediate(binary_addr, reg)
-            state.pessimistic.compare_immediate(binary_addr, reg)
+            for d in state.dispositions:
+                d.compare_immediate(binary_addr, reg)
         return compare_immediate
 
     def make_adc_sbc_immediate(self, subtract):
         """An update function for ADC #imm, or SBC #imm if 'subtract' (see
         CpuStateDisposition.adc_sbc_immediate())."""
         def adc_sbc_immediate(binary_addr, state):
-            state.optimistic.adc_sbc_immediate(binary_addr, subtract)
-            state.pessimistic.adc_sbc_immediate(binary_addr, subtract)
+            for d in state.dispositions:
+                d.adc_sbc_immediate(binary_addr, subtract)
         return adc_sbc_immediate
 
     def update_EOR_immediate(self, binary_addr, state):
         """EOR #imm (see CpuStateDisposition.update_EOR_immediate())."""
         assert binary_addr is not None
-        state.optimistic.update_EOR_immediate(binary_addr)
-        state.pessimistic.update_EOR_immediate(binary_addr)
+        for d in state.dispositions:
+            d.update_EOR_immediate(binary_addr)
 
     def update_AND_immediate(self, binary_addr, state):
         """AND #imm (see CpuStateDisposition.update_AND_immediate())."""
         assert binary_addr is not None
-        state.optimistic.update_AND_immediate(binary_addr)
-        state.pessimistic.update_AND_immediate(binary_addr)
+        for d in state.dispositions:
+            d.update_AND_immediate(binary_addr)
 
     def update_ORA_immediate(self, binary_addr, state):
         """ORA #imm (see CpuStateDisposition.update_ORA_immediate())."""
         assert binary_addr is not None
-        state.optimistic.update_ORA_immediate(binary_addr)
-        state.pessimistic.update_ORA_immediate(binary_addr)
+        for d in state.dispositions:
+            d.update_ORA_immediate(binary_addr)
 
     # ********************************************************************************************
     # Analysis of the traced code
@@ -3082,7 +3134,20 @@ class Cpu6502(cpu.Cpu):
         (see io_range()) or an address that isn't known (an indirect
         operand). Anything that isn't one of those or of
         _OTHER_INSTRUCTIONS (e.g. a JSR, a branch, or the end of a block)
-        reads everything and writes nothing."""
+        reads everything and writes nothing. (While calculate_cpu_states()
+        works out the states, these are kept for each instruction.)"""
+        cache = self.instruction_effects_cache
+        if cache is not None:
+            effects = cache.get(binary_addr)
+            if effects is not None and effects[0] is c:
+                return effects[1]
+        effects = self._work_out_instruction_effects(c, binary_addr)
+        if cache is not None:
+            cache[binary_addr] = (c, effects)
+        return effects
+
+    def _work_out_instruction_effects(self, c, binary_addr):
+        """_instruction_effects() worked out."""
         mnemonic = c.mnemonic.lower()
         mode = c.addr_mode
         index = {self.mode_indexed_indirect: "x", self.mode_abs_indexed_x: "x", self.mode_zp_indexed_x: "x",
@@ -3096,11 +3161,32 @@ class Cpu6502(cpu.Cpu):
             memory = self._memory_operand_range(c, binary_addr)
             io_ranges = session.current().disassembly.io_ranges
             candidate = memory is None or (memory != "unknown" and not any(start <= memory[1] and memory[0] < end for start, end in io_ranges))
-            return set(reads + index), set(writes), candidate
+            return frozenset(reads + index), frozenset(writes), candidate
         if mnemonic in self._OTHER_INSTRUCTIONS and not c.is_block_end():
             reads, writes = self._OTHER_INSTRUCTIONS[mnemonic]
-            return set(reads + index), set(writes), False
-        return set(self._ALL_RESOURCES), set(), False
+            return frozenset(reads + index), frozenset(writes), False
+        return self._ALL_RESOURCES, frozenset(), False
+
+    def instruction_info(self, opcode, binary_addr):
+        """What Opcode.update_cpu_state() needs to know about the
+        instruction at binary_addr that doesn't depend on the state: (the
+        opcode, what Z says afterwards (see z_source()), what C says (see
+        c_source()), whether code can start inside it (see
+        is_entered_inside()), and whether code changes its immediate
+        operand (see is_operand_modified())). While calculate_cpu_states()
+        works out the states, these are kept for each instruction (nothing
+        they depend on changes then)."""
+        cache = self.instruction_info_cache
+        if cache is not None:
+            info = cache.get(binary_addr)
+            if info is not None and info[0] is opcode:
+                return info
+        info = (opcode, Cpu6502.z_source(opcode, binary_addr), Cpu6502.c_source(opcode, binary_addr),
+                self.is_entered_inside(binary_addr, opcode.length()),
+                opcode.addr_mode == self.mode_immediate and self.is_operand_modified(binary_addr))
+        if cache is not None:
+            cache[binary_addr] = info
+        return info
 
     def is_entered_inside(self, binary_addr, length):
         """Whether code can start in the middle of the instruction at
@@ -3297,18 +3383,22 @@ class Cpu6502(cpu.Cpu):
         whose label something refers to, e.g. code that modifies it.)"""
         labels = session.current().labels.labels
         explicit_entry_points = self.explicit_entry_points
+        # (Looked up directly, for speed)
+        classifications = session.current().classifications.classifications
+        b2r_int = movemanager.b2r_int
+        inside = classification.INSIDE_A_CLASSIFICATION
         run = []
         for range_start, range_end in memorymanager.loaded_ranges():
             binary_addr = range_start
             while binary_addr < range_end:
-                c = classification.get_classification(binary_addr)
-                if c is None or c is classification.INSIDE_A_CLASSIFICATION or not c.is_code(binary_addr):
+                c = classifications[binary_addr]
+                if c is None or c is inside or not c.is_code(binary_addr):
                     if run:
                         yield run
                         run = []
-                    binary_addr += 1 if c is None or c is classification.INSIDE_A_CLASSIFICATION else c.length()
+                    binary_addr += 1 if c is None or c is inside else c.length()
                     continue
-                label = labels.get(movemanager.b2r(BinaryAddr(binary_addr)))
+                label = labels.get(b2r_int(binary_addr))
                 if run and ((label is not None and label.references) or binary_addr in explicit_entry_points):
                     yield run
                     run = []
@@ -3634,9 +3724,63 @@ class Cpu6502(cpu.Cpu):
         to (see is_operand_modified()) is taken not to be known."""
         self.modified = self.modified_addresses()
         self._untracked_zero_page = self.untracked_zero_page()
-        super().calculate_cpu_states()
-        if config.get_join_states_at_labels():
-            self.join_states_at_labels()
+        self.expression_addrs = self._addresses_in_expressions()
+        # (Tracing again from the entry points found from what the code does
+        # often finds nothing new, e.g. a vector's handler that's already
+        # traced, and then the states would be worked out again just the
+        # same)
+        inputs = self._state_inputs()
+        if inputs == self.state_inputs:
+            return
+        self.state_inputs = None
+        self.instruction_info_cache = {}
+        self.instruction_effects_cache = {}
+        try:
+            super().calculate_cpu_states()
+            if config.get_join_states_at_labels():
+                self.join_states_at_labels()
+        finally:
+            self.instruction_info_cache = None
+            self.instruction_effects_cache = None
+        self.state_inputs = inputs
+
+    def _state_inputs(self):
+        """Everything the CPU states depend on but the memory (which doesn't
+        change once it's loaded), as a value that can be compared: where
+        each classification is and what it is, each label and what refers
+        to it, the entry points given, the addresses that expressions name,
+        the moves, the code that writes to operands, the bytes of zero page
+        that aren't tracked, what subroutines declare they leave, the
+        subroutine hooks and the config. (See calculate_cpu_states(), which
+        doesn't work out the states again if none of these has changed.)"""
+        classifications = session.current().classifications.classifications
+        b2r_int = movemanager.b2r_int
+        placed = []
+        code_addrs = set()      # The runtime addresses of the bytes of the code
+        for range_start, range_end in memorymanager.loaded_ranges():
+            b = range_start
+            while b < range_end:
+                c = classifications[b]
+                if c is None or c is classification.INSIDE_A_CLASSIFICATION:
+                    b += 1
+                    continue
+                length = c.length()
+                is_code = c.is_code(b)
+                placed.append((b, c if isinstance(c, self.Opcode) else type(c), length, is_code))
+                if is_code:
+                    for i in range(length):
+                        code_addrs.add(b2r_int(b + i))
+                b += length
+        # (Only the labels in the code matter)
+        labels = tuple((addr, tuple((int(ref.binary_addr), ref.move_id) for ref in label.references))
+                       for addr, label in sorted(session.current().labels.labels.items()) if addr in code_addrs)
+        declared = tuple(sorted((addr, tuple(sorted(preserved)), tuple(sorted(values.items())))
+                                for addr, (preserved, values) in self.declared_exits().items()))
+        return (tuple(placed), labels, frozenset(self.explicit_entry_points), frozenset(self.expression_addrs),
+                len(session.current().moves.move_definitions), None if self.modified is None else frozenset(self.modified),
+                frozenset(self._untracked_zero_page), tuple(session.current().disassembly.io_ranges), declared,
+                tuple(sorted(getattr(self, "subroutine_hooks", {}).items())),
+                config.get_join_states_at_labels(), config.get_subroutine_summaries())
 
     def known_before(self, run, j):
         """What's known for certain (a CpuStateDisposition) just before the
@@ -3678,8 +3822,9 @@ class Cpu6502(cpu.Cpu):
             walk(expression.to_expr(e))
         optional_labels = session.current().disassembly.optional_labels
         optional_by_name = {ol.name: addr for addr, ol in optional_labels.items()}
+        by_name = labelmanager.addresses_by_name() if names else {}
         for name in names:
-            addr = labelmanager.addr(name)
+            addr = by_name.get(name)
             if addr is None:
                 addr = optional_by_name.get(name)
             if addr is not None:
@@ -3772,20 +3917,39 @@ class Cpu6502(cpu.Cpu):
             return indexed(base, "y", 0xffff)
         return {base}
 
-    def zero_page_snapshot(self, c, binary_addr, state):
-        """Copies of the two versions of the state before the instruction's
-        usual update (optimistic, pessimistic), if update_zero_page() needs
-        them: for arithmetic, compares and BIT, which need A or the register
-        before the update, and ROL and ROR of memory, which need C, with a
-        byte of zero page whose values are known. Otherwise None."""
-        if not (state.optimistic.zp or state.pessimistic.zp):
-            return None
+    def _zero_page_opcode_info(self, c):
+        """For update_zero_page() and zero_page_snapshot(), what they need
+        to know about an opcode (kept on it): (its mnemonic in lower case,
+        whether it reads its operand as a value, whether it writes its
+        operand, whether zero_page_snapshot() is needed)."""
+        try:
+            return c.zero_page_info
+        except AttributeError:
+            pass
         mnemonic = c.mnemonic.lower()
-        if mnemonic in self._ZP_OPERAND_UPDATES or (mnemonic in ("rol", "ror") and c.addr_mode not in (self.mode_accumulator, self.mode_implied)):
-            for d in (state.optimistic, state.pessimistic):
+        memory_operand = c.addr_mode not in (self.mode_accumulator, self.mode_implied)
+        reads = mnemonic in self._ZP_LOADS or mnemonic in self._ZP_OPERAND_UPDATES
+        writes = (mnemonic in self._ZP_STORES or mnemonic == "sax"
+                  or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and memory_operand))
+        snapshot = mnemonic in self._ZP_OPERAND_UPDATES or (mnemonic in ("rol", "ror") and memory_operand)
+        c.zero_page_info = (mnemonic, reads, writes, snapshot)
+        return c.zero_page_info
+
+    def zero_page_snapshot(self, c, binary_addr, state):
+        """Copies of the versions of the state that the instruction's usual
+        update changes (see CpuState.dispositions), before it, if
+        update_zero_page() needs them: for arithmetic, compares and BIT,
+        which need A or the register before the update, and ROL and ROR of
+        memory, which need C, with a byte of zero page whose values are
+        known. Otherwise None."""
+        if not self._zero_page_opcode_info(c)[3]:
+            return None
+        dispositions = state.dispositions
+        for d in dispositions:
+            if d.zp:
                 addresses = self._addresses_used(d, c, binary_addr)
                 if addresses is not None and addresses != "any" and len(addresses) == 1 and next(iter(addresses)) in d.zp:
-                    return (state.optimistic.copy(), state.pessimistic.copy())
+                    return tuple(d.copy() for d in dispositions)
         return None
 
     def _may_use_zero_page(self, c, binary_addr):
@@ -3823,16 +3987,13 @@ class Cpu6502(cpu.Cpu):
 
         Bytes in I/O aren't tracked (see untracked_zero_page()). 'before' is
         from zero_page_snapshot()."""
-        mnemonic = c.mnemonic.lower()
-        reads = mnemonic in self._ZP_LOADS or mnemonic in self._ZP_OPERAND_UPDATES
-        writes = (mnemonic in self._ZP_STORES or mnemonic == "sax"
-                  or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and c.addr_mode not in (self.mode_accumulator, self.mode_implied)))
+        mnemonic, reads, writes, _ = self._zero_page_opcode_info(c)
         if not (reads or writes) or not self._may_use_zero_page(c, binary_addr):
             return
         untracked = getattr(self, "_untracked_zero_page", None)
         if untracked is None:
             untracked = self.untracked_zero_page()
-        for i, d in enumerate((state.optimistic, state.pessimistic)):
+        for i, d in enumerate(state.dispositions):
             pre = None if before is None else before[i]
             # (What the instruction used: the state before it, as far as
             # the index and the pointer go, hasn't changed, since loads and
@@ -4330,7 +4491,7 @@ class Cpu6502(cpu.Cpu):
         changed."""
         labels = session.current().labels.labels
         move_ids = session.current().moves.move_id_for_binary_addr
-        expression_addrs = self._addresses_in_expressions()
+        expression_addrs = self.expression_addrs
 
         # The instructions, in address order
         nodes = []
@@ -4492,10 +4653,12 @@ class Cpu6502(cpu.Cpu):
             before = state_in[b]
             c = classification.get_classification(b)
             # (A CpuState made without its own empty dispositions, which
-            # would only be replaced; the optimistic one is thrown away)
+            # would only be replaced. Only what's known for certain is
+            # worked out: 'optimistic' is the same object, and isn't used)
             state = self.CpuState.__new__(self.CpuState)
-            state.optimistic = before.copy()
             state.pessimistic = before.copy()
+            state.optimistic = state.pessimistic
+            state.pessimistic_only = True
             state.always_branch = False
             state.next_instruction = None
             if isinstance(c, self.OpcodeConditionalBranch):
@@ -4552,7 +4715,12 @@ class Cpu6502(cpu.Cpu):
                     new = new.copy()
                     new.zp = {address: possible for address, possible in new.zp.items() if address in loop_zp[b]}
                 old = state_in.get(b)
-                if b not in first and old is not None:
+                if b in first:
+                    first.discard(b)
+                elif old is not None:
+                    if CpuStateDisposition.same(old, new):
+                        # (Nothing has changed)
+                        continue
                     # (Each register and byte of zero page is widened once
                     # its set has grown JOIN_WIDEN_AFTER times here, so one
                     # that keeps growing, e.g. a counter in zero page that an
@@ -4564,19 +4732,20 @@ class Cpu6502(cpu.Cpu):
                             widen.append(resource)
                     if widen:
                         new = old.widen(new, widen)
-                if b in first or not CpuStateDisposition.same(old, new):
-                    first.discard(b)
-                    state_in[b] = new
-                    update(b)
-                    successors = list(ways_out[b])
-                    for jsr in affected_by_return.get(b, ()):
-                        # (A return whose state changed: the ways on from
-                        # the calls to its subroutine)
+                state_in[b] = new
+                update(b)
+                successors = ways_out[b]
+                returns_to = affected_by_return.get(b)
+                if returns_to:
+                    # (A return whose state changed: the ways on from the
+                    # calls to its subroutine)
+                    successors = list(successors)
+                    for jsr in returns_to:
                         successors.extend(ways_out[jsr])
-                    for successor in successors:
-                        if successor not in queued:
-                            queued.add(successor)
-                            heapq.heappush(worklist, successor)
+                for successor in successors:
+                    if successor not in queued:
+                        queued.add(successor)
+                        heapq.heappush(worklist, successor)
         finally:
             self.joining_states = False
 

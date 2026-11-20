@@ -65,9 +65,18 @@ def count(s):
     return bin(s).count("1")
 
 
+# The bits that are set in each byte value, for values()
+_BYTE_BITS = [tuple(k for k in range(8) if (b >> k) & 1) for b in range(256)]
+
 def values(s):
     """The values in the set, in order."""
-    return [v for v in range(256) if (s >> v) & 1]
+    # (A byte of the set at a time, which is much quicker than a bit)
+    result = []
+    for i, byte in enumerate((s & FULL).to_bytes(32, "little")):
+        if byte:
+            base = i * 8
+            result.extend(base + k for k in _BYTE_BITS[byte])
+    return result
 
 
 def value(s):
