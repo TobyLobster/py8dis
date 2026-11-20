@@ -14,6 +14,7 @@ section pydis, org = &28ea, filename = "atm_test_baron"
     equw &2906 ; Execution address
     equw &0014 ; Length
 
+; A table of 6 bytes, indexed by X (0 to 5), read at &2908
 ; &2900 referenced 1 time by &2908
 .pydis_start
     equs "HELLO"                                                      ; 2900: 48 45 4c... HEL

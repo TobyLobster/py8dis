@@ -710,7 +710,7 @@ def atom():
 
     # The OS entry points
     for addr, name, _ in atom_os_calls:
-        subroutine(addr, os_call_name(name), None, None, hook=_OS_CALL_HOOKS[name], is_entry_point=False)
+        subroutine(addr, os_call_name(name), None, None, on_exit=atom_os_exits.get(name), hook=_OS_CALL_HOOKS[name], is_entry_point=False)
 
     # The vectors, e.g. 'wrcvec' and 'wrcvec+1'
     for addr, (name, _) in atom_vectors.items():

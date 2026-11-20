@@ -33,6 +33,23 @@ atom_os_calls = [
     (0xfff7, "oscli", 0x0206),
 ]
 
+# What the OS calls leave unchanged, as Atomic Theory and Practice (section
+# 25.1) gives it: OSWRCH preserves all the registers; OSCRLF leaves A #0D,
+# N and Z clear, and the other registers preserved; OSRDCH and OSECHO leave
+# the byte read in A, and X and Y preserved; OSBPUT and OSBGET keep X and Y.
+# OSASCI either goes to OSWRCH or, for #0D, to OSCRLF, which leaves A #0D,
+# so it preserves A too. As on_exit descriptions, which py8dis takes as
+# what's known after a call (see Cpu6502.declared_exits()).
+atom_os_exits = {
+    "oswrch": {'a': "(preserved)", 'x': "(preserved)", 'y': "(preserved)"},
+    "osasci": {'a': "(preserved)", 'x': "(preserved)", 'y': "(preserved)"},
+    "oscrlf": {'a': "#0D", 'x': "(preserved)", 'y': "(preserved)", 'n': "(clear)", 'z': "(clear)"},
+    "osrdch": {'a': "the byte read", 'x': "(preserved)", 'y': "(preserved)"},
+    "osecho": {'a': "the byte read", 'x': "(preserved)", 'y': "(preserved)"},
+    "osbput": {'x': "(preserved)", 'y': "(preserved)"},
+    "osbget": {'a': "the byte read", 'x': "(preserved)", 'y': "(preserved)"},
+}
+
 # The vectors at #0200-#021F: {address: (name, description)}. The OS calls
 # jump through them (see atom_os_calls), and the 6502's NMI, BRK and IRQ go
 # through the first three. IN1VEC and IN2VEC are Econet's.

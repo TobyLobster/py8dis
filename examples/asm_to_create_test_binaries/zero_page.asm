@@ -20,6 +20,7 @@ start
     jsr polling_loop
     jsr across_calls
     jsr not_tracked
+    jsr clear_after_call
     rts
 
 ; 1. A byte stored and loaded again: bit 7 of $71 is set, so LDX $71 sets N
@@ -171,4 +172,23 @@ not_tracked
     nop
 +   rts
 
+; 10. As 6, but with a call between setting the pointer and the loop, to a
+;     subroutine that doesn't write it: the loads are still written as the
+;     buffer's low and high bytes (and the call to writes_7b, which writes
+;     $7b, not the pointer, doesn't stop them being found either)
+clear_after_call
+    lda #<buffer2
+    sta $7c
+    lda #>buffer2
+    sta $7d
+    jsr reads_only
+    jsr writes_7b
+    lda #0
+    tay
+-   sta ($7c),y
+    iny
+    bne -
+    rts
+
 buffer = $0400
+buffer2 = $0500

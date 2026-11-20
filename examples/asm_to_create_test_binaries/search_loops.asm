@@ -214,6 +214,46 @@ loop17
     dex
     bpl loop17
 found17
+
+    ; 18. Comparing two tables indexed by different registers, both
+    ; counting down, X from 3 past zero and Y not known: the 4 bytes from
+    ; table6+Y-3 with those from key_table
+    ldy $60
+    ldx #3
+loop18
+    lda table6,y
+    cmp key_table,x
+    bne found18
+    dey
+    dex
+    bpl loop18
+found18
+
+    ; 19. The same, with Y counting up from 2 and X down from 3: the 4
+    ; bytes from table6+2 with those from key_table, in reverse
+    ldy #2
+    ldx #3
+loop19
+    lda table6,y
+    eor key_table,x
+    bne found19
+    iny
+    dex
+    bpl loop19
+found19
+
+    ; 20. X counts up from 5 until it's 0 again: more likely a match that
+    ; runs until the bytes differ than a count, so no comment
+    ldy $61
+    ldx #5
+loop20
+    lda (ptr2),y
+    cmp table2,x
+    bne found20
+    iny
+    inx
+    bne loop20
+found20
     rts
 
 key_table

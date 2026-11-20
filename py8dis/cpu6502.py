@@ -1176,6 +1176,10 @@ class Cpu6502(cpu.Cpu):
         # its possible values or None, offset, why it isn't marked)
         self.jump_table_candidates = {}
 
+        # The zero page addresses each JSR's call may write (see
+        # _note_call_zero_page())
+        self.call_zero_page_written = {}
+
         # True while join_states_at_labels() works out the states (so the
         # opcodes' update_cpu_state() doesn't forget what's known at labels)
         self.joining_states = False
@@ -3475,9 +3479,11 @@ class Cpu6502(cpu.Cpu):
         ptr+1': the binary addresses of the operands of the loads of its low
         and high bytes, as a pair, or None if they aren't both found. They're
         looked for in the code that runs on into the instruction, back as
-        far as the first write whose address isn't known or a JSR (or 'limit'
-        instructions back), and the stores found last must have stored the
-        bytes of 'value'. Giving the operands expressions, e.g. '<table',
+        far as the first write whose address isn't known, or a JSR to a
+        subroutine that may write a byte of the pointer not found yet (one
+        that's known not to, e.g. OSWRCH, or a subroutine in the code that
+        doesn't, is stepped over), or 'limit' instructions back, and the
+        stores found last must have stored the bytes of 'value'. Giving the operands expressions, e.g. '<table',
         names the pointer's value."""
         memory_binary = session.current().memory.binary
         wanted = {ptr: value & 0xff, (ptr + 1) & 0xff: value >> 8}
@@ -3499,6 +3505,13 @@ class Cpu6502(cpu.Cpu):
             write = self.memory_write(b)
             if write is None:
                 continue
+            if write.target is None and memory_binary[b] == 0x20:
+                # (A call that doesn't write the bytes still to be found is
+                # stepped over, see _note_call_zero_page())
+                written = self.call_zero_page_written.get(b)
+                if written is not None and not any(address in written for address in wanted if address not in found):
+                    continue
+                return None
             if write.target is None:
                 return None
             if write.target in wanted and write.target not in found:
@@ -4446,6 +4459,21 @@ class Cpu6502(cpu.Cpu):
         # (Less what its subroutine() declares it preserves)
         return written - declared.get(movemanager.b2r(BinaryAddr(entry)), (set(), {}, None))[0]
 
+    def _note_call_zero_page(self, summaries):
+        """Keep, for each JSR (by binary address), the zero page addresses
+        its call may write (see SubroutineSummary.zp_written, and what a
+        subroutine outside the binary is declared to write: see
+        _declared_zero_page()), as a set, or None if it could be anywhere:
+        for pointer_loads(), after the states are worked out."""
+        result = {}
+        for jsr, callee in self.jsr_callees.items():
+            if callee is not None and callee in summaries and summaries[callee].valid:
+                result[jsr] = summaries[callee].zp_written
+            else:
+                target = movemanager.b2r(BinaryAddr(callee)) if callee is not None else classification.get_classification(jsr).target(jsr)
+                result[jsr] = self._declared_zero_page(target)
+        self.call_zero_page_written = result
+
     def _loop_zero_page(self, nodes, ways_in, summaries):
         """For each instruction that starts a loop (one that a branch from
         it or after it goes back to), the bytes of zero page that what's
@@ -4590,6 +4618,7 @@ class Cpu6502(cpu.Cpu):
         # subroutines it returns from, and to those that tail call them
         summaries = self.subroutine_summaries(nodes, node_set) if config.get_subroutine_summaries() else {}
         loop_zp = self._loop_zero_page(nodes, ways_in, summaries)
+        self._note_call_zero_page(summaries)
         jsrs_to = collections.defaultdict(list)
         for jsr, callee in self.jsr_callees.items():
             if callee is not None:

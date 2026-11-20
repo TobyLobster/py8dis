@@ -1041,6 +1041,86 @@ def comment_compare_loop(p, reg):
     _comment_loop(p.get_start_loc(), utils.LazyString("Compare %s with %s", where, other))
     _name_pointer_loads(p, state, [first, second])
 
+# (The index register of each first instruction of a compare loop with two
+# index registers: LDA abs,X, zp,X, abs,Y and (zp),Y)
+_LDA_INDEX = {0xbd: 'x', 0xb5: 'x', 0xb9: 'y', 0xb1: 'y'}
+
+def _from_register(p, name, kind, register, offset):
+    """An operand ('name', of a kind 'abs', 'zp' or 'indirect') plus a
+    register whose value isn't known, plus 'offset' (0 or less), e.g.
+    'table+Y', '(ptr)+Y' or 'table+Y-6', or None if the code changes the
+    operand (see _operand_modified())."""
+    if _operand_modified(p, name, kind):
+        return None
+    base = utils.LazyString("(%s)", p.get_expr(name)) if kind == "indirect" else p.get_expr(name)
+    return utils.LazyString("%s+%s%s", base, register.upper(), "" if offset == 0 else "%d" % offset)
+
+def comment_compare_two_register_loop(p):
+    """Comment a loop that compares two runs of bytes, indexing each with a
+    different register and stepping both, and leaving the loop at the
+    first difference: e.g. 'ldx #6 : loop lda a,y : cmp b,x : bne differ :
+    dey : dex : bpl loop' ('Compare 7 bytes from a+Y-6 with b'). The count
+    is the register the branch back tests (or that's compared, if there's
+    a compare), whose first value must be known (see _loop_run()); it must
+    count down, or up to a compare (not round to zero from somewhere else,
+    which is more likely a compare that runs until the bytes differ, e.g.
+    a match against a table of names). The other register's runs are given
+    from its first value if that's known, otherwise in terms of it, e.g.
+    'a+Y'. If one register counts up and the other down, the second run
+    is compared in reverse ('Compare 4 bytes from a+Y with b, in reverse').
+    The comment goes before the loop's label."""
+    state = _loop_start(p, ('loop', 'found_branch', 'update', 'branch'))
+    if state is None:
+        return
+    first, second = _operand(p, 1), _operand(p, 2)
+    if first is None or second is None:
+        return
+    reg1 = _LDA_INDEX.get(p.memory_binary[p.get_binary_address('loop')])
+    reg2 = 'y' if reg1 == 'x' else 'x'
+    updates = [_UPDATES.get(p.memory_binary[addr]) for addr in range(p.get_binary_address('update'), p.get_binary_address('compare'))]
+    if reg1 is None or None in updates or sorted(reg for reg, _ in updates) != ['x', 'y']:
+        return
+    steps = dict(updates)
+    branch = p.get_memory('branch')
+    has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
+    if has_compare:
+        count_reg = 'x' if p.get_memory('compare') == OPCODE_CPX_IMMEDIATE else 'y'
+    else:
+        # (The update just before the branch sets the flags it tests)
+        count_reg = updates[-1][0]
+    if steps[count_reg] == 1 and not has_compare:
+        return
+    keep_going = _keep_going(p, branch, has_compare)
+    count_start = state[count_reg].value
+    if keep_going is None or count_start is None:
+        return
+    run = _loop_run(count_start, steps[count_reg], keep_going)
+    if run is None:
+        return
+    count_lowest, n = run
+
+    # Each operand's first byte (its lowest), from the register that
+    # indexes it
+    other_reg = 'y' if count_reg == 'x' else 'x'
+    other_start = state[other_reg].value
+    other_step = steps[other_reg]
+    def lowest_byte(name, kind, reg):
+        if reg == count_reg:
+            return _first_byte(p, state, name, kind, count_lowest)
+        if other_start is None:
+            return _from_register(p, name, kind, reg, 0 if other_step == 1 else -(n - 1))
+        lowest = other_start if other_step == 1 else other_start - (n - 1)
+        if lowest < 0 or lowest + n - 1 > 0xff:
+            return None
+        return _first_byte(p, state, name, kind, lowest)
+    first_text = lowest_byte(*first, reg1)
+    second_text = lowest_byte(*second, reg2)
+    if first_text is None or second_text is None:
+        return
+    reverse = "" if steps['x'] == steps['y'] else ", in reverse"
+    _comment_loop(p.get_start_loc(), utils.LazyString("Compare %s from %s with %s%s", utils.count_with_units(n, "byte", "bytes"), first_text, second_text, reverse))
+    _name_pointer_loads(p, state, [first, second])
+
 def comment_search_x_index_loop(p):
     """Post-trace function for a loop that looks through bytes, indexing
     them with X (see comment_search_loop())."""
@@ -1365,6 +1445,23 @@ update
     iny | dey | iny : dex | dey : dex | dex : iny | dex : dey
 compare
 ?   cpy #nn | cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+# Loops that compare two runs of bytes indexed by different registers,
+# stepping both ('lda a,y : cmp b,x : bne differ : dey : dex : bpl loop').
+# Commented e.g. 'Compare 7 bytes from a+Y-6 with b' (see
+# comment_compare_two_register_loop()). (Not traced, as above.)
+register_snippet(None, comment_compare_two_register_loop, """
+loop
+    lda addr1,y : cmp addr2,x | lda addr1,y : cmp zpaddr2,x | lda (zpptr1),y : cmp addr2,x | lda (zpptr1),y : cmp zpaddr2,x | lda addr1,x : cmp addr2,y | lda zpaddr1,x : cmp addr2,y | lda addr1,x : cmp (zpptr2),y | lda zpaddr1,x : cmp (zpptr2),y | lda addr1,y : eor addr2,x | lda addr1,y : eor zpaddr2,x | lda (zpptr1),y : eor addr2,x | lda (zpptr1),y : eor zpaddr2,x | lda addr1,x : eor addr2,y | lda zpaddr1,x : eor addr2,y | lda addr1,x : eor (zpptr2),y | lda zpaddr1,x : eor (zpptr2),y
+found_branch
+    bne differ
+update
+    inx : iny | inx : dey | dex : iny | dex : dey | iny : inx | iny : dex | dey : inx | dey : dex
+compare
+?   cpx #nn | cpy #nn
 branch
     bne loop | bpl loop | bcc loop
 """)

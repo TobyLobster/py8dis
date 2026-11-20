@@ -3,6 +3,8 @@
 ; Memory locations
 
 ; Zero page (&0000-&00ff)
+l0060   = &0060
+l0061   = &0061
 l0070   = &0070
 l0071   = &0071
 l0072   = &0072
@@ -41,7 +43,7 @@ lffff   = &ffff
     ; Search 16 bytes from key_table for A
 ; &2004 referenced 1 time by &200c
 .loop_c2004
-    cmp key_table,x                                                   ; 2004: dd f0 20    ..
+    cmp key_table,x                                                   ; 2004: dd 1f 21    ..!
     beq c200e                                                         ; 2007: f0 05       ..
     inx                                                               ; 2009: e8          .
     cpx #&10                                                          ; 200a: e0 10       ..
@@ -53,7 +55,7 @@ lffff   = &ffff
     ; Search 6 bytes from table2 for A
 ; &2012 referenced 1 time by &2018
 .loop_c2012
-    cmp table2,x                                                      ; 2012: dd 00 21    ..!
+    cmp table2,x                                                      ; 2012: dd 2f 21    ./!
     beq c201a                                                         ; 2015: f0 03       ..
     dex                                                               ; 2017: ca          .
     bpl loop_c2012                                                    ; 2018: 10 f8       ..
@@ -101,7 +103,7 @@ lffff   = &ffff
     ; Search from table6+X to table6 + 7 for A
 ; &2049 referenced 1 time by &2051
 .loop_c2049
-    cmp table6,x                                                      ; 2049: dd 06 21    ..!
+    cmp table6,x                                                      ; 2049: dd 35 21    .5!
     beq c2053                                                         ; 204c: f0 05       ..
     inx                                                               ; 204e: e8          .
     cpx #8                                                            ; 204f: e0 08       ..
@@ -112,7 +114,7 @@ lffff   = &ffff
     ; Search X bytes from table7 + 1 for 0
 ; &2055 referenced 1 time by &205b
 .loop_c2055
-    lda table7,x                                                      ; 2055: bd 0e 21    ..!
+    lda table7,x                                                      ; 2055: bd 3d 21    .=!
     beq c205d                                                         ; 2058: f0 03       ..
     dex                                                               ; 205a: ca          .
     bne loop_c2055                                                    ; 205b: d0 f8       ..
@@ -167,7 +169,7 @@ l2088 = loop_c2086+2
     ldx #2                                                            ; 2096: a2 02       ..
 ; &2098 referenced 2 times by &2094, &20a0
 .c2098
-    cmp table2,x                                                      ; 2098: dd 00 21    ..!
+    cmp table2,x                                                      ; 2098: dd 2f 21    ./!
     beq c20a2                                                         ; 209b: f0 05       ..
     inx                                                               ; 209d: e8          .
     cpx #6                                                            ; 209e: e0 06       ..
@@ -178,8 +180,8 @@ l2088 = loop_c2086+2
     ; Compare 4 bytes from table6 with key_table
 ; &20a4 referenced 1 time by &20af
 .loop_c20a4
-    lda table6,x                                                      ; 20a4: bd 06 21    ..!
-    cmp key_table,x                                                   ; 20a7: dd f0 20    ..
+    lda table6,x                                                      ; 20a4: bd 35 21    .5!
+    cmp key_table,x                                                   ; 20a7: dd 1f 21    ..!
     bne c20b1                                                         ; 20aa: d0 05       ..
     inx                                                               ; 20ac: e8          .
     cpx #4                                                            ; 20ad: e0 04       ..
@@ -220,7 +222,7 @@ l2088 = loop_c2086+2
     ; Search 4 bytes from table2 + 2 for A
 ; &20d9 referenced 1 time by &20e0
 .loop_c20d9
-    cmp table2,y                                                      ; 20d9: d9 00 21    ..!
+    cmp table2,y                                                      ; 20d9: d9 2f 21    ./!
     beq c20e2                                                         ; 20dc: f0 04       ..
     iny                                                               ; 20de: c8          .
     dex                                                               ; 20df: ca          .
@@ -232,44 +234,80 @@ l2088 = loop_c2086+2
     ; Search 3 bytes from table6 + 3 for 0
 ; &20e6 referenced 1 time by &20ed
 .loop_c20e6
-    lda table6,y                                                      ; 20e6: b9 06 21    ..!
-    beq return_1                                                      ; 20e9: f0 04       ..
+    lda table6,y                                                      ; 20e6: b9 35 21    .5!
+    beq c20ef                                                         ; 20e9: f0 04       ..
     dey                                                               ; 20eb: 88          .
     dex                                                               ; 20ec: ca          .
     bpl loop_c20e6                                                    ; 20ed: 10 f7       ..
 ; &20ef referenced 1 time by &20e9
+.c20ef
+    ldy l0060                                                         ; 20ef: a4 60       .`
+    ldx #3                                                            ; 20f1: a2 03       ..
+    ; Compare 4 bytes from table6+Y-3 with key_table
+; &20f3 referenced 1 time by &20fd
+.loop_c20f3
+    lda table6,y                                                      ; 20f3: b9 35 21    .5!
+    cmp key_table,x                                                   ; 20f6: dd 1f 21    ..!
+    bne c20ff                                                         ; 20f9: d0 04       ..
+    dey                                                               ; 20fb: 88          .
+    dex                                                               ; 20fc: ca          .
+    bpl loop_c20f3                                                    ; 20fd: 10 f4       ..
+; &20ff referenced 1 time by &20f9
+.c20ff
+    ldy #2                                                            ; 20ff: a0 02       ..
+    ldx #3                                                            ; 2101: a2 03       ..
+    ; Compare 4 bytes from table6 + 2 with key_table, in reverse
+; &2103 referenced 1 time by &210d
+.loop_c2103
+    lda table6,y                                                      ; 2103: b9 35 21    .5!
+    eor key_table,x                                                   ; 2106: 5d 1f 21    ].!
+    bne c210f                                                         ; 2109: d0 04       ..
+    iny                                                               ; 210b: c8          .
+    dex                                                               ; 210c: ca          .
+    bpl loop_c2103                                                    ; 210d: 10 f4       ..
+; &210f referenced 1 time by &2109
+.c210f
+    ldy l0061                                                         ; 210f: a4 61       .a
+    ldx #5                                                            ; 2111: a2 05       ..
+; &2113 referenced 1 time by &211c
+.loop_c2113
+    lda (l0082),y                                                     ; 2113: b1 82       ..
+    cmp table2,x                                                      ; 2115: dd 2f 21    ./!
+    bne return_1                                                      ; 2118: d0 04       ..
+    iny                                                               ; 211a: c8          .
+    inx                                                               ; 211b: e8          .
+    bne loop_c2113                                                    ; 211c: d0 f5       ..
+; &211e referenced 1 time by &2118
 .return_1
-    rts                                                               ; 20ef: 60          `
+    rts                                                               ; 211e: 60          `
 
-; A table of 16 bytes, indexed by X (0 to 15), read at &2004 and &20a7
-; &20f0 referenced 2 times by &2004, &20a7
+; A table of 16 bytes, indexed by X (0 to 15), read at &2004, &20a7, &20f6 and &2106
+; &211f referenced 4 times by &2004, &20a7, &20f6, &2106
 .key_table
-    equb 1, 2, 3, 4, 5, 6, 7, 8, 9, &0a, &0b, &0c, &0d, &0e, &0f, &10 ; 20f0: 01 02 03... ...
+    equb 1, 2, 3, 4, 5, 6, 7, 8, 9, &0a, &0b, &0c, &0d, &0e, &0f, &10 ; 211f: 01 02 03... ...
 ; A table of 6 bytes, indexed by X (0 to 5), read at &2012 and &2098
-; &2100 referenced 3 times by &2012, &2098, &20d9
+; &212f referenced 4 times by &2012, &2098, &20d9, &2115
 .table2
-    equb &20, &21, &22, &23, &24, &25                                 ; 2100: 20 21 22...  !"
+    equb &20, &21, &22, &23, &24, &25                                 ; 212f: 20 21 22...  !"
 ; A table of 4 bytes, indexed by X (0 to 3), read at &20a4
-; &2106 referenced 3 times by &2049, &20a4, &20e6
+; &2135 referenced 5 times by &2049, &20a4, &20e6, &20f3, &2103
 .table6
-    equb &30, &31, &32, &33                                           ; 2106: 30 31 32... 012
-    equs "4567"                                                       ; 210a: 34 35 36... 456
-; &210e referenced 1 time by &2055
+    equb &30, &31, &32, &33                                           ; 2135: 30 31 32... 012
+    equs "4567"                                                       ; 2139: 34 35 36... 456
+; &213d referenced 1 time by &2055
 .table7
-    equb 0                                                            ; 210e: 00          .
-    equs "ABCD"                                                       ; 210f: 41 42 43... ABC
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2113: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2127: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 213b: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 214f: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2163: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2177: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 218b: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 219f: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21b3: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21c7: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21db: 00 00 00... ...
-    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0            ; 21ef: 00 00 00... ...
+    equb 0                                                            ; 213d: 00          .
+    equs "ABCD"                                                       ; 213e: 41 42 43... ABC
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2142: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2156: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 216a: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 217e: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 2192: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21a6: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21ba: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21ce: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0   ; 21e2: 00 00 00... ...
+    equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                                 ; 21f6: 00 00 00... ...
 ; &2200 referenced 1 time by &201c
 .string3
     equs "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU" ; 2200: 55 55 55... UUU
@@ -308,13 +346,13 @@ l2088 = loop_c2086+2
 save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
-;     table2:       3
-;     table6:       3
+;     table6:       5
+;     key_table:    4
+;     table2:       4
+;     l0082:        3
 ;     buffer4:      2
 ;     c2098:        2
-;     key_table:    2
 ;     l0080:        2
-;     l0082:        2
 ;     c200e:        1
 ;     c201a:        1
 ;     c2024:        1
@@ -328,6 +366,11 @@ save pydis_start, pydis_end
 ;     c20bc:        1
 ;     c20d3:        1
 ;     c20e2:        1
+;     c20ef:        1
+;     c20ff:        1
+;     c210f:        1
+;     l0060:        1
+;     l0061:        1
 ;     l0070:        1
 ;     l0071:        1
 ;     l0072:        1
@@ -369,6 +412,9 @@ save pydis_start, pydis_end
 ;     loop_c20c8:   1
 ;     loop_c20d9:   1
 ;     loop_c20e6:   1
+;     loop_c20f3:   1
+;     loop_c2103:   1
+;     loop_c2113:   1
 ;     return_1:     1
 ;     string3:      1
 ;     table7:       1
@@ -389,6 +435,11 @@ save pydis_start, pydis_end
 ;     c20bc
 ;     c20d3
 ;     c20e2
+;     c20ef
+;     c20ff
+;     c210f
+;     l0060
+;     l0061
 ;     l0070
 ;     l0071
 ;     l0072
@@ -433,16 +484,19 @@ save pydis_start, pydis_end
 ;     loop_c20c8
 ;     loop_c20d9
 ;     loop_c20e6
+;     loop_c20f3
+;     loop_c2103
+;     loop_c2113
 ;     return_1
 
 ; Stats:
 ;
 ;     Total size (Code + Data) = 1088 bytes
-;     Code                     = 240 bytes (22%)
-;     Data                     = 848 bytes (78%)
+;     Code                     = 287 bytes (26%)
+;     Data                     = 801 bytes (74%)
 ;
-;     Number of instructions   = 122
-;     Number of data bytes     = 313 bytes
+;     Number of instructions   = 146
+;     Number of data bytes     = 266 bytes
 ;     Number of data words     = 0 bytes
 ;     Number of string bytes   = 535 bytes
 ;     Number of strings        = 5

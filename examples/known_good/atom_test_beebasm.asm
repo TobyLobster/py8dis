@@ -124,6 +124,7 @@ OSCLI   = &fff7
 .handle_wrcvec
     jmp kernel_wrch                                                   ; 29a5: 4c 52 fe    LR. ; Write character A (the kernel's OSWRCH, WRCVEC's default)
 
+; A table of 4 bytes, indexed by X (0 to 3), read at &2940
 ; &29a8 referenced 1 time by &2940
 .l29a8
     equs "ATOM"                                                       ; 29a8: 41 54 4f... ATO

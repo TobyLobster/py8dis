@@ -5115,6 +5115,7 @@ cdabd
     jsr sub_cdc16                                                     ; dabd: 20 16 dc     ..
     ldx #3                                                            ; dac0: a2 03       ..
     ldy l8007                                                         ; dac2: ac 07 80    ...
+    ; Compare 4 bytes from l8000+Y with ldf0c, in reverse
 ; $dac5 referenced 1 time by $dacf
 loop_cdac5
     lda l8000,y                                                       ; dac5: b9 00 80    ...

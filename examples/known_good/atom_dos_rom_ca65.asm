@@ -498,6 +498,7 @@ ce162:
     bne ce162                                                         ; e171: d0 ef       ..
     jsr sub_ce101                                                     ; e173: 20 01 e1     ..
     ldx #6                                                            ; e176: a2 06       ..
+    ; Compare 7 bytes from l2007+Y-6 with l00a5
 ; $e178 referenced 1 time by $e181
 loop_ce178:
     lda l2007,y                                                       ; e178: b9 07 20    ..
@@ -2165,6 +2166,10 @@ loop_ceadb:
     sta l221f,y                                                       ; eadb: 99 1f 22    .."
     rts                                                               ; eade: 60          `
 
+; ***************************************************************************************
+; On Exit:
+;     Y is preserved
+; ***************************************************************************************
 ; $eadf referenced 2 times by $eb3c, $eb5e
 sub_ceadf:
     clc                                                               ; eadf: 18          .

@@ -1707,7 +1707,7 @@ cf92f
 // $f93b referenced 1 time by $f94b
 loop_cf93b
     jsr OSBGET                                                        // f93b: 20 d4 ff     .. // Read a byte from file Y
-    sta (l00cb),y                                                     // f93e: 91 cb       ..  // A=byte read
+    sta (l00cb),y                                                     // f93e: 91 cb       ..  // A=byte read // Offset Y=0
     inc l00cb                                                         // f940: e6 cb       ..
     bne cf946                                                         // f942: d0 02       ..
     inc l00cc                                                         // f944: e6 cc       ..
@@ -1804,7 +1804,8 @@ lf9a3 = cf9a2+1
     bne cf9a2                                                         // f9bd: d0 e3       ..
     jsr sub_cf992                                                     // f9bf: 20 92 f9     ..
     jsr OSCRLF                                                        // f9c2: 20 ed ff     .. // Write newline (characters 10 and 13)
-    bne cf9a2                                                         // f9c5: d0 db       ..
+    bne cf9a2                                                         // f9c5: d0 db       ..  // ALWAYS branch
+
 // $f9c7 referenced 1 time by $f9b5
 cf9c7
     ldx #2                                                            // f9c7: a2 02       ..
@@ -1918,7 +1919,8 @@ cfa44
 // $fa5d referenced 2 times by $fa42, $fa52
 cfa5d
     jsr OSCRLF                                                        // fa5d: 20 ed ff     .. // Write newline (characters 10 and 13)
-    bne cfa31                                                         // fa60: d0 cf       ..
+    bne cfa31                                                         // fa60: d0 cf       ..  // ALWAYS branch
+
     jmp OSCRLF                                                        // fa62: 4c ed ff    L.. // Write newline (characters 10 and 13)
 
 // $fa65 referenced 3 times by $fa6d, $fac0, $fac5
@@ -1969,11 +1971,11 @@ cfa86
 loop_cfa9e
     lda l00ca,y                                                       // fa9e: b9 ca 00    ...
     jsr OSBPUT                                                        // faa1: 20 d1 ff     .. // Write byte A to file Y
-    dey                                                               // faa4: 88          .
+    dey                                                               // faa4: 88          .   // Y=file handle
     bne loop_cfa9e                                                    // faa5: d0 f7       ..
 // $faa7 referenced 1 time by $fab7
 loop_cfaa7
-    lda (l00cf),y                                                     // faa7: b1 cf       ..
+    lda (l00cf),y                                                     // faa7: b1 cf       ..  // Offset Y=0
     jsr OSBPUT                                                        // faa9: 20 d1 ff     .. // Write byte A to file Y
     inc l00cf                                                         // faac: e6 cf       ..
     bne cfab2                                                         // faae: d0 02       ..
@@ -2080,7 +2082,7 @@ sub_cfb3b
 loop_cfb44
     lda #$2a // '*'                                                   // fb44: a9 2a       .*
     jsr OSBPUT                                                        // fb46: 20 d1 ff     .. // Write byte A=42 to file Y
-    dey                                                               // fb49: 88          .
+    dey                                                               // fb49: 88          .   // Y=file handle
     bne loop_cfb44                                                    // fb4a: d0 f8       ..
 // $fb4c referenced 1 time by $fb54
 loop_cfb4c
@@ -3041,10 +3043,17 @@ OSFIND
     jmp (fndvec)                                                      // ffce: 6c 18 02    l.. // Open a file (for input if C=1, output if C=0)
 
 // ***************************************************************************************
+// On Exit:
+//     X and Y are preserved
+// ***************************************************************************************
 // $ffd1 referenced 7 times by $faa1, $faa9, $fb46, $fb4e, $fb5b, $fb6c, $fb75
 OSBPUT
     jmp (bptvec)                                                      // ffd1: 6c 16 02    l.. // Write byte A to file Y
 
+// ***************************************************************************************
+// On Exit:
+//     A: the byte read
+//     X and Y are preserved
 // ***************************************************************************************
 // $ffd4 referenced 5 times by $f93b, $f9e9, $f9f6, $fbc9, $fbe4
 OSBGET
@@ -3067,17 +3076,34 @@ OSLOAD
     jmp (lodvec)                                                      // ffe0: 6c 0c 02    l.. // Load a file
 
 // ***************************************************************************************
+// On Exit:
+//     A: the byte read
+//     X and Y are preserved
+// ***************************************************************************************
 // $ffe3 referenced 2 times by $fc76, $ffe6
 OSRDCH
     jmp (rdcvec)                                                      // ffe3: 6c 0a 02    l.. // Read a character
 
 // ***************************************************************************************
+// On Exit:
+//     A: the byte read
+//     X and Y are preserved
+// ***************************************************************************************
 OSECHO
     jsr OSRDCH                                                        // ffe6: 20 e3 ff     .. // Read a character // Read a character and write it
+// ***************************************************************************************
+// On Exit:
+//     A, X and Y are preserved
 // ***************************************************************************************
 OSASCI
     cmp #$0d                                                          // ffe9: c9 0d       ..  // A=character read // Write character
     bne OSWRCH                                                        // ffeb: d0 07       ..  // Write character
+// ***************************************************************************************
+// On Exit:
+//     A: #0D
+//     N: clear
+//     Z: clear
+//     X and Y are preserved
 // ***************************************************************************************
 // $ffed referenced 4 times by $f9c2, $fa5d, $fa62, $fc79
 OSCRLF
@@ -3085,6 +3111,9 @@ OSCRLF
     lda #$0a                                                          // ffed: a9 0a       ..  // Write newline (characters 10 and 13)
     jsr OSWRCH                                                        // ffef: 20 f4 ff     .. // Write character 10
     lda #$0d                                                          // fff2: a9 0d       ..
+// ***************************************************************************************
+// On Exit:
+//     A, X and Y are preserved
 // ***************************************************************************************
 // $fff4 referenced 6 times by $f7e3, $f7ff, $f815, $f98e, $ffeb, $ffef
 OSWRCH
