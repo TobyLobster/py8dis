@@ -649,7 +649,9 @@ def io_range(start_addr, end_addr):
     """Say that memory from start_addr up to (but not including) end_addr is
     memory mapped I/O, where reading can have side effects (e.g.
     acknowledging an interrupt): so an instruction that reads it isn't taken
-    to be redundant (see config.set_redundant_instruction_comments()).
+    to be redundant (see config.set_redundant_instruction_comments()), and
+    on the 6502 a byte of zero page in it isn't taken to hold what was
+    stored there (see Cpu6502.untracked_zero_page()).
     acorn.bbc() etc. and commodore.c64() etc. say this for their machines'
     I/O. The ranges are kept in the session's DisassemblyState.io_ranges.
     Stops with an error if the range is empty or outside memory."""

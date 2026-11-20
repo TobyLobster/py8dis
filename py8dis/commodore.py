@@ -2409,6 +2409,11 @@ def _set_up(command, machine, names, rom_labels):
         memory_region(start, end, name)
     for start, end in machine.io_ranges:
         io_range(start, end)
+    if machine.name in ("c64", "c128", "plus4"):
+        # (The processor port of the 6510, 8502 and 7501/8501, at 0 and 1,
+        # whose input bits aren't what was stored: what's known about zero
+        # page leaves them out, see Cpu6502.untracked_zero_page())
+        session.current().extras["untracked_zero_page"] = {0, 1}
 
     # The memory locations' names (not defined inline in the I/O)
     for addr, name, base in location_names(machine, names, rom_labels):

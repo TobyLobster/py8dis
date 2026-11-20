@@ -1455,7 +1455,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     rol write + 1                                                     ; 1996: 26 71       &q
     asl a                                                             ; 1998: 0a          .
     rol write + 1                                                     ; 1999: 26 71       &q
-    clc                                                               ; 199b: 18          .
+    clc                                                               ; 199b: 18          .              ; Redundant instruction?
     adc write                                                         ; 199c: 65 70       ep
     sta write                                                         ; 199e: 85 70       .p
     lda #0                                                            ; 19a0: a9 00       ..
@@ -3735,7 +3735,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     rol hiscoreaddr + 1                                               ; 2785: 26 77       &w
     asl a                                                             ; 2787: 0a          .
     rol hiscoreaddr + 1                                               ; 2788: 26 77       &w
-    clc                                                               ; 278a: 18          .
+    clc                                                               ; 278a: 18          .              ; Redundant instruction?
     adc #<hiscoretab                                                  ; 278b: 69 30       i0
     sta hiscoreaddr                                                   ; 278d: 85 76       .v
     lda hiscoreaddr + 1                                               ; 278f: a5 77       .w

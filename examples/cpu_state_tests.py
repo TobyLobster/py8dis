@@ -33,13 +33,30 @@ run by run_tests.py -c when all the tests are run.
    known where py8dis's comments rely on it (e.g. X is 0 to 16 at the start
    of a 'dex : bpl' loop that starts with 'ldx #16', and $ff after it).
 
+   Then zero page (see Cpu6502.update_zero_page()): each instruction that
+   uses memory in each addressing mode that can reach zero page (loads,
+   stores, INC, DEC, the shifts, arithmetic, compares, BIT, the 65C02's
+   STZ, TSB and TRB, the 6510's SAX, LAX and DCP; zero page, indexed,
+   absolute, and through a pointer), from a random state with some bytes of
+   zero page known (the one it uses, or for an index some of those it could
+   use, or the pointer, which points into zero page half the time, and a few
+   others), sometimes followed by a branch: what py8dis says about the
+   registers, the flags and zero page afterwards must be so, for random
+   states and memory that agree with what was known; and exact, where there
+   are few enough states to try and the instruction uses one byte of zero
+   page whose values it works out exactly (see test_zero_page()).
+
 3. Joining at labels (see Cpu6502.join_states_at_labels()): random
    programs of the instructions above, with loads, stores, conditional
    branches (forwards and backwards, so with loops) and jumps, are traced by
    py8dis, then run on the simple 6502 from random states (with D clear) and
-   random memory. At each instruction run, what py8dis says it knows for
-   certain after it must be so (after a branch, only when it isn't taken,
-   and a branch it says is always taken must be).
+   random memory. The instructions include those of zero page (loads,
+   stores, INC, DEC, the shifts, arithmetic, compares, BIT, 'zp,X', and
+   '(zp),Y' through a pointer that the program sometimes points at zero
+   page). At each instruction run, what py8dis says it knows for certain
+   after it (about the registers, the flags and zero page) must be so
+   (after a branch, only when it isn't taken, and a branch it says is
+   always taken must be).
 
 4. What subroutines leave behind (see Cpu6502.subroutine_summaries()):
    random programs with subroutines, which call each other, jump to each
@@ -47,9 +64,11 @@ run by run_tests.py -c when all the tests are run.
    so that an RTS goes somewhere else), save registers and flags on the
    stack and get them back (perhaps through A), and write to the stack
    (TSX : STA $01xx,X, which can change what was saved), are traced and run
-   on the simple 6502 with a real stack. What py8dis says it knows is
-   checked as in 3, and what it says it knows after a JSR is checked when
-   the call returns. A run stops at an RTS that doesn't return to a call
+   on the simple 6502 with a real stack (in its memory, so a write through a
+   pointer can change it). What py8dis says it knows is checked as in 3,
+   and what it says it knows after a JSR is checked when the call returns
+   (including the bytes of zero page that the subroutine, a subroutine it
+   calls, or one it jumps to, writes or doesn't write). A run stops at an RTS that doesn't return to a call
    (it's a jump to an address that was pushed, which py8dis can't follow).
 
 The tests are randomised with a fixed seed, so they're the same each run.
@@ -261,6 +280,135 @@ BRANCHES = [(0x10, 'n', True), (0x30, 'n', False), (0x50, 'v', True), (0x70, 'v'
 # always has: so ADC and SBC are followed by a branch only with D clear
 DECIMAL_SENSITIVE = (0x69, 0xe9)
 
+# The instructions that use memory, for the zero page tests: by opcode,
+# (operation, addressing mode, the CPU they're for). The modes are zp,
+# zpx and zpy ('zp,X' and 'zp,Y'), abs and absx ('addr' and 'addr,X', used
+# with addresses in zero page or that wrap round to it), izy, izx and iz
+# ('(zp),Y', '(zp,X)' and the 65C02's '(zp)')
+MEMORY_OPCODES = {
+    0xa5: ("lda", "zp", "6502"), 0xa6: ("ldx", "zp", "6502"), 0xa4: ("ldy", "zp", "6502"),
+    0xb5: ("lda", "zpx", "6502"), 0xb4: ("ldy", "zpx", "6502"), 0xb6: ("ldx", "zpy", "6502"),
+    0x85: ("sta", "zp", "6502"), 0x86: ("stx", "zp", "6502"), 0x84: ("sty", "zp", "6502"),
+    0x95: ("sta", "zpx", "6502"), 0x94: ("sty", "zpx", "6502"), 0x96: ("stx", "zpy", "6502"),
+    0xe6: ("inc", "zp", "6502"), 0xc6: ("dec", "zp", "6502"), 0xf6: ("inc", "zpx", "6502"), 0xd6: ("dec", "zpx", "6502"),
+    0x06: ("asl", "zp", "6502"), 0x26: ("rol", "zp", "6502"), 0x46: ("lsr", "zp", "6502"), 0x66: ("ror", "zp", "6502"),
+    0x16: ("asl", "zpx", "6502"), 0x76: ("ror", "zpx", "6502"),
+    0x25: ("and", "zp", "6502"), 0x05: ("ora", "zp", "6502"), 0x45: ("eor", "zp", "6502"),
+    0x65: ("adc", "zp", "6502"), 0xe5: ("sbc", "zp", "6502"),
+    0xc5: ("cmp", "zp", "6502"), 0xe4: ("cpx", "zp", "6502"), 0xc4: ("cpy", "zp", "6502"), 0x24: ("bit", "zp", "6502"),
+    0x35: ("and", "zpx", "6502"), 0xd5: ("cmp", "zpx", "6502"),
+    0xb1: ("lda", "izy", "6502"), 0x91: ("sta", "izy", "6502"), 0x11: ("ora", "izy", "6502"),
+    0xa1: ("lda", "izx", "6502"), 0x81: ("sta", "izx", "6502"),
+    0xad: ("lda", "abs", "6502"), 0x8d: ("sta", "abs", "6502"), 0xee: ("inc", "abs", "6502"), 0x2d: ("and", "abs", "6502"),
+    0xbd: ("lda", "absx", "6502"), 0x9d: ("sta", "absx", "6502"),
+    0x64: ("stz", "zp", "65C02"), 0x74: ("stz", "zpx", "65C02"), 0x9c: ("stz", "abs", "65C02"),
+    0xb2: ("lda", "iz", "65C02"), 0x92: ("sta", "iz", "65C02"),
+    0x04: ("tsb", "zp", "65C02"), 0x14: ("trb", "zp", "65C02"), 0x34: ("bit", "zpx", "65C02"),
+    0x87: ("sax", "zp", "6510"), 0xa7: ("lax", "zp", "6510"), 0xb7: ("lax", "zpy", "6510"), 0xc7: ("dcp", "zp", "6510"),
+}
+
+# The opcodes with an immediate operand that do what each operation does
+# with its operand, and those for the shifts of memory (see step())
+IMMEDIATE_OPCODES = {"and": 0x29, "ora": 0x09, "eor": 0x49, "adc": 0x69, "sbc": 0xe9, "cmp": 0xc9, "cpx": 0xe0, "cpy": 0xc0}
+SHIFT_OPCODES = {"asl": 0x06, "rol": 0x26, "lsr": 0x46, "ror": 0x66}
+
+class Memory:
+    """The simple 6502's memory: zero page (a list of 256 bytes), and the
+    rest, random until it's written (the same each time it's read)."""
+
+    def __init__(self, rng, zero_page):
+        self.zero_page = zero_page
+        self.rest = {}
+        self.rng = rng
+
+    def __getitem__(self, address):
+        if address < 0x100:
+            return self.zero_page[address]
+        if address not in self.rest:
+            self.rest[address] = self.rng.randrange(256)
+        return self.rest[address]
+
+    def __setitem__(self, address, value):
+        if address < 0x100:
+            self.zero_page[address] = value
+        else:
+            self.rest[address] = value
+
+def instruction_length(opcode):
+    """The length of an instruction in MEMORY_OPCODES."""
+    return 3 if MEMORY_OPCODES[opcode][1] in ("abs", "absx") else 2
+
+def effective_address(mode, operand_bytes, s, memory):
+    """The address that an instruction with the addressing mode and operand
+    uses, in the state s with memory."""
+    if mode == "zp":
+        return operand_bytes[0]
+    if mode == "zpx":
+        return (operand_bytes[0] + s['x']) & 0xff
+    if mode == "zpy":
+        return (operand_bytes[0] + s['y']) & 0xff
+    if mode == "abs":
+        return operand_bytes[0] | operand_bytes[1] << 8
+    if mode == "absx":
+        return ((operand_bytes[0] | operand_bytes[1] << 8) + s['x']) & 0xffff
+    p = operand_bytes[0]
+    if mode == "izx":
+        p = (p + s['x']) & 0xff
+    pointer = memory[p] | memory[(p + 1) & 0xff] << 8
+    return (pointer + s['y']) & 0xffff if mode == "izy" else pointer
+
+def execute(opcode, operand_bytes, s, memory):
+    """The simple 6502 (see step()) for an instruction in MEMORY_OPCODES:
+    run it on s and memory (a Memory, or a list for zero page alone),
+    changing them. Returns False if its result isn't modelled (ADC or SBC
+    in decimal mode), else True."""
+    operation, mode, _ = MEMORY_OPCODES[opcode]
+    address = effective_address(mode, operand_bytes, s, memory)
+    def nz(v):
+        s['n'] = bool(v & 0x80)
+        s['z'] = v == 0
+        return v
+    if operation in ("lda", "ldx", "ldy"):
+        s[operation[2]] = nz(memory[address])
+    elif operation == "lax":
+        s['a'] = s['x'] = nz(memory[address])
+    elif operation in ("sta", "stx", "sty"):
+        memory[address] = s[operation[2]]
+    elif operation == "stz":
+        memory[address] = 0
+    elif operation == "sax":
+        memory[address] = s['a'] & s['x']
+    elif operation in ("inc", "dec"):
+        memory[address] = nz((memory[address] + (1 if operation == "inc" else -1)) & 0xff)
+    elif operation in SHIFT_OPCODES:
+        s['m'] = memory[address]
+        step(SHIFT_OPCODES[operation], 0, s)
+        memory[address] = s['m']
+    elif operation in IMMEDIATE_OPCODES:
+        return step(IMMEDIATE_OPCODES[operation], memory[address], s)
+    elif operation == "bit":
+        m = memory[address]
+        s['z'] = (s['a'] & m) == 0
+        s['n'] = bool(m & 0x80)
+        s['v'] = bool(m & 0x40)
+    elif operation in ("tsb", "trb"):
+        m = memory[address]
+        s['z'] = (s['a'] & m) == 0
+        memory[address] = (m | s['a']) if operation == "tsb" else (m & ~s['a'] & 0xff)
+    elif operation == "dcp":
+        memory[address] = (memory[address] - 1) & 0xff
+        step(0xc9, memory[address], s)
+    else:
+        assert False, operation
+    return True
+
+def check_zero_page(name, disposition, memory, inputs):
+    """What the disposition says it knows about zero page must be what's
+    in memory."""
+    for address, possible in disposition.zp.items():
+        if not (possible >> memory[address]) & 1:
+            fail("%s $%02x: says %s, but it's %d, for %s" % (name, address, valuesets.describe(possible), memory[address], inputs))
+
 def random_flag(rng):
     return rng.choice([None, None, True, False])
 
@@ -422,6 +570,166 @@ def test_cpu_state(rng):
     return count
 
 
+def show_zero_page(zp):
+    return " ".join("$%02x:%s" % (address, valuesets.describe(possible)) for address, possible in sorted(zp.items())) or "nothing"
+
+def test_zero_page(rng, trials=300):
+    """Each instruction in MEMORY_OPCODES (sometimes followed by a branch
+    that isn't taken), from a random state with some bytes of zero page
+    known (the one it uses, or for a pointer the pointer, and others): what
+    py8dis says about the registers, the flags and zero page afterwards must
+    be so, for random states and memory that agree with what was known.
+    Where it uses one byte of zero page (its index, or pointer, being known)
+    that it doesn't read unless that's known, and there are few enough
+    states to try them all, what it says must be exact too: loads, stores,
+    INC, DEC and the shifts with any set of values, and AND, ORA, EOR, ADC,
+    SBC, CMP, CPX, CPY and BIT with one value."""
+    import memorymanager
+    import session
+    count = 0
+    sessions = {}
+    exact_operations = {"lda", "ldx", "ldy", "sta", "stx", "sty", "stz", "inc", "dec", "asl", "rol", "lsr", "ror"}
+    one_value_operations = set(IMMEDIATE_OPCODES) | {"bit"}
+    for opcode, (operation, mode, cpu_name) in sorted(MEMORY_OPCODES.items()):
+        if cpu_name not in sessions:
+            s = session.new_session(assembler="acme")
+            s.cpu = make_cpu(cpu_name)
+            s.cpu._untracked_zero_page = frozenset()
+            sessions[cpu_name] = s
+        s = sessions[cpu_name]
+        session.set_current(s)
+        cpu = s.cpu
+        length = instruction_length(opcode)
+        for trial in range(trials):
+            few = trial % 3 == 0
+            with_branch = trial % 2 == 1
+            branch = rng.choice(BRANCHES) if with_branch else None
+            if mode == "abs":
+                operand_bytes = [rng.randrange(256), 0]
+            elif mode == "absx":
+                operand_bytes = [rng.randrange(256), rng.choice([0, 0xff])]
+            else:
+                operand_bytes = [rng.randrange(256)]
+            regs = {reg: random_set(rng) for reg in "axy"}
+            flags = {flag: random_flag(rng) for flag in "nvdizc"}
+            if operation in ("adc", "sbc", "dcp"):
+                # (Decimal arithmetic isn't modelled; a branch after ADC or
+                # SBC assumes binary)
+                flags['d'] = False
+            # What's known about zero page: the byte used (for an index, one
+            # of those it could be), or the pointer, and a few others
+            zp = {}
+            def know(address, possible):
+                if possible != valuesets.FULL:
+                    zp[address & 0xff] = possible
+            if mode in ("zp", "abs") or (mode == "absx" and operand_bytes[1] == 0):
+                know(operand_bytes[0], random_set(rng))
+            elif mode in ("zpx", "zpy", "absx"):
+                index = mode[-1]
+                if rng.random() < 0.6:
+                    regs[index] = valuesets.exact(rng.randrange(256)) if rng.random() < 0.7 else random_set(rng)
+                values = valuesets.values(regs[index])
+                for v in rng.sample(values, min(3, len(values))):
+                    know(operand_bytes[0] + v, random_set(rng))
+            else:
+                # (A pointer, pointing into zero page half the time)
+                if rng.random() < 0.7:
+                    target = rng.randrange(256) | (0 if rng.random() < 0.5 else rng.randrange(256) << 8)
+                    p = operand_bytes[0]
+                    if mode == "izx":
+                        x = rng.randrange(256)
+                        regs['x'] = valuesets.exact(x)
+                        p = (p + x) & 0xff
+                    if mode == "izy" and rng.random() < 0.7:
+                        regs['y'] = valuesets.exact(rng.randrange(256))
+                    know(p, valuesets.exact(target & 0xff))
+                    know(p + 1, valuesets.exact(target >> 8))
+                    for v in rng.sample(valuesets.values(regs['y']), min(2, len(valuesets.values(regs['y'])))):
+                        if (target + v) & 0xffff < 0x100:
+                            know(target + v, random_set(rng))
+            for _ in range(rng.randrange(3)):
+                know(rng.randrange(256), random_set(rng))
+            if few:
+                # (One register or one byte of zero page with a random set,
+                # and everything else one value; most flags known)
+                varied = rng.choice(["a", "x", "y"] + sorted(zp))
+                for reg in "axy":
+                    if reg != varied:
+                        regs[reg] = valuesets.exact(rng.choice(valuesets.values(regs[reg])))
+                for address in zp:
+                    if address != varied:
+                        zp[address] = valuesets.exact(rng.choice(valuesets.values(zp[address])))
+                for flag in "nvdizc":
+                    if flags[flag] is None and rng.random() < 0.7:
+                        flags[flag] = rng.choice([False, True])
+            s.memory.binary[0x2000:0x2000 + length + 2] = [opcode] + operand_bytes + ([branch[0], 0x0a] if with_branch else [0xea, 0xea])
+            state = cpu.CpuState()
+            for d in (state.pessimistic, state.optimistic):
+                set_disposition(d, regs, flags)
+                d.zp = dict(zp)
+            cpu.opcodes[opcode].update_cpu_state(memorymanager.BinaryAddr(0x2000), state)
+            after_instruction = state.copy()
+            if with_branch:
+                cpu.opcodes[branch[0]].update_cpu_state(memorymanager.BinaryAddr(0x2000 + length), state)
+            inputs = "opcode %02x %s%s from %s, zero page %s" % (
+                opcode, " ".join("%02x" % b for b in operand_bytes), (" then branch %02x" % branch[0]) if with_branch else "",
+                show_inputs(regs, flags), show_zero_page(zp))
+            if few:
+                states = all_zero_page_states(regs, flags, zp, rng)
+                if states is not None:
+                    addresses = set(effective_address(mode, operand_bytes, st, st['memory']) for st in states)
+                    address = next(iter(addresses))
+                    reads = operation not in ("sta", "stx", "sty", "stz")
+                    if (len(addresses) == 1 and address < 0x100 and (address in zp or not reads)
+                            and (operation in exact_operations or (operation in one_value_operations and valuesets.value(zp[address]) is not None))):
+                        if all(execute(opcode, operand_bytes, st, st['memory']) for st in states):
+                            check_disposition_exact("exact", after_instruction.pessimistic, states, inputs)
+                            for a in set(zp) | {address}:
+                                want = functools.reduce(lambda x, y: x | y, (1 << st['memory'][a] for st in states))
+                                check_exact("exact $%02x" % a, after_instruction.pessimistic.zp.get(a, valuesets.FULL), want, inputs)
+                            count += 1
+            for _ in range(48):
+                concrete = {reg: rng.choice(valuesets.values(regs[reg])) for reg in "axy"}
+                for flag in "nvdizc":
+                    concrete[flag] = rng.choice([False, True]) if flags[flag] is None else flags[flag]
+                zero_page = [rng.randrange(256) for _ in range(256)]
+                for address, possible in zp.items():
+                    zero_page[address] = rng.choice(valuesets.values(possible))
+                memory = Memory(rng, zero_page)
+                if not execute(opcode, operand_bytes, concrete, memory):
+                    continue
+                count += 1
+                for name, d in (("after", after_instruction.pessimistic), ("after (optimistic)", after_instruction.optimistic)):
+                    check_disposition(name, d, concrete, inputs)
+                    check_zero_page(name, d, memory, inputs)
+                if with_branch and concrete[branch[1]] == branch[2]:
+                    if state.always_branch:
+                        fail("ALWAYS branch, but it isn't taken, for " + inputs)
+                    else:
+                        check_disposition("after the branch", state.pessimistic, concrete, inputs)
+                        check_zero_page("after the branch", state.pessimistic, memory, inputs)
+    return count
+
+def all_zero_page_states(regs, flags, zp, rng, limit=2048):
+    """All the 6502 states that agree with what's known (as all_states()),
+    with what's known about zero page (the rest of memory random, the same
+    in each state), each with its memory as 'memory', or None if there are
+    more than 'limit'."""
+    states = all_states(regs, flags, limit)
+    if states is None:
+        return None
+    base = [rng.randrange(256) for _ in range(256)]
+    states = [dict(st, zero_page=list(base)) for st in states]
+    for address, possible in sorted(zp.items()):
+        vs = valuesets.values(possible)
+        if len(states) * len(vs) > limit:
+            return None
+        states = [dict(st, zero_page=st['zero_page'][:address] + [v] + st['zero_page'][address + 1:]) for st in states for v in vs]
+    for st in states:
+        st['memory'] = Memory(rng, st.pop('zero_page'))
+    return states
+
+
 # Programs for test_examples(), each (description, bytes at $2000, and
 # (address, register, the set of values it's known to have after the
 # instruction there))
@@ -439,6 +747,10 @@ EXAMPLES = [
     # rts. A is 0 or $80 at 'done'
     ("joining 0 and $80", "a5703004a900f002a980aa60",
      [(0x200a, "x", valuesets.exact(0) | valuesets.exact(0x80))]),
+    # lda $80 : bmi neg : lda #1 : sta $70 : bne done : neg: lda #2 : sta
+    # $70 : done: ldx $70 : rts. $70 is 1 or 2 at 'done'
+    ("joining zero page 1 and 2", "a5803006a9018570d004a9028570a67060",
+     [(0x200e, "x", valuesets.exact(1) | valuesets.exact(2))]),
 ]
 
 def traced(program_bytes):
@@ -481,8 +793,18 @@ def test_examples():
 # The instructions of the random programs: (opcode, length), by kind
 PROGRAM_IMMEDIATE = [0xa9, 0xa2, 0xa0, 0x29, 0x09, 0x49, 0x69, 0xe9, 0xc9, 0xe0, 0xc0]
 PROGRAM_IMPLIED = [0x0a, 0x2a, 0x4a, 0x6a, 0xe8, 0xca, 0xc8, 0x88, 0xaa, 0x8a, 0xa8, 0x98, 0x18, 0x38, 0xd8, 0xea]
-PROGRAM_ZP = [0xa5, 0xa6, 0xa4, 0x85, 0x86, 0x84]          # LDA/LDX/LDY/STA/STX/STY zp
+# (Loads, stores, INC, DEC, the shifts, arithmetic, compares and BIT of zero
+# page; LDA and STA zp,X; and LDA and STA (zp),Y)
+PROGRAM_ZP = [0xa5, 0xa6, 0xa4, 0x85, 0x86, 0x84, 0x85, 0x86, 0x84, 0xe6, 0xc6, 0x06, 0x26, 0x46, 0x66,
+              0x25, 0x05, 0x45, 0x65, 0xe5, 0xc5, 0xe4, 0xc4, 0x24, 0xb5, 0x95, 0xb1, 0x91]
+# (LDA and STA of an absolute address in zero page)
+PROGRAM_ZP_ABS = [0xad, 0x8d]
 PROGRAM_BRANCHES = [b[0] for b in BRANCHES]
+
+def pointer_setup(rng):
+    """Instructions (opcode, operand) that set the pointer at $72 to a byte
+    of zero page that the programs use (so '(zp),Y' writes there)."""
+    return [(0xa9, 0x70 + rng.randrange(4)), (0x85, 0x72), (0xa9, 0), (0x85, 0x73)]
 
 def random_program(rng, slots=24):
     """A random program at $2000: a list of instructions (as lists of
@@ -495,8 +817,13 @@ def random_program(rng, slots=24):
             kinds.append(("imm", rng.choice(PROGRAM_IMMEDIATE), rng.choice([0, 1, 2, 3, 7, 0x0f, 0x10, 0x7f, 0x80, 0xfe, 0xff, rng.randrange(256)])))
         elif r < 0.55:
             kinds.append(("implied", rng.choice(PROGRAM_IMPLIED)))
-        elif r < 0.7:
+        elif r < 0.66:
             kinds.append(("zp", rng.choice(PROGRAM_ZP), 0x70 + rng.randrange(4)))
+        elif r < 0.68:
+            kinds.append(("zpabs", rng.choice(PROGRAM_ZP_ABS), 0x70 + rng.randrange(4)))
+        elif r < 0.70:
+            for op, operand in pointer_setup(rng):
+                kinds.append(("imm" if op == 0xa9 else "zp", op, operand))
         elif r < 0.93:
             kinds.append(("branch", rng.choice(PROGRAM_BRANCHES), rng.randrange(slots)))
         elif r < 0.97:
@@ -504,7 +831,7 @@ def random_program(rng, slots=24):
         else:
             kinds.append(("rts", 0x60))
     kinds.append(("rts", 0x60))
-    lengths = {"imm": 2, "implied": 1, "zp": 2, "branch": 2, "jmp": 3, "rts": 1}
+    lengths = {"imm": 2, "implied": 1, "zp": 2, "zpabs": 3, "branch": 2, "jmp": 3, "rts": 1}
     addrs = []
     addr = 0x2000
     for k in kinds:
@@ -514,6 +841,8 @@ def random_program(rng, slots=24):
     for i, k in enumerate(kinds):
         if k[0] in ("imm", "zp"):
             program.append([k[1], k[2]])
+        elif k[0] == "zpabs":
+            program.append([k[1], k[2], 0])
         elif k[0] == "branch":
             program.append([k[1], (addrs[k[2]] - (addrs[i] + 2)) & 0xff])
         elif k[0] == "jmp":
@@ -524,8 +853,8 @@ def random_program(rng, slots=24):
 
 def run(program_bytes, s, memory, steps=300):
     """Run the program (bytes at $2000) on the simple 6502 from the state s
-    (changed as it runs), with 'memory' its zero page. Yields (address,
-    branch taken or not, or None) after each instruction."""
+    (changed as it runs), with 'memory' its memory (a Memory). Yields
+    (address, branch taken or not, or None) after each instruction."""
     pc = 0x2000
     for _ in range(steps):
         op = program_bytes[pc - 0x2000]
@@ -543,15 +872,10 @@ def run(program_bytes, s, memory, steps=300):
             pc = (pc + 2 + (operand - 256 if operand & 0x80 else operand)) if taken else pc + 2
             yield here, taken
             continue
-        if op in (0xa5, 0xa6, 0xa4):
-            reg = {0xa5: 'a', 0xa6: 'x', 0xa4: 'y'}[op]
-            s[reg] = memory[operand]
-            s['n'] = bool(s[reg] & 0x80)
-            s['z'] = s[reg] == 0
-            pc += 2
-        elif op in (0x85, 0x86, 0x84):
-            memory[operand] = s[{0x85: 'a', 0x86: 'x', 0x84: 'y'}[op]]
-            pc += 2
+        if op in MEMORY_OPCODES:
+            length = instruction_length(op)
+            assert execute(op, program_bytes[pc - 0x2000 + 1:pc - 0x2000 + length], s, memory)
+            pc += length
         elif op == 0x18:
             s['c'] = False
             pc += 1
@@ -593,7 +917,7 @@ def test_joining(rng, programs=150):
             for flag in "nvizc":
                 s[flag] = rng.choice([False, True])
             s['d'] = False
-            memory = [rng.randrange(256) for _ in range(256)]
+            memory = Memory(rng, [rng.randrange(256) for _ in range(256)])
             for result in run(program_bytes, s, memory):
                 if result is None:
                     continue
@@ -608,6 +932,7 @@ def test_joining(rng, programs=150):
                         fail("ALWAYS branch, but it isn't taken, at " + inputs)
                     if not state.always_branch:
                         check_disposition("joined", state.pessimistic, s, inputs)
+                        check_zero_page("joined", state.pessimistic, memory, inputs)
                         count += 1
     return count
 
@@ -628,8 +953,13 @@ def random_program_with_subroutines(rng, subroutines=3, main_slots=14, sub_slots
                 kinds.append((block, "imm", rng.choice(PROGRAM_IMMEDIATE), rng.choice([0, 1, 3, 7, 0x0f, 0x10, 0x80, 0xff, rng.randrange(256)])))
             elif r < 0.45:
                 kinds.append((block, "implied", rng.choice(PROGRAM_IMPLIED)))
-            elif r < 0.55:
+            elif r < 0.53:
                 kinds.append((block, "zp", rng.choice(PROGRAM_ZP), 0x70 + rng.randrange(4)))
+            elif r < 0.54:
+                kinds.append((block, "abs", rng.choice(PROGRAM_ZP_ABS), 0x70 + rng.randrange(4)))
+            elif r < 0.55:
+                for op, operand in pointer_setup(rng):
+                    kinds.append((block, "imm" if op == 0xa9 else "zp", op, operand))
             elif r < 0.68:
                 kinds.append((block, "branch", rng.choice(PROGRAM_BRANCHES), rng.randrange(slots)))
             elif r < 0.80:
@@ -693,23 +1023,22 @@ def random_program_with_subroutines(rng, subroutines=3, main_slots=14, sub_slots
 
 def run_with_stack(program_bytes, s, memory, steps=400):
     """Run the program (bytes at $2000) on the simple 6502 from the state s,
-    with a stack (page 1, from $ff) and zero page 'memory'. Yields
-    (address, branch taken or None, JSR returned to or None) after each
-    instruction; for a JSR that's returned from, the third is the JSR's
-    address, with s as it is after the return."""
-    stack = [0] * 256
+    with 'memory' its memory (a Memory), and a stack (page 1, from $ff).
+    Yields (address, branch taken or None, JSR returned to or None) after
+    each instruction; for a JSR that's returned from, the third is the
+    JSR's address, with s as it is after the return."""
     sp = 0xff
     pc = 0x2000
     calls = []          # (the JSR's address, SP after its push)
     end = 0x2000 + len(program_bytes)
     def push(v):
         nonlocal sp
-        stack[sp] = v
+        memory[0x100 | sp] = v
         sp = (sp - 1) & 0xff
     def pull():
         nonlocal sp
         sp = (sp + 1) & 0xff
-        return stack[sp]
+        return memory[0x100 | sp]
     for _ in range(steps):
         if not 0x2000 <= pc < end:
             return
@@ -772,15 +1101,6 @@ def run_with_stack(program_bytes, s, memory, steps=400):
             pc += 1
             yield here, None, None
             continue
-        if op == 0x9d:
-            address = (operand | program_bytes[pc - 0x2000 + 2] << 8) + s['x']
-            if 0x100 <= address <= 0x1ff:
-                stack[address & 0xff] = s['a']
-            elif address < 0x100:
-                memory[address] = s['a']
-            pc += 3
-            yield here, None, None
-            continue
         if op == 0x4c:
             pc = operand | program_bytes[pc - 0x2000 + 2] << 8
             yield here, None, None
@@ -791,15 +1111,10 @@ def run_with_stack(program_bytes, s, memory, steps=400):
             pc = (pc + 2 + (operand - 256 if operand & 0x80 else operand)) if taken else pc + 2
             yield here, taken, None
             continue
-        if op in (0xa5, 0xa6, 0xa4):
-            reg = {0xa5: 'a', 0xa6: 'x', 0xa4: 'y'}[op]
-            s[reg] = memory[operand]
-            s['n'] = bool(s[reg] & 0x80)
-            s['z'] = s[reg] == 0
-            pc += 2
-        elif op in (0x85, 0x86, 0x84):
-            memory[operand] = s[{0x85: 'a', 0x86: 'x', 0x84: 'y'}[op]]
-            pc += 2
+        if op in MEMORY_OPCODES:
+            length = instruction_length(op)
+            assert execute(op, program_bytes[pc - 0x2000 + 1:pc - 0x2000 + length], s, memory)
+            pc += length
         elif op == 0x18:
             s['c'] = False
             pc += 1
@@ -883,10 +1198,28 @@ def test_sequences(rng):
 #   main: clc : jsr sub_e : clc : jsr sub_f : bcs + : + rts
 #   sub_e: sec : php : plp : rts       (C is set after the call)
 #   sub_f: lda #$c0 : pha : plp : rts  (the flags are $c0's bits)
+#
+# And a byte of zero page that the subroutine writes with a value that
+# isn't known (so it isn't as it was before the call), and one it doesn't
+# write (so it is)
+#
+#   main: lda #5 : sta $70 : sta $71 : jsr sub_g : lda $70 : ldx $71 : rts
+#   sub_g: lda $80 : sta $70 : rts
+#
+# And bytes written by a subroutine that the subroutine calls, and by one it
+# jumps to (a tail call)
+#
+#   main: lda #5 : sta $70 : sta $71 : jsr sub_h : lda $70 : ldx $71 :
+#         jsr sub_j : rts
+#   sub_h: jsr sub_i : jmp sub_j
+#   sub_i: lda $80 : sta $70 : rts
+#   sub_j: lda $81 : sta $71 : rts
 FIXED_PROGRAMS = ["a2052012208670a009201a20847120172060a9014c1720a20760202020a002606868a00360",
                   "a905a206201c2085708671202620857218203320b00020372085736048"
                   "8a48a901aa68aa68604820" "2c20" "6860a909ba9d0301600838286048a903ba9d01016860",
-                  "18200b2018200f20b0006038082860a9c0482860"]
+                  "18200b2018200f20b0006038082860a9c0482860",
+                  "a90585708571200e20a570a67160a580857060",
+                  "a90585708571201120a570a671201c2060" "201720" "4c1c20" "a580857060" "a581857160"]
 
 def test_subroutines(rng, programs=200):
     import commands
@@ -916,13 +1249,14 @@ def test_subroutines(rng, programs=200):
             for flag in "nvizc":
                 s[flag] = rng.choice([False, True])
             s['d'] = False
-            memory = [rng.randrange(256) for _ in range(256)]
+            memory = Memory(rng, [rng.randrange(256) for _ in range(256)])
             for here, taken, returned in run_with_stack(program_bytes, s, memory):
                 if returned is not None:
                     # The state after the JSR, now that the call has returned
                     state = cpu.cpu_states[returned]
                     if state is not None:
                         check_disposition("after the call", state.pessimistic, s, "JSR at $%04x in %s" % (returned, inputs))
+                        check_zero_page("after the call", state.pessimistic, memory, "JSR at $%04x in %s" % (returned, inputs))
                         count += 1
                     continue
                 state = cpu.cpu_states[here]
@@ -935,6 +1269,7 @@ def test_subroutines(rng, programs=200):
                     fail("ALWAYS branch, but it isn't taken, at $%04x in %s" % (here, inputs))
                 if not taken and not state.always_branch:
                     check_disposition("subroutines", state.pessimistic, s, "$%04x in %s" % (here, inputs))
+                    check_zero_page("subroutines", state.pessimistic, memory, "$%04x in %s" % (here, inputs))
                     count += 1
     return count
 
@@ -943,6 +1278,7 @@ def main():
     rng = random.Random(6502)
     test_valuesets(rng)
     count = test_cpu_state(rng)
+    count += test_zero_page(rng)
     count += test_examples()
     count += test_joining(rng)
     count += test_sequences(rng)

@@ -1366,7 +1366,8 @@ plot_mode_4
     sty l0060                                                         ; f7c2: 84 60       .`
     asl                                                               ; f7c4: 0a          .
     rol l0060                                                         ; f7c5: 26 60       &`
-    bpl cf789                                                         ; f7c7: 10 c0       ..
+    bpl cf789                                                         ; f7c7: 10 c0       ..  ; ALWAYS branch
+
 ; $f7c9 referenced 1 time by $f7a4
 bit_masks
 lf7cb equ bit_masks+2

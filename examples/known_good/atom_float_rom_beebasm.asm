@@ -1280,14 +1280,14 @@ error2 = cd2e3+1
     rol result_man2                                                   ; d65b: 26 68       &h
     asl a                                                             ; d65d: 0a          .
     rol result_man2                                                   ; d65e: 26 68       &h
-    clc                                                               ; d660: 18          .
+    clc                                                               ; d660: 18          .   ; Redundant instruction?
     adc float8A_man1 - 1,x                                            ; d661: 75 59       uY
     bcc skip2                                                         ; d663: 90 02       ..
     inc result_man2                                                   ; d665: e6 68       .h
 .skip2
     asl a                                                             ; d667: 0a          .
     rol result_man2                                                   ; d668: 26 68       &h
-    clc                                                               ; d66a: 18          .
+    clc                                                               ; d66a: 18          .   ; Redundant instruction?
     adc result_man1                                                   ; d66b: 65 67       eg
     bcc skip3                                                         ; d66d: 90 02       ..
     inc result_man2                                                   ; d66f: e6 68       .h

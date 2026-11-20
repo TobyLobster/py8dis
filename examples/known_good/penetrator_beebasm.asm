@@ -8296,23 +8296,23 @@ l8465 = c8463+2
 ; &acf4 referenced 1 time by &63fc
 .lacf4
     equb &11, 9, &19, 8, &1a                                          ; acf4: 11 09 19... ...
+; A table of 32 bytes, indexed by X (0 to 31), read at &80ad
 ; &acf9 referenced 1 time by &80ad
 .lacf9
-    equb 4, &25, 5, &26, &54, &75, &55, &76                           ; acf9: 04 25 05... ...
-    equb &a4, &c5, &a5, &c6, &f4 ; apple "$E%Ft"                      ; ad01: a4 c5 a5... $E%
-    equb &15, &f5, &16, &44, &65, &45, &66, &94, &b5, &95, &b6, &e4   ; ad06: 15 f5 16... .u.
-    equb   5, &e5,   6, &34, &55, &35, &56                            ; ad12: 05 e5 06... .e.
+    equb   4, &25,   5, &26, &54, &75, &55, &76, &a4, &c5, &a5, &c6   ; acf9: 04 25 05... ...
+    equb &f4, &15, &f5, &16, &44, &65, &45, &66, &94, &b5, &95, &b6   ; ad05: f4 15 f5... t.u
+    equb &e4,   5, &e5,   6, &34, &55, &35, &56                       ; ad11: e4 05 e5... d.e
+; A table of 32 bytes, indexed by X (0 to 31), read at &80b3
 ; &ad19 referenced 1 time by &80b3
 .lad19
-    equb &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae ; apple "........"    ; ad19: ae ae ae... ...
-    equb &ae, &ae, &ae, &ae, &ae, &af, &ae, &af ; apple "....././"    ; ad21: ae ae ae... ...
-    equb &af, &af, &af, &af, &af, &af, &af, &af ; apple "////////"    ; ad29: af af af... ///
-    equb &af, &b0, &af, &b0, &b0, &b0, &b0, &b0 ; apple "/0/00000"    ; ad31: af b0 af... /0/
-; A table of 64 bytes, indexed by X (0 to 63), read at &8099
+    equb &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae, &ae   ; ad19: ae ae ae... ...
+    equb &ae, &af, &ae, &af, &af, &af, &af, &af, &af, &af, &af, &af   ; ad25: ae af ae... ./.
+    equb &af, &b0, &af, &b0, &b0, &b0, &b0, &b0                       ; ad31: af b0 af... /0/
+; A table of 8 bytes, indexed by X (0 to 7), read at &8099
 ; &ad39 referenced 1 time by &8099
 .lad39
     equb &24, &74, &c4, &14, &64, &b4, 4, &54                         ; ad39: 24 74 c4... ..D
-; A table of 64 bytes, indexed by X (0 to 63), read at &809f
+; A table of 8 bytes, indexed by X (0 to 7), read at &809f
 ; &ad41 referenced 1 time by &809f
 .lad41
     equb &ae, &ae, &ae, &af, &af, &af, &b0, &b0                       ; ad41: ae ae ae... ...
@@ -8404,20 +8404,22 @@ l8465 = c8463+2
 ; &ad81 referenced 1 time by &8172
 .lad81
     equb 1, 2                                                         ; ad81: 01 02       ..
-; A table of 4 bytes, indexed by X (0 to 3), read at &805e
+; A table of 4 bytes, indexed by X (0 to 3), read at &805e and &83af
 ; &ad83 referenced 2 times by &805e, &83af
 .lad83
     equb &84, &d4, &24, &74                                           ; ad83: 84 d4 24... .T.
-; A table of 4 bytes, indexed by X (0 to 3), read at &8064
+; A table of 4 bytes, indexed by X (0 to 3), read at &8064 and &83b5
 ; &ad87 referenced 2 times by &8064, &83b5
 .lad87
     equb &b0, &b0, &b1, &b1                                           ; ad87: b0 b0 b1... 001
+; A table of 4 bytes, indexed by X (0 to 3), read at &839b
 ; &ad8b referenced 1 time by &839b
 .lad8b
     equb &a4, &f4, &44, &94                                           ; ad8b: a4 f4 44... $t.
+; A table of 4 bytes, indexed by X (0 to 3), read at &83a1
 ; &ad8f referenced 1 time by &83a1
 .lad8f
-    equb &b0, &b0, &b1, &b1 ; apple "0011"                            ; ad8f: b0 b0 b1... 001
+    equb &b0, &b0, &b1, &b1                                           ; ad8f: b0 b0 b1... 001
     equb 0, 0                                                         ; ad93: 00 00       ..
 ; &ad95 referenced 2 times by &6fac, &7f0b
 .lad95
@@ -10956,8 +10958,8 @@ save pydis_start - 58, pydis_end
 ;     Data                     = 21170 bytes (68%)
 ;
 ;     Number of instructions   = 4564
-;     Number of data bytes     = 21021 bytes
+;     Number of data bytes     = 21062 bytes
 ;     Number of data words     = 44 bytes
-;     Number of string bytes   = 105 bytes
-;     Number of strings        = 11
+;     Number of string bytes   = 64 bytes
+;     Number of strings        = 8
 

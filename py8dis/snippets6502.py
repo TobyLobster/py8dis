@@ -616,7 +616,11 @@ def comment_set_memory_one_register_loop(p, reg):
     the branch doesn't go back to the loop's start. The first byte is named
     by its label, and if it isn't the operand's address, the operand is
     written as that label minus the difference. With an indirect store
-    ('(ptr),y'), the first byte is given as e.g. '(ptr)+2'."""
+    ('(ptr),y'), the first byte is given as the label of where the pointer
+    points, if what's known coming into the loop says (e.g. after 'lda
+    #<buf : sta ptr : lda #>buf : sta ptr+1', whose loads are then written
+    that way: see Cpu6502.name_pointer_loads()), otherwise as e.g.
+    '(ptr)+2'."""
     cpu = session.current().cpu
     for name in ('loop', 'update', 'branch'):
         binary_addr = p.get_binary_address(name)
@@ -665,11 +669,24 @@ def comment_set_memory_one_register_loop(p, reg):
     if not stores:
         return
 
+    def pointed_to(name, offset):
+        """For an indirect store, the label of the byte 'offset' on from
+        where the pointer points, if what's known entering the loop says
+        where that is (see CpuStateDisposition.pointer()), otherwise None."""
+        pointer = state.pointer(p.get_memory(name))
+        if pointer is None:
+            return None
+        return disassembly.get_label((pointer + offset) & 0xffff, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+
     def first_byte(name, kind, lowest):
         """The first byte the store writes, for the comment: the operand plus
         'lowest' (and an absolute operand is written as that byte's label
-        minus 'lowest')."""
+        minus 'lowest'; and an indirect one as the label of the byte it
+        points to, if that's known)."""
         if kind == "indirect":
+            known = pointed_to(name, lowest)
+            if known is not None:
+                return known
             return utils.LazyString("(%s)%s", p.get_expr(name), "+{0}".format(lowest) if lowest else "")
         if kind == "zp":
             zp_addr = p.get_memory(name)
@@ -716,8 +733,12 @@ def comment_set_memory_one_register_loop(p, reg):
         parts = []
         for name, kind in stores:
             if kind == "indirect":
-                last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
-                parts.append(utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last))
+                first, last = pointed_to(name, 0), pointed_to(name, limit - 1)
+                if first is not None:
+                    parts.append(utils.LazyString("from %s+%s to %s", first, register, last))
+                else:
+                    last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
+                    parts.append(utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last))
             elif kind == "zp":
                 parts.append(utils.LazyString("from %s+%s to %s", p.get_expr(name), register, make_add(p.get_expr(name), limit - 1)))
             else:
@@ -740,6 +761,13 @@ def comment_set_memory_one_register_loop(p, reg):
     # table+512 onwards"
     text = utils.LazyString("%s %s%s", verb, utils.LazyString(", and ".join(["%s"] * len(parts)), *parts), to_text)
     _comment_loop(p.get_start_loc(), text)
+    # (And the loads that set a pointer whose value is known, before the
+    # loop, as its label's low and high bytes, e.g. 'lda #<buffer')
+    for name, kind in stores:
+        if kind == "indirect":
+            pointer = state.pointer(p.get_memory(name))
+            if pointer is not None:
+                cpu.name_pointer_loads(p.get_binary_address('loop'), p.get_memory(name), pointer)
 
 def comment_set_memory_y_index_loop(p):
     """Post-trace function for a loop that stores A with Y as both the

@@ -6,6 +6,7 @@
 
 ; Zero page ($00-$ff)
 l0070   equ $70
+l0071   equ $71
 
 ; OS vectors ($0200-$0235)
 userv   equ $0200
@@ -87,7 +88,7 @@ start
     stx cliv+1                                                        ; 2066: 8e 09 02    ... ; Set the high byte of command line interpreter vector to $20
     lda #0                                                            ; 2069: a9 00       ..
     sta filev                                                         ; 206b: 8d 12 02    ... ; Set the low byte of load/save file vector to $00 (and the high byte to a value that isn't known)
-    lda l0070                                                         ; 206e: a5 70       .p
+    lda l0071                                                         ; 206e: a5 71       .q
     sta filev+1                                                       ; 2070: 8d 13 02    ...
     rts                                                               ; 2073: 60          `
 
@@ -140,12 +141,13 @@ pydis_end
 
 ; Label references by decreasing frequency:
 ;     irq2v:   2
-;     l0070:   2
 ;     brkv:    1
 ;     bytev:   1
 ;     cliv:    1
 ;     evntv:   1
 ;     filev:   1
+;     l0070:   1
+;     l0071:   1
 ;     rdchv:   1
 ;     userv:   1
 ;     wordv:   1
@@ -153,6 +155,7 @@ pydis_end
 
 ; Automatically generated labels:
 ;     l0070
+;     l0071
 
 ; Stats:
 ;

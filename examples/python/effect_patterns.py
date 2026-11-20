@@ -17,7 +17,7 @@ asm_to_create_test_binaries/effect_patterns.asm:
 from commands import *
 import snippets6502
 
-load(0x2000, "orig/effect_patterns.orig", "6502", "902de504973829fb3c6ad2c6c7ecf24a")
+load(0x2000, "orig/effect_patterns.orig", "6502", "618e32f243783ff4b5404d3092cc794a")
 label(0x209c, "subroutine")
 label(0x209d, "print")
 label(0x209e, "write")

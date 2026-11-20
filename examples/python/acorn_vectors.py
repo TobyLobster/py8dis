@@ -14,7 +14,7 @@ vectors, and a store of a high byte that isn't known."""
 from commands import *
 import acorn
 
-load(0x2000, "orig/acorn_vectors.orig", "6502", "538cad0f74396e859192767601222d0f")
+load(0x2000, "orig/acorn_vectors.orig", "6502", "64af27fd6accda6afdb0c6a2ab5406d8")
 acorn.bbc()
 entry(0x2000, "start")
 go()

@@ -70,10 +70,11 @@ start
     sta $206
     stx $209
 
-    ; The high byte isn't known: only the low byte is set to a known value
+    ; The high byte isn't known (nothing stores to $71): only the low byte is
+    ; set to a known value
     lda #<start
     sta $212
-    lda $70
+    lda $71
     sta $213
     rts
 

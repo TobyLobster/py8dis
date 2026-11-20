@@ -305,7 +305,7 @@ The 6502 already has regions for zero page, the stack and its vectors, and `acor
 
 `io_range(start_addr, end_addr)`
 
-Says that memory from `start_addr` up to (but not including) `end_addr` is memory mapped I/O, where reading can have side effects (e.g. acknowledging an interrupt), so an instruction that reads it isn't commented as redundant (see [cpus.md](cpus.md#redundant-instructions)). `acorn.bbc()` etc. do this for &FC00-&FEFF, and `commodore.c64()` etc. for their machines' I/O.
+Says that memory from `start_addr` up to (but not including) `end_addr` is memory mapped I/O, where reading can have side effects (e.g. acknowledging an interrupt), so an instruction that reads it isn't commented as redundant (see [cpus.md](cpus.md#redundant-instructions)), and on the 6502 a byte of zero page in it isn't taken to hold what was stored there (see [cpus.md](cpus.md#what-py8dis-knows-about-the-registers)). `acorn.bbc()` etc. do this for &FC00-&FEFF, and `commodore.c64()` etc. for their machines' I/O.
 
 ### addr
 

@@ -63,6 +63,7 @@ import disassembly
 import effectpattern
 import labelmanager
 import expression
+import maker
 import mainformatter
 import output
 import memorymanager
@@ -357,6 +358,13 @@ class CpuStateDisposition:
         # Cpu6502.c_source().)
         self.c_from = None
 
+        # What's known about the bytes of zero page: the set of values each
+        # could have (see valuesets.py), by address, for those that anything
+        # is known about (see Cpu6502.update_zero_page()): a byte that could
+        # be anything isn't in it. Copies share the dict, so it's never
+        # changed: a change makes a new one.
+        self.zp = {}
+
     def copy(self):
         """A fast copy (much faster than copy.deepcopy())."""
         result = CpuStateDisposition.__new__(CpuStateDisposition)
@@ -364,7 +372,22 @@ class CpuStateDisposition:
         result.z_from = self.z_from
         result.n_from = self.n_from
         result.c_from = self.c_from
+        result.zp = self.zp
         return result
+
+    def zp_value(self, address):
+        """The value of the byte of zero page at 'address', if it's known
+        (it can only be one value), otherwise None."""
+        possible = self.zp.get(address)
+        return None if possible is None else valuesets.value(possible)
+
+    def pointer(self, address):
+        """The address that the two bytes of zero page from 'address' (low
+        byte first, wrapping round within zero page) hold, if both are
+        known, otherwise None."""
+        lo = self.zp_value(address)
+        hi = self.zp_value((address + 1) & 0xff)
+        return None if lo is None or hi is None else (hi << 8) | lo
 
     def clear(self):
         """Forget everything: no register or flag is known."""
@@ -380,6 +403,7 @@ class CpuStateDisposition:
         self.z_from = None
         self.n_from = None
         self.c_from = None
+        self.zp = {}
 
     def __getitem__(self, key):
         assert key in "axynvdizc"
@@ -421,6 +445,8 @@ class CpuStateDisposition:
             self.n_from = None
         if self.c_from is not None and not kept("c", (self.c_from[0],)):
             self.c_from = None
+        # (The subroutine may write anywhere in zero page)
+        self.zp = {}
 
     def update_clear_nz(self, binary_addr):
         """N and Z become unknown."""
@@ -461,7 +487,9 @@ class CpuStateDisposition:
         CpuStateDisposition): the state where code can come from either
         (see Cpu6502.join_states_at_labels()). A register could have any of
         the values it could have in either; a flag is
-        known where both know it and agree ('pending' isn't kept); and z_from,
+        known where both know it and agree ('pending' isn't kept); a byte of
+        zero page could have any of the values it could have in either (if
+        both know something about it); and z_from,
         n_from and c_from, and where a register was loaded, are kept where
         they're the same."""
         result = CpuStateDisposition()
@@ -479,27 +507,53 @@ class CpuStateDisposition:
         result.z_from = self.z_from if self.z_from == other.z_from else None
         result.n_from = self.n_from if self.n_from == other.n_from else None
         result.c_from = self.c_from if self.c_from == other.c_from else None
+        result.zp = {}
+        for address, possible in self.zp.items():
+            if address in other.zp:
+                possible |= other.zp[address]
+                if possible != valuesets.FULL:
+                    result.zp[address] = possible
         return result
 
-    def widen(self, newer):
+    def grown(self, newer):
+        """The registers ('a', 'x' and 'y') and bytes of zero page (by
+        address) that have values in 'newer' (the state after another time
+        round a loop) that they don't have in this one."""
+        result = [reg for reg in "axy" if newer._d[reg].possible & ~self._d[reg].possible]
+        result.extend(address for address, possible in newer.zp.items()
+                      if address not in self.zp or possible & ~self.zp[address])
+        return result
+
+    def widen(self, newer, which):
         """'newer' (the state after another time round a loop), with each
-        register whose set of values has grown since this one made all the
-        values from its least to its greatest that agree on the bits that
-        they all agree on, with an end that's grown since this one taken to
-        the end it's growing towards (0 or $ff). (So it can only grow a few
-        more times: see Cpu6502.join_states_at_labels().)"""
-        result = newer.copy()
-        for reg in "axy":
-            old, new = self._d[reg].possible, newer._d[reg].possible
-            if new & ~old == 0:
-                continue
+        register and byte of zero page in 'which' (see grown()) whose set of
+        values has grown since this one made all the values from its least
+        to its greatest that agree on the bits that they all agree on, with
+        an end that's grown since this one taken to the end it's growing
+        towards (0 or $ff). (So it can only grow a few more times: see
+        Cpu6502.join_states_at_labels().)"""
+        def widened(old, new):
+            if old is None or new & ~old == 0:
+                return new
             lo, hi = valuesets.bounds(new)
             old_lo, old_hi = valuesets.bounds(old)
             if lo < old_lo:
                 lo = 0
             if hi > old_hi:
                 hi = 0xff
-            result._d[reg].possible = valuesets.from_range(lo, hi) & valuesets.from_known_bits(*valuesets.known_bits(new))
+            return valuesets.from_range(lo, hi) & valuesets.from_known_bits(*valuesets.known_bits(new))
+
+        result = newer.copy()
+        for reg in "axy":
+            if reg in which:
+                result._d[reg].possible = widened(self._d[reg].possible, newer._d[reg].possible)
+        # (And the bytes of zero page the same way)
+        result.zp = {}
+        for address, possible in newer.zp.items():
+            if address in which:
+                possible = widened(self.zp.get(address), possible)
+            if possible != valuesets.FULL:
+                result.zp[address] = possible
         return result
 
     @staticmethod
@@ -511,7 +565,7 @@ class CpuStateDisposition:
             if a._d[reg].__dict__ != b._d[reg].__dict__:
                 return False
         return (all(a._d[flag] == b._d[flag] for flag in "nvdizc")
-                and a.z_from == b.z_from and a.n_from == b.n_from and a.c_from == b.c_from)
+                and a.z_from == b.z_from and a.n_from == b.n_from and a.c_from == b.c_from and a.zp == b.zp)
 
     def carry(self):
         """The C flag as True or False, or None if it isn't known (or is
@@ -591,40 +645,40 @@ class CpuStateDisposition:
         self._d['z'] = None
         self._d['c'] = None
 
-    def update_AND_immediate(self, binary_addr):
+    def update_AND_immediate(self, binary_addr, value=None):
         """AND #imm (the instruction at binary_addr): A could be each value
         it could be before AND the operand (so e.g. AND #0 makes A 0, and AND
         #$0f makes it 0 to 15), with N and Z from the result."""
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         self.set_result('a', valuesets.and_(self._d['a'].possible, v))
 
-    def update_ORA_immediate(self, binary_addr):
+    def update_ORA_immediate(self, binary_addr, value=None):
         """ORA #imm (the instruction at binary_addr): A could be each value
         it could be before OR the operand (so e.g. ORA #$80 sets N, and any
         non-zero operand clears Z)."""
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         self.set_result('a', valuesets.or_(self._d['a'].possible, v))
 
-    def update_EOR_immediate(self, binary_addr):
+    def update_EOR_immediate(self, binary_addr, value=None):
         """EOR #imm (the instruction at binary_addr): A could be each value
         it could be before EOR the operand."""
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         self.set_result('a', valuesets.eor(self._d['a'].possible, v))
 
-    def compare_immediate(self, binary_addr, reg):
+    def compare_immediate(self, binary_addr, reg, value=None):
         """CMP, CPX or CPY #imm (the instruction at binary_addr), comparing
         'reg': as far as what's known about the register says, C is set if
         it's at least the operand, Z if it's equal, and N is bit 7 of the
         difference (each known if it's the same for every value the register
         could have). Z and C are 'pending' where they aren't known (see
         update_transfer())."""
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         n, z, carry = valuesets.compare(self._d[reg].possible, v)
         self._d['n'] = n
         self._d['z'] = "pending" if z is None else z
         self._d['c'] = "pending" if carry is None else carry
 
-    def adc_sbc_immediate(self, binary_addr, subtract):
+    def adc_sbc_immediate(self, binary_addr, subtract, value=None):
         """ADC or SBC #imm (the instruction at binary_addr): if D is known
         to be clear (binary arithmetic), A could be the sum (or difference)
         for each value it could be before, and each value of C if that isn't
@@ -635,7 +689,7 @@ class CpuStateDisposition:
             self.update_adc_sbc(binary_addr)
             return
         a = self._d['a'].possible
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         carry_in = self.carry()
         if subtract:
             result, carry = valuesets.subtract(a, v, carry_in)
@@ -645,11 +699,11 @@ class CpuStateDisposition:
         self._d['c'] = carry
         self._d['v'] = valuesets.overflow(a, v, carry_in, subtracting=subtract)
 
-    def bit_immediate(self, binary_addr):
+    def bit_immediate(self, binary_addr, value=None):
         """The 65C02's BIT #imm (the instruction at binary_addr): only Z
         changes, set if A AND the operand is 0, as far as what's known
         about A says."""
-        v = session.current().memory.binary[binary_addr+1]
+        v = (session.current().memory.binary[binary_addr+1] if value is None else value)
         self._d['z'] = valuesets.z_flag(valuesets.and_(self._d['a'].possible, v))
 
     def decrement(self, addr, reg):
@@ -830,7 +884,10 @@ class SubroutineSummary:
     : pha : ... : pla : tax', 'php : ... : plp') isn't written. touches_stack
     is whether it (or a subroutine it calls) may write to what's already on
     the stack (see Cpu6502.subroutine_summaries()), so that what a caller
-    saved there may not be what it gets back. valid is False if what it does to the
+    saved there may not be what it gets back. zp_written is the addresses in
+    zero page it (or a subroutine it calls) may write, as a set, or None if
+    it may write anywhere there (e.g. through a pointer, or by calling code
+    outside the binary). valid is False if what it does to the
     stack isn't understood (e.g. an RTS with something still pushed, or
     TXS), or if it calls such a subroutine or one with a hook, or runs
     into data; then nothing is known after a call to it."""
@@ -843,6 +900,7 @@ class SubroutineSummary:
         self.calls = []
         self.written = set()
         self.touches_stack = False
+        self.zp_written = set()
         self.valid = True
 
     def __repr__(self):
@@ -1644,6 +1702,8 @@ class Cpu6502(cpu.Cpu):
                     disposition.c_from = None
             elif self.update is not None:
                 self.regular_update(binary_addr, state)
+                cpu = session.current().cpu
+                before = cpu.zero_page_snapshot(self, binary_addr, state)
                 self.update(binary_addr, state)
                 z_from = Cpu6502.z_source(self, binary_addr)
                 if z_from is not Cpu6502.Z_UNCHANGED:
@@ -1669,6 +1729,8 @@ class Cpu6502(cpu.Cpu):
                     elif disposition.c_from is not None and self.reg_changes[disposition.c_from[0]] in "AOT":
                         # (The register compared has changed since)
                         disposition.c_from = None
+                # What it reads from or writes to zero page
+                cpu.update_zero_page(self, binary_addr, state, before)
                 # Code that jumps into the middle of this instruction (the
                 # BIT trick, e.g. 'bit $02a9' skipping 'lda #2') runs another
                 # instruction there, then continues after this one, so
@@ -3298,6 +3360,63 @@ class Cpu6502(cpu.Cpu):
         # the state it stores)
         return MemoryWrite(binary_addr, target, pessimistic[reg].value, reg, pessimistic[reg].get_previous_load_imm_operand())
 
+    def pointer_loads(self, binary_addr, ptr, value, limit=32):
+        """Where the pointer at 'ptr' in zero page was set to 'value' (which
+        what's known before the instruction at binary_addr says it is) with
+        immediate loads, e.g. 'lda #<table : sta ptr : lda #>table : sta
+        ptr+1': the binary addresses of the operands of the loads of its low
+        and high bytes, as a pair, or None if they aren't both found. They're
+        looked for in the code that runs on into the instruction, back as
+        far as the first write whose address isn't known or a JSR (or 'limit'
+        instructions back), and the stores found last must have stored the
+        bytes of 'value'. Giving the operands expressions, e.g. '<table',
+        names the pointer's value."""
+        memory_binary = session.current().memory.binary
+        wanted = {ptr: value & 0xff, (ptr + 1) & 0xff: value >> 8}
+        found = {}
+        b = binary_addr
+        for _ in range(limit):
+            # (The instruction before, if it runs on into this one)
+            for length in (1, 2, 3):
+                before = b - length
+                c = classification.get_classification(before) if before >= 0 else None
+                if isinstance(c, self.Opcode) and c.length() == length:
+                    break
+            else:
+                return None
+            state = self.cpu_states[before]
+            if c.is_block_end() or state is None or state.always_branch:
+                return None
+            b = before
+            write = self.memory_write(b)
+            if write is None:
+                continue
+            if write.target is None:
+                return None
+            if write.target in wanted and write.target not in found:
+                operand = write.value_operand
+                if (write.value != wanted[write.target] or operand is None or memory_binary[operand] != wanted[write.target]
+                        or self.is_operand_modified(operand - 1)):
+                    return None
+                found[write.target] = operand
+                if len(found) == 2:
+                    return found[ptr], found[(ptr + 1) & 0xff]
+        return None
+
+    def name_pointer_loads(self, binary_addr, ptr, value):
+        """Write the immediate loads that set the pointer at 'ptr' to 'value'
+        before the instruction at binary_addr (see pointer_loads()), if
+        they're found, as the low and high bytes of the label there, e.g.
+        'lda #<table' and 'lda #>table' (unless they have expressions
+        already). Returns whether they were found."""
+        loads = self.pointer_loads(binary_addr, ptr, value)
+        if loads is None:
+            return False
+        for operand, make in zip(loads, (maker.make_lo, maker.make_hi)):
+            label = disassembly.get_label(value, operand, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+            classification.add_expression(operand, make(label), force=False)
+        return True
+
     def memory_writes(self, run):
         """The MemoryWrite for each instruction in the run (see
         straight_runs()) that writes memory, in order."""
@@ -3467,8 +3586,8 @@ class Cpu6502(cpu.Cpu):
     # ********************************************************************************************
     # What's known at labels: joining the states of the ways in
 
-    # How many times a label's state can change before the registers' sets of
-    # values that are still growing are widened (see
+    # How many times the set of values of a register or a byte of zero page
+    # can grow at a label before it's widened (see
     # CpuStateDisposition.widen(), so loops are worked out quickly: a loop
     # counter's values are exact if the loop runs fewer times than this)
     JOIN_WIDEN_AFTER = 32
@@ -3514,6 +3633,7 @@ class Cpu6502(cpu.Cpu):
         join_states_at_labels()). An immediate operand that the code writes
         to (see is_operand_modified()) is taken not to be known."""
         self.modified = self.modified_addresses()
+        self._untracked_zero_page = self.untracked_zero_page()
         super().calculate_cpu_states()
         if config.get_join_states_at_labels():
             self.join_states_at_labels()
@@ -3579,6 +3699,221 @@ class Cpu6502(cpu.Cpu):
         if binary_addr is None:
             binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr & 0xffff))
         return binary_addr if binary_addr in node_set else None
+
+    # ********************************************************************************************
+    # What's known about zero page
+
+    # The addresses in zero page whose values aren't tracked (I/O: see
+    # untracked_zero_page())
+    UNTRACKED_ZERO_PAGE = frozenset()
+
+    # The mnemonics that read memory into a register, by register; those
+    # that do arithmetic or a compare with it (as with an immediate operand:
+    # see update_zero_page()); those that store a register (STZ stores 0);
+    # and those that change memory that update_zero_page() works out
+    _ZP_LOADS = {"lda": "a", "ldx": "x", "ldy": "y"}
+    _ZP_OPERAND_UPDATES = {"and", "ora", "eor", "adc", "sbc", "cmp", "cpx", "cpy", "bit"}
+    _ZP_STORES = {"sta": "a", "stx": "x", "sty": "y", "stz": None}
+    _ZP_CHANGES = {"inc", "dec", "asl", "lsr", "rol", "ror"}
+
+    def untracked_zero_page(self):
+        """The addresses in zero page whose values aren't tracked, as a set:
+        those in an I/O range (see io_range()), whose values can change by
+        themselves, those in the session's extras["untracked_zero_page"]
+        (e.g. the C64's processor port at 0 and 1, see commodore.py), and
+        UNTRACKED_ZERO_PAGE."""
+        result = set(self.UNTRACKED_ZERO_PAGE)
+        result.update(session.current().extras.get("untracked_zero_page", ()))
+        for start, end in session.current().disassembly.io_ranges:
+            result.update(range(start, min(end, 0x100)))
+        return result
+
+    def _addresses_used(self, disposition, c, binary_addr):
+        """The addresses the instruction at binary_addr (classification c)
+        may read or write, as a set, worked out from what the disposition
+        knows (the index, or the pointer in zero page), or 'any' if they
+        could be anywhere (an indirect operand whose pointer isn't known),
+        or None if it doesn't use memory."""
+        memory_binary = session.current().memory.binary
+        mode = c.addr_mode
+        if mode in (self.mode_implied, self.mode_immediate, self.mode_accumulator, self.mode_offset):
+            return None
+        if c.mnemonic.lower() in ("jmp", "jsr"):
+            return None
+
+        def indexed(base, reg, wrap):
+            possible = disposition[reg].possible
+            if possible == valuesets.FULL:
+                return set((base + v) & wrap for v in range(0x100))
+            return set((base + v) & wrap for v in valuesets.values(possible))
+
+        if mode == self.mode_zp:
+            return {memory_binary[binary_addr + 1]}
+        if mode == self.mode_zp_indexed_x:
+            return indexed(memory_binary[binary_addr + 1], "x", 0xff)
+        if mode == self.mode_zp_indexed_y:
+            return indexed(memory_binary[binary_addr + 1], "y", 0xff)
+        if mode == self.mode_indirect_indexed:
+            pointer = disposition.pointer(memory_binary[binary_addr + 1])
+            return "any" if pointer is None else indexed(pointer, "y", 0xffff)
+        if mode == self.mode_indirect_zp:
+            pointer = disposition.pointer(memory_binary[binary_addr + 1])
+            return "any" if pointer is None else {pointer}
+        if mode == self.mode_indexed_indirect:
+            x = disposition["x"].value
+            pointer = None if x is None else disposition.pointer((memory_binary[binary_addr + 1] + x) & 0xff)
+            return "any" if pointer is None else {pointer}
+        if mode in (self.mode_indirect_addr, self.mode_indexed_abs):
+            return None
+        base = memorymanager.get_u16_binary(binary_addr + 1)
+        if mode == self.mode_abs_indexed_x:
+            return indexed(base, "x", 0xffff)
+        if mode == self.mode_abs_indexed_y:
+            return indexed(base, "y", 0xffff)
+        return {base}
+
+    def zero_page_snapshot(self, c, binary_addr, state):
+        """Copies of the two versions of the state before the instruction's
+        usual update (optimistic, pessimistic), if update_zero_page() needs
+        them: for arithmetic, compares and BIT, which need A or the register
+        before the update, and ROL and ROR of memory, which need C, with a
+        byte of zero page whose values are known. Otherwise None."""
+        if not (state.optimistic.zp or state.pessimistic.zp):
+            return None
+        mnemonic = c.mnemonic.lower()
+        if mnemonic in self._ZP_OPERAND_UPDATES or (mnemonic in ("rol", "ror") and c.addr_mode not in (self.mode_accumulator, self.mode_implied)):
+            for d in (state.optimistic, state.pessimistic):
+                addresses = self._addresses_used(d, c, binary_addr)
+                if addresses is not None and addresses != "any" and len(addresses) == 1 and next(iter(addresses)) in d.zp:
+                    return (state.optimistic.copy(), state.pessimistic.copy())
+        return None
+
+    def _may_use_zero_page(self, c, binary_addr):
+        """Whether the instruction could read or write zero page at all: a
+        zero page operand, an absolute one that is (or, indexed, reaches)
+        zero page, or a pointer (which could point there)."""
+        mode = c.addr_mode
+        if mode in (self.mode_zp, self.mode_zp_indexed_x, self.mode_zp_indexed_y,
+                    self.mode_indirect_indexed, self.mode_indirect_zp, self.mode_indexed_indirect):
+            return True
+        if mode == self.mode_addr:
+            return c.mnemonic.lower() not in ("jmp", "jsr") and memorymanager.get_u16_binary(binary_addr + 1) < 0x100
+        if mode in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
+            base = memorymanager.get_u16_binary(binary_addr + 1)
+            return base < 0x100 or base + 0xff > 0xffff
+        return False
+
+    def update_zero_page(self, c, binary_addr, state, before=None):
+        """What the instruction at binary_addr (classification c) does to
+        what's known about zero page, and what it learns from it, in both
+        versions of the state (see CpuStateDisposition.zp), after its usual
+        update (see Opcode.update_cpu_state()):
+
+        - a load (LDA, LDX, LDY) from a byte whose values are known gives
+          the register those values, with N and Z from them;
+        - AND, ORA, EOR, ADC, SBC, CMP, CPX, CPY and BIT with a byte whose
+          value is known work as they do with an immediate operand (BIT also
+          sets N and V from bits 7 and 6 of it);
+        - a store (STA, STX, STY, STZ) to a known byte gives it the
+          register's values (or 0), and INC, DEC, ASL, LSR, ROL and ROR
+          change its values, with N, Z (and C) from the result;
+        - any other write, and one whose address isn't known (e.g. 'sta
+          table,x' with X not known, or through a pointer that isn't known),
+          forgets the bytes it may write.
+
+        Bytes in I/O aren't tracked (see untracked_zero_page()). 'before' is
+        from zero_page_snapshot()."""
+        mnemonic = c.mnemonic.lower()
+        reads = mnemonic in self._ZP_LOADS or mnemonic in self._ZP_OPERAND_UPDATES
+        writes = (mnemonic in self._ZP_STORES or mnemonic == "sax"
+                  or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and c.addr_mode not in (self.mode_accumulator, self.mode_implied)))
+        if not (reads or writes) or not self._may_use_zero_page(c, binary_addr):
+            return
+        untracked = getattr(self, "_untracked_zero_page", None)
+        if untracked is None:
+            untracked = self.untracked_zero_page()
+        for i, d in enumerate((state.optimistic, state.pessimistic)):
+            pre = None if before is None else before[i]
+            # (What the instruction used: the state before it, as far as
+            # the index and the pointer go, hasn't changed, since loads and
+            # arithmetic don't change the index register they use)
+            addresses = self._addresses_used(d, c, binary_addr)
+            if addresses is None:
+                continue
+            zp_addresses = set(range(0x100)) if addresses == "any" else set(a for a in addresses if a < 0x100)
+            single = next(iter(addresses)) if addresses != "any" and len(addresses) == 1 else None
+            known = d.zp.get(single) if single is not None and single < 0x100 and single not in untracked else None
+            if reads and known is not None:
+                if mnemonic in self._ZP_LOADS:
+                    d.set_result(self._ZP_LOADS[mnemonic], known)
+                elif valuesets.value(known) is not None and pre is not None:
+                    # (Worked out from before the instruction, as with an
+                    # immediate operand, then put in place of what its
+                    # usual update gave)
+                    worked_out = pre.copy()
+                    self._operand_update(worked_out, mnemonic, binary_addr, valuesets.value(known))
+                    for reg in "axy":
+                        d[reg].possible = worked_out[reg].possible
+                    for flag in "nvzc":
+                        d[flag] = worked_out[flag]
+                    if mnemonic in ("cmp", "cpx", "cpy"):
+                        d.z_from, d.n_from, d.c_from = worked_out.z_from, worked_out.n_from, worked_out.c_from
+            if not writes:
+                continue
+            if mnemonic in self._ZP_STORES and single is not None and single < 0x100 and single not in untracked:
+                reg = self._ZP_STORES[mnemonic]
+                self._set_zero_page(d, single, valuesets.exact(0) if reg is None else d[reg].possible)
+            elif mnemonic in self._ZP_CHANGES and known is not None:
+                if mnemonic in ("inc", "dec"):
+                    result = valuesets.rotate(known, 1 if mnemonic == "inc" else -1)
+                    carry = d.carry()
+                else:
+                    carry_in = (pre if pre is not None else d).carry()
+                    result, carry = {"asl": lambda: valuesets.asl(known), "lsr": lambda: valuesets.lsr(known),
+                                     "rol": lambda: valuesets.rol(known, carry_in), "ror": lambda: valuesets.ror(known, carry_in)}[mnemonic]()
+                self._set_zero_page(d, single, result)
+                d['n'] = valuesets.n_flag(result)
+                d['z'] = valuesets.z_flag(result)
+                if mnemonic not in ("inc", "dec"):
+                    d['c'] = carry
+            elif not zp_addresses.isdisjoint(d.zp):
+                d.zp = {a: possible for a, possible in d.zp.items() if a not in zp_addresses}
+
+    @staticmethod
+    def _set_zero_page(d, address, possible):
+        """Say that the byte of zero page at 'address' has the set of values
+        'possible' in d (leaving it out if it could be anything)."""
+        if possible == valuesets.FULL:
+            if address in d.zp:
+                d.zp = {a: v for a, v in d.zp.items() if a != address}
+        else:
+            d.zp = dict(d.zp)
+            d.zp[address] = possible
+
+    def _operand_update(self, d, mnemonic, binary_addr, value):
+        """AND, ORA, EOR, ADC, SBC, CMP, CPX, CPY or BIT with a byte of zero
+        page whose value is known (see update_zero_page()), on 'd' (the
+        state before the instruction): as with an immediate operand (BIT
+        also setting N and V from it)."""
+        if mnemonic == "and":
+            d.update_AND_immediate(binary_addr, value)
+        elif mnemonic == "ora":
+            d.update_ORA_immediate(binary_addr, value)
+        elif mnemonic == "eor":
+            d.update_EOR_immediate(binary_addr, value)
+        elif mnemonic in ("adc", "sbc"):
+            d.adc_sbc_immediate(binary_addr, mnemonic == "sbc", value)
+        elif mnemonic in ("cmp", "cpx", "cpy"):
+            reg = {"cmp": "a", "cpx": "x", "cpy": "y"}[mnemonic]
+            d.compare_immediate(binary_addr, reg, value)
+            # (What the compare says about the register, as after CMP #n)
+            d.z_from = ((reg,), value, BinaryAddr(binary_addr))
+            d.n_from = (reg,) if value == 0 else None
+            d.c_from = (reg, value)
+        elif mnemonic == "bit":
+            d.bit_immediate(binary_addr, value)
+            d['n'] = bool(value & 0x80)
+            d['v'] = bool(value & 0x40)
 
     # The descriptions in a subroutine()'s on_exit that declare what it
     # leaves: a register or flag it doesn't change, and a flag's value
@@ -3689,12 +4024,18 @@ class Cpu6502(cpu.Cpu):
                 if mnemonic not in self._CONTROL_MNEMONICS:
                     if self._effects_unknown(c, b):
                         stack_writes = True
+                        summary.zp_written = None
                     else:
                         written_memory = self._memory_written(c, b)
                         if written_memory == "unknown":
                             unknown_writes = True
                         elif written_memory is not None and written_memory[0] <= 0x1ff and written_memory[1] >= 0x100:
                             stack_writes = True
+                        # (The bytes of zero page it may write)
+                        if written_memory == "unknown" or (written_memory is not None and written_memory[1] > 0xffff):
+                            summary.zp_written = None
+                        elif written_memory is not None and written_memory[0] < 0x100 and summary.zp_written is not None:
+                            summary.zp_written.update(range(written_memory[0], min(written_memory[1], 0xff) + 1))
                 # Where it goes next
                 runtime = movemanager.b2r(BinaryAddr(b))
                 following = []
@@ -3737,18 +4078,27 @@ class Cpu6502(cpu.Cpu):
             for summary in entries.values():
                 valid = summary.valid
                 touches_stack = summary.touches_stack
+                zp_written = None if summary.zp_written is None else set(summary.zp_written)
                 for jsr, callee in summary.calls:
                     if jsr in hooked_calls:
                         valid = False
                     if callee is not None:
                         valid = valid and entries[callee].valid
                         touches_stack = touches_stack or entries[callee].touches_stack
+                        callee_zp = entries[callee].zp_written
+                    else:
+                        # (Code outside the binary may write anywhere)
+                        callee_zp = None
+                    zp_written = None if zp_written is None or callee_zp is None else zp_written | callee_zp
                 for t in summary.tail_calls:
                     valid = valid and entries[t].valid
                     touches_stack = touches_stack or entries[t].touches_stack
-                if valid != summary.valid or touches_stack != summary.touches_stack:
+                    t_zp = entries[t].zp_written
+                    zp_written = None if zp_written is None or t_zp is None else zp_written | t_zp
+                if valid != summary.valid or touches_stack != summary.touches_stack or zp_written != summary.zp_written:
                     summary.valid = valid
                     summary.touches_stack = touches_stack
+                    summary.zp_written = zp_written
                     changed = True
 
         # What each may change, given what its callees and tail calls
@@ -3783,7 +4133,7 @@ class Cpu6502(cpu.Cpu):
         'unknown' for an indirect operand, or None if it doesn't write
         memory."""
         mnemonic = c.mnemonic.lower()
-        if mnemonic in ("sta", "stx", "sty", "stz") or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and c.addr_mode not in (self.mode_accumulator, self.mode_implied)):
+        if mnemonic in ("sta", "stx", "sty", "stz", "sax") or (mnemonic.upper() in self._READ_MODIFY_WRITE_MNEMONICS and c.addr_mode not in (self.mode_accumulator, self.mode_implied)):
             return self._memory_operand_range(c, binary_addr)
         return None
 
@@ -3900,6 +4250,56 @@ class Cpu6502(cpu.Cpu):
         # (Less what its subroutine() declares it preserves)
         return written - declared.get(movemanager.b2r(BinaryAddr(entry)), (set(), {}))[0]
 
+    def _loop_zero_page(self, nodes, ways_in, summaries):
+        """For each instruction that starts a loop (one that a branch from
+        it or after it goes back to), the bytes of zero page that what's
+        known about can be kept there, as a set (or None for all of them):
+        those that the loop (the instructions from it to the last branch
+        back to it) may write, or uses as a pointer ('(ptr),y', '(ptr)' or
+        '(ptr,x)'). The others are forgotten (see join_states_at_labels()),
+        since a loop that reads a byte that nothing in it writes is likely
+        to be waiting for an interrupt to change it, e.g. 'loop: lda flag :
+        bmi loop'. A call in the loop writes what its subroutine writes (see
+        SubroutineSummary.zp_written), and one to code outside the binary
+        (or one that's not understood) could write anything."""
+        memory_binary = session.current().memory.binary
+        result = {}
+        node_list = list(nodes)
+        index = {b: i for i, b in enumerate(node_list)}
+        for b, ways in ways_in.items():
+            back = [p for p, kind in (ways or []) if kind == "taken" and p >= b]
+            if not back:
+                continue
+            keep = set()
+            for p in node_list[index[b]:index[max(back)] + 1]:
+                c = classification.get_classification(p)
+                if isinstance(c, self.OpcodeJsr):
+                    callee = self.jsr_callees.get(p)
+                    if callee is None or callee not in summaries or summaries[callee].zp_written is None:
+                        keep = None
+                        break
+                    keep |= summaries[callee].zp_written
+                    continue
+                if c.mnemonic.lower() in self._CONTROL_MNEMONICS:
+                    # (A branch or jump writes nothing)
+                    continue
+                if c.addr_mode in (self.mode_indirect_indexed, self.mode_indirect_zp, self.mode_indexed_indirect):
+                    pointer = memory_binary[p + 1]
+                    keep.update((pointer, (pointer + 1) & 0xff))
+                    if c.addr_mode == self.mode_indexed_indirect:
+                        keep = None
+                        break
+                if self._effects_unknown(c, p):
+                    keep = None
+                    break
+                written = self._memory_written(c, p)
+                if written == "unknown":
+                    continue
+                if written is not None and written[0] < 0x100:
+                    keep.update(range(written[0], min(written[1], 0xff) + 1))
+            result[b] = keep
+        return result
+
     def join_states_at_labels(self):
         """Work out what's known for certain (the pessimistic state) after
         each instruction again, so that at a label it's what all the ways in
@@ -3926,7 +4326,7 @@ class Cpu6502(cpu.Cpu):
 
         The states are worked out until they don't change (loops go round
         until the states at their labels settle), with growing sets of values
-        widened after JOIN_WIDEN_AFTER changes. The optimistic state isn't
+        widened after they've grown JOIN_WIDEN_AFTER times. The optimistic state isn't
         changed."""
         labels = session.current().labels.labels
         move_ids = session.current().moves.move_id_for_binary_addr
@@ -3988,6 +4388,7 @@ class Cpu6502(cpu.Cpu):
         # for each RTS, the JSRs whose way on it affects: those to the
         # subroutines it returns from, and to those that tail call them
         summaries = self.subroutine_summaries(nodes, node_set) if config.get_subroutine_summaries() else {}
+        loop_zp = self._loop_zero_page(nodes, ways_in, summaries)
         jsrs_to = collections.defaultdict(list)
         for jsr, callee in self.jsr_callees.items():
             if callee is not None:
@@ -4064,6 +4465,13 @@ class Cpu6502(cpu.Cpu):
             # (And the flags its subroutine() says it leaves set or clear)
             for flag, value in declared.get(movemanager.b2r(BinaryAddr(callee)), (set(), {}))[1].items():
                 result[flag] = value
+            # Zero page: what the subroutine writes is what's known at all its
+            # returns (where only what it stored is known), and the rest is as
+            # before the call
+            zp_written = summaries[callee].zp_written
+            if zp_written is not None:
+                result.zp = {address: possible for address, possible in before.zp.items() if address not in zp_written}
+                result.zp.update((address, possible) for address, possible in at_exit.zp.items() if address in zp_written)
             return result
 
         def way_state(p, kind):
@@ -4137,11 +4545,25 @@ class Cpu6502(cpu.Cpu):
                 if new is None:
                     # (No way in reaches it yet)
                     continue
+                if b in loop_zp and loop_zp[b] is not None:
+                    # (At the start of a loop, only the bytes of zero page
+                    # that the loop writes or uses as pointers are known: see
+                    # _loop_zero_page())
+                    new = new.copy()
+                    new.zp = {address: possible for address, possible in new.zp.items() if address in loop_zp[b]}
                 old = state_in.get(b)
                 if b not in first and old is not None:
-                    changes[b] += 1
-                    if changes[b] > self.JOIN_WIDEN_AFTER:
-                        new = old.widen(new)
+                    # (Each register and byte of zero page is widened once
+                    # its set has grown JOIN_WIDEN_AFTER times here, so one
+                    # that keeps growing, e.g. a counter in zero page that an
+                    # inner loop increments, doesn't widen the others)
+                    widen = []
+                    for resource in old.grown(new):
+                        changes[b, resource] += 1
+                        if changes[b, resource] > self.JOIN_WIDEN_AFTER:
+                            widen.append(resource)
+                    if widen:
+                        new = old.widen(new, widen)
                 if b in first or not CpuStateDisposition.same(old, new):
                     first.discard(b)
                     state_in[b] = new
@@ -4622,7 +5044,8 @@ class Cpu6502(cpu.Cpu):
 
     def _size_data_tables(self):
         """Mark the tables of bytes that the code reads, writes or changes
-        with 'table,x' or 'table,y', where the index's possible values are
+        with 'table,x' or 'table,y' (or '(ptr),y', where the pointer in
+        zero page is known), where the index's possible values are
         known (at least two of them, and at most
         MAX_DATA_TABLE_INDEX_VALUES): e.g. after 'ldy #31 : loop: lda
         sine_table,y : ... dey : bpl loop', the 32 bytes from sine_table. A
@@ -4669,18 +5092,34 @@ class Cpu6502(cpu.Cpu):
         # instruction's binary address, the index register, its possible
         # values, how it uses the table)]
         uses = collections.defaultdict(list)
+        # The tables used through a pointer: by the runtime address it points
+        # to, [(the instruction's binary address, the pointer's address)]
+        pointer_uses = collections.defaultdict(list)
         for run in self.straight_runs():
             for j, binary_addr in enumerate(run):
                 c = classification.get_classification(binary_addr)
-                if c.addr_mode not in (self.mode_abs_indexed_x, self.mode_abs_indexed_y) or self.is_operand_modified(binary_addr, 2):
+                if c.addr_mode in (self.mode_abs_indexed_x, self.mode_abs_indexed_y):
+                    if self.is_operand_modified(binary_addr, 2):
+                        continue
+                    reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
+                    base = memorymanager.get_u16_binary(binary_addr + 1)
+                elif c.addr_mode == self.mode_indirect_indexed:
+                    # ('(ptr),y' with the pointer known, e.g. after 'lda
+                    # #<table : sta ptr : lda #>table : sta ptr+1')
+                    reg = "y"
+                    base = self.known_before(run, j).pointer(memory_binary[binary_addr + 1])
+                    if base is None or self.is_operand_modified(binary_addr):
+                        continue
+                else:
                     continue
-                reg = "x" if c.addr_mode == self.mode_abs_indexed_x else "y"
                 possible = self.known_before(run, j)[reg].possible
                 if valuesets.value(possible) is not None or valuesets.count(possible) > self.MAX_DATA_TABLE_INDEX_VALUES:
                     continue
+                if c.addr_mode == self.mode_indirect_indexed:
+                    pointer_uses[base].append((binary_addr, memory_binary[binary_addr + 1]))
                 mnemonic = c.mnemonic.lower()
                 kind = "written" if mnemonic in self._MEMORY_WRITES else "changed" if mnemonic in self._MEMORY_CHANGES else "read"
-                uses[memorymanager.get_u16_binary(binary_addr + 1)].append((binary_addr, reg, valuesets.values(possible), kind))
+                uses[base].append((binary_addr, reg, valuesets.values(possible), kind))
 
         def describe_values(values):
             """The values an index can have, as text, e.g. '0 to 7', '0 or
@@ -4724,7 +5163,8 @@ class Cpu6502(cpu.Cpu):
             # list of its own)
             return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + ", and " + parts[-1]
 
-        # The tables: (first binary address, number of bytes, words?, comment)
+        # The tables: (their bytes' binary addresses, words?, comment, the
+        # runtime address of the operand that they're used with)
         tables = []
         done = set()
         for base in sorted(uses):
@@ -4741,14 +5181,14 @@ class Cpu6502(cpu.Cpu):
                 if None not in binary_addrs:
                     text = "A table of {0} words, indexed by {1}, {2}, and {3}".format(
                         n, describe_index(uses[base] + high_uses), describe_kinds(uses[base], "the low bytes "), describe_kinds(high_uses, "the high bytes "))
-                    tables.append((binary_addrs, True, text))
+                    tables.append((binary_addrs, True, text, base))
                     done.update((base, base + 1))
                     continue
             binary_addrs = [free(base + i) for i in range(values[0], values[-1] + 1)]
             if None in binary_addrs:
                 continue
             n = len(binary_addrs)
-            tables.append((binary_addrs, False, "A table of {0} bytes, indexed by {1}, {2}".format(n, describe_index(uses[base]), describe_kinds(uses[base]))))
+            tables.append((binary_addrs, False, "A table of {0} bytes, indexed by {1}, {2}".format(n, describe_index(uses[base]), describe_kinds(uses[base])), base))
 
         # Say what each table is before it, and classify their bytes (where
         # tables overlap, together): the tables of words as words (unless
@@ -4785,8 +5225,15 @@ class Cpu6502(cpu.Cpu):
         byte_addrs = set()
         word_tables = []
         text_tables = []
-        for binary_addrs, words, text in tables:
+        for binary_addrs, words, text, base in tables:
             disassembly.comment_binary(binary_addrs[0], text, align=Align.BEFORE_LABEL, auto_generated=True)
+            # A table used through a pointer has a label where the pointer
+            # points, and the immediate loads of the pointer (where they're
+            # found) are written as the label's low and high bytes, e.g.
+            # 'lda #<table'
+            for use_binary_addr, ptr in pointer_uses.get(base, ()):
+                if not self.name_pointer_loads(use_binary_addr, ptr, base):
+                    disassembly.get_label(base, use_binary_addr, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
             if words:
                 word_tables.append(binary_addrs)
                 continue

@@ -96,7 +96,7 @@ l0303   = &0303
     jsr write                                                         ; 208e: 20 9e 20     .
     lda #&16                                                          ; 2091: a9 16       ..
     jsr write                                                         ; 2093: 20 9e 20     .
-    lda l0070                                                         ; 2096: a5 70       .p
+    lda l0071                                                         ; 2096: a5 71       .q
     jsr write                                                         ; 2098: 20 9e 20     .
     rts                                                               ; 209b: 60          `
 
@@ -140,11 +140,11 @@ save pydis_start, pydis_end
 
 ; Label references by decreasing frequency:
 ;     write:        8
-;     l0070:        6
+;     l0070:        5
+;     l0071:        4
 ;     l0302:        4
 ;     l0303:        4
 ;     print:        4
-;     l0071:        3
 ;     l0300:        3
 ;     l0301:        2
 ;     c206c:        1

@@ -97,10 +97,11 @@ split
     jsr write
     lda #7
     jsr write
-    ; ...A not known the second time: not matched
+    ; ...A not known the second time (nothing stores a known value in
+    ; flag): not matched
     lda #22
     jsr write
-    lda temp
+    lda flag
     jsr write
     rts
 
