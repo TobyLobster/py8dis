@@ -3082,15 +3082,20 @@ sound_8_volume_high
 sound_9
     dfb $11, 0, $f1, $ff, $c8, 0, 4, 0                                ; 3308: 11 00 f1... ... :2208[1]   ; Channel (2 bytes) ; Amplitude (2 bytes) ; Pitch (2 bytes) ; Duration (2 bytes)
 ; ----------------------------------------------------------------------------------
+; A table of 6 bytes, indexed by X (0 to 5), read at $2308
 set_foreground_colour_to_white_string
     dfb 0, 0, 0, 7, 1, $13                                            ; 3310: 00 00 00... ... :2210[1]
+; A table of 6 bytes, indexed by X (0 to 5), read at $2314
 set_foreground_colour_to_black_string
     dfb 0, 0, 0, 0, 1, $13                                            ; 3316: 00 00 00... ... :2216[1]
+; A table of 6 bytes, indexed by X (0 to 5), read at $2320
 set_background_colour_to_black_string
     dfb 0, 0, 0, 0, 0, $13                                            ; 331c: 00 00 00... ... :221c[1]
+; A table of 9 bytes, indexed by X (0 to 8), read at $22a5
 energy_string
     asc 'YGRENE'                                                      ; 3322: 59 47 52... YGR :2222[1]
     dfb $11, $21, $1f                                                 ; 3328: 11 21 1f    .!. :2228[1]
+; A table of 18 bytes, indexed by X (0 to 17), read at $22b3
 one_two_three_four_string
     dfb 4, $34, $0a, 8, $33, $0a, 8, $32, $0a, 8, $31, 5, 1, $ac, 4   ; 332b: 04 34 0a... .4. :222b[1]
     dfb 8,   4, $19                                                   ; 333a: 08 04 19    ... :223a[1]
@@ -3099,12 +3104,14 @@ shields_string
     dfb 5, $23, $1f                                                   ; 333f: 05 23 1f    .#. :223f[1]
     asc 'SDLEIHS'                                                     ; 3342: 53 44 4c... SDL :2242[1]
     dfb 2, $21, $1f                                                   ; 3349: 02 21 1f    .!. :2249[1]
+; A table of 15 bytes, indexed by X (0 to 14), read at $22cb
 blank_string
-    dfb $20, $20, 5, $23, $1f                                         ; 334c: 20 20 05...   . :224c[1]
-    asc '       '                                                     ; 3351: 20 20 20...     :2251[1]
-    dfb 2, $21, $1f                                                   ; 3358: 02 21 1f    .!. :2258[1]
+    dfb $20, $20, 5, $23, $1f, $20, $20, $20, $20, $20, $20, $20, 2   ; 334c: 20 20 05...   . :224c[1]
+    dfb $21, $1f                                                      ; 3359: 21 1f       !.  :2259[1]
+; A table of 10 bytes, indexed by X (0 to 9), read at $232c
 enable_cursor_string
     dfb 0, 0, 0, 0, 0, 0, $60, $0a, 0, $17                            ; 335b: 00 00 00... ... :225b[1]
+; A table of 10 bytes, indexed by X (0 to 9), read at $2338
 disable_cursor_string
     dfb 0, 0, 0, 0, 0, 0, $3c, $0a, 0, $17                            ; 3365: 00 00 00... ... :2265[1]
 unused42
@@ -5926,6 +5933,7 @@ subtraction_from_starship_regeneration_when_shields_active
     dfb 4                                                             ; 45bc: 04          .   :34bc[1]
 unused86
     dfb $ea, $ea, $ea                                                 ; 45bd: ea ea ea    ... :34bd[1]
+; A table of 30 bytes, indexed by Y (0 to 29), read at $35f9
 escape_capsule_launched_string
     asc 'DEHCNUAL'                                                    ; 45c0: 44 45 48... DEH :34c0[1]
     dfb $19, $20, $1f                                                 ; 45c8: 19 20 1f    . . :34c8[1]
@@ -5933,10 +5941,12 @@ escape_capsule_launched_string
     dfb $18, $20, $1f                                                 ; 45d2: 18 20 1f    . . :34d2[1]
     asc 'EPACSE'                                                      ; 45d5: 45 50 41... EPA :34d5[1]
     dfb $17, $20, $1f                                                 ; 45db: 17 20 1f    . . :34db[1]
+; A table of 6 bytes, indexed by Y (0 to 5), read at $35d4
 command_move_string
     dfb 0, $81, 4                                                     ; 45de: 00 81 04    ... :34de[1]
 command_move_string_horizontal_pos
     dfb $6f, 4, $19                                                   ; 45e1: 6f 04 19    o.. :34e1[1]
+; A table of 14 bytes, indexed by Y (0 to 13), read at $35b8
 command_string
     asc 'DNAMMOC'                                                     ; 45e4: 44 4e 41... DNA :34e4[1]
     dfb 5, 0, $a2, 4, $0f, 4, $19                                     ; 45eb: 05 00 a2... ... :34eb[1]
@@ -6481,6 +6491,7 @@ no_before_the_starship_exploded_string
     dfb $1f, 5, $0a, $4e, $4f, $1f, 5, $0b                            ; 4a97: 1f 05 0a... ... :3997[1]
     asc 'before the starship exploded.'                               ; 4a9f: 62 65 66... bef :399f[1]
     dfb $0d                                                           ; 4abc: 0d          .   :39bc[1]
+; A table of 97 bytes, indexed by Y (0 to 96), read at $3c81
 after_your_performance_string
     dfb $1f, 3, $16                                                   ; 4abd: 1f 03 16    ... :39bd[1]
     asc 'After  your  performance  on  this'                          ; 4ac0: 41 66 74... Aft :39c0[1]
@@ -6499,6 +6510,7 @@ but_collided_string
     dfb $1f, 5, $0b                                                   ; 4b4e: 1f 05 0b    ... :3a4e[1]
     asc 'but collided with an enemy ship.'                            ; 4b51: 62 75 74... but :3a51[1]
     dfb $0d                                                           ; 4b71: 0d          .   :3a71[1]
+; A table of 25 bytes, indexed by Y (0 to 24), read at $3c50
 having_just_gained_string
     dfb $1f, 4, $13                                                   ; 4b72: 1f 04 13    ... :3a72[1]
     asc 'having  just  gained  '                                      ; 4b75: 68 61 76... hav :3a75[1]
@@ -6878,7 +6890,7 @@ plot_instructions
     sta temp0_high                                                    ; 511c: 85 81       ..  :401c[1]
     ldy #0                                                            ; 511e: a0 00       ..  :401e[1]
 plot_instructions_loop
-    lda (temp0_low),y                                                 ; 5120: b1 80       ..  :4020[1]
+    lda (temp0_low),y                                                 ; 5120: b1 80       ..  :4020[1]   ; Offset Y=0
     cmp #'~'                                                          ; 5122: c9 7e       .~  :4022[1]
     beq finished_plotting_instructions                                ; 5124: f0 0b       ..  :4024[1]
     jsr OSWRCH                                                        ; 5126: 20 ee ff     .. :4026[1]   ; Write character
@@ -6927,6 +6939,7 @@ combat_preparation_screen_key_table
     dfb $e9                                                           ; 516d: e9          .   :406d[1]
     dfb $89                                                           ; 516e: 89          .   :406e[1]
     dfb $88                                                           ; 516f: 88          .   :406f[1]
+; A table of 4 bytes, indexed by X (0 to 3), read at $41a9
 game_options
 option_sound
     dfb 0                                                             ; 5170: 00          .   :4070[1]
@@ -6995,7 +7008,7 @@ plot_selected_options_loop
     lda #9                                                            ; 52a2: a9 09       ..  :41a2[1]
     jsr OSWRCH                                                        ; 52a4: 20 ee ff     .. :41a4[1]   ; Write character 9
     txa                                                               ; 52a7: 8a          .   :41a7[1]
-    asl                                                               ; 52a8: 0a          .   :41a8[1]
+    asl                                                               ; 52a8: 0a          .   :41a8[1]   ; Shift clear bit out (clears carry)
     adc game_options,x                                                ; 52a9: 7d 70 40    }p@ :41a9[1]
     asl                                                               ; 52ac: 0a          .   :41ac[1]
     adc #$0b                                                          ; 52ad: 69 0b       i.  :41ad[1]
@@ -7065,7 +7078,7 @@ combat_preparation_screen
     sta temp0_high                                                    ; 5319: 85 81       ..  :4219[1]
     ldy #0                                                            ; 531b: a0 00       ..  :421b[1]
 plot_combat_preparations_loop
-    lda (temp0_low),y                                                 ; 531d: b1 80       ..  :421d[1]
+    lda (temp0_low),y                                                 ; 531d: b1 80       ..  :421d[1]   ; Offset Y=0
     cmp #$7e                                                          ; 531f: c9 7e       .~  :421f[1]
     beq finished_plotting_combat_preparations                         ; 5321: f0 0b       ..  :4221[1]
     jsr OSWRCH                                                        ; 5323: 20 ee ff     .. :4223[1]   ; Write character
@@ -7187,7 +7200,7 @@ starfleet_records_screen
     sta temp0_high                                                    ; 54ea: 85 81       ..  :43ea[1]
     ldy #0                                                            ; 54ec: a0 00       ..  :43ec[1]
 plot_starfleet_records_loop
-    lda (temp0_low),y                                                 ; 54ee: b1 80       ..  :43ee[1]
+    lda (temp0_low),y                                                 ; 54ee: b1 80       ..  :43ee[1]   ; Offset Y=0
     cmp #$7e                                                          ; 54f0: c9 7e       .~  :43f0[1]
     beq finished_plotting_starfleet_records                           ; 54f2: f0 0b       ..  :43f2[1]
     jsr OSWRCH                                                        ; 54f4: 20 ee ff     .. :43f4[1]   ; Write character
@@ -7225,8 +7238,8 @@ plot_high_scores_loop
     ; Print "   "
     lda #$20                                                          ; 5529: a9 20       .   :4429[1]
     jsr OSWRCH                                                        ; 552b: 20 ee ff     .. :442b[1]   ; Write character 32
-    jsr OSWRCH                                                        ; 552e: 20 ee ff     .. :442e[1]   ; Write character
-    jsr OSWRCH                                                        ; 5531: 20 ee ff     .. :4431[1]   ; Write character
+    jsr OSWRCH                                                        ; 552e: 20 ee ff     .. :442e[1]   ; Write character 32
+    jsr OSWRCH                                                        ; 5531: 20 ee ff     .. :4431[1]   ; Write character 32
     inx                                                               ; 5534: e8          .   :4434[1]
     inx                                                               ; 5535: e8          .   :4435[1]
     inx                                                               ; 5536: e8          .   :4436[1]
@@ -7240,8 +7253,8 @@ plot_name_loop
     ; Print "   "
     lda #$20                                                          ; 5543: a9 20       .   :4443[1]
     jsr OSWRCH                                                        ; 5545: 20 ee ff     .. :4445[1]   ; Write character 32
-    jsr OSWRCH                                                        ; 5548: 20 ee ff     .. :4448[1]   ; Write character
-    jsr OSWRCH                                                        ; 554b: 20 ee ff     .. :444b[1]   ; Write character
+    jsr OSWRCH                                                        ; 5548: 20 ee ff     .. :4448[1]   ; Write character 32
+    jsr OSWRCH                                                        ; 554b: 20 ee ff     .. :444b[1]   ; Write character 32
     ldy #$20                                                          ; 554e: a0 20       .   :444e[1]
     lda high_score_table - 16,x                                       ; 5550: bd 25 43    .%C :4450[1]
     jsr plot_two_digit_high_score                                     ; 5553: 20 79 44     yD :4453[1]
@@ -7261,6 +7274,10 @@ leave_after_plotting_underscores
     jsr wait_for_return                                               ; 5575: 20 bb 41     .A :4475[1]
     rts                                                               ; 5578: 60          `   :4478[1]
 
+; ***************************************************************************************
+; On Exit:
+;     X is preserved
+; ***************************************************************************************
 plot_two_digit_high_score
     sta temp7                                                         ; 5579: 85 88       ..  :4479[1]
     lsr                                                               ; 557b: 4a          J   :447b[1]
@@ -7353,7 +7370,7 @@ finished_moving_records
     sta temp0_high                                                    ; 5641: 85 81       ..  :4541[1]
     ldy #0                                                            ; 5643: a0 00       ..  :4543[1]
 plot_enter_your_name_loop
-    lda (temp0_low),y                                                 ; 5645: b1 80       ..  :4545[1]
+    lda (temp0_low),y                                                 ; 5645: b1 80       ..  :4545[1]   ; Offset Y=0
     cmp #$7e                                                          ; 5647: c9 7e       .~  :4547[1]
     beq finished_plotting_enter_your_name                             ; 5649: f0 0b       ..  :4549[1]
     jsr OSWRCH                                                        ; 564b: 20 ee ff     .. :454b[1]   ; Write character
@@ -7563,7 +7580,7 @@ skip
     sta temp0_high                                                    ; 58f3: 85 81       ..  :47f3[1]
     ldy #0                                                            ; 58f5: a0 00       ..  :47f5[1]
 plot_the_frontiers_loop
-    lda (temp0_low),y                                                 ; 58f7: b1 80       ..  :47f7[1]
+    lda (temp0_low),y                                                 ; 58f7: b1 80       ..  :47f7[1]   ; Offset Y=0
     cmp #$7e                                                          ; 58f9: c9 7e       .~  :47f9[1]
     beq finished_the_frontiers                                        ; 58fb: f0 0b       ..  :47fb[1]
     jsr OSWRCH                                                        ; 58fd: 20 ee ff     .. :47fd[1]   ; Write character
@@ -8071,7 +8088,7 @@ pydis_end
 ;     Data                     = 6105 bytes (36%)
 ;
 ;     Number of instructions   = 5145
-;     Number of data bytes     = 4129 bytes
+;     Number of data bytes     = 4136 bytes
 ;     Number of data words     = 2 bytes
-;     Number of string bytes   = 1974 bytes
-;     Number of strings        = 84
+;     Number of string bytes   = 1967 bytes
+;     Number of strings        = 83

@@ -26,7 +26,7 @@ start
 // 
 // On Exit:
 //     X: Length of the message just printed
-//     Y: (preserved)
+//     Y is preserved
 // ***************************************************************************************
 print_message
     ldx #0                                                            // 2010: a2 00       ..
@@ -67,6 +67,7 @@ found_digit
     bpl loop_next_decimal_digit                                       // 203f: 10 ea       ..
     rts                                                               // 2041: 60          `
 
+// A table of 3 bytes, indexed by Y (0 to 2), read at $202d and $2032
 decimal_digits
     .byt 1, 10, 100                                                   // 2042: 01 0a 64    ..d
 
@@ -80,8 +81,7 @@ decimal_digits
 // 
 // On Exit:
 //     A: (corrupted)
-//     X: (preserved)
-//     Y: (preserved)
+//     X and Y are preserved
 // ***************************************************************************************
 print_hex_number
     pha                                                               // 2045: 48          H

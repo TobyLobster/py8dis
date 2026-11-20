@@ -10206,7 +10206,7 @@ print_following_string
     ldy #0                                                            ; 3e54: a0 00       ..
 print_loop
     jsr increment_print_address                                       ; 3e56: 20 6a 3e     j>
-    lda (print_addr_low),y                                            ; 3e59: b1 2f       ./
+    lda (print_addr_low),y                                            ; 3e59: b1 2f       ./  ; Offset Y=0
     and #$7f                                                          ; 3e5b: 29 7f       ).
     jsr OSASCI                                                        ; 3e5d: 20 e3 ff     .. ; Write character
     lda (print_addr_low),y                                            ; 3e60: b1 2f       ./

@@ -7720,7 +7720,7 @@ nmi_XXX5 = c0d1f+1
     ; Print "**"
     lda #&2a ; '*'                                                    ; ab80: a9 2a       .*
     jsr OSASCI                                                        ; ab82: 20 e3 ff     ..            ; Write character 42
-    jsr OSASCI                                                        ; ab85: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; ab85: 20 e3 ff     ..            ; Write character 42
     jsr cac0f                                                         ; ab88: 20 0f ac     ..
     lda #0                                                            ; ab8b: a9 00       ..
     sta (l00ac,x)                                                     ; ab8d: 81 ac       ..
@@ -7809,7 +7809,7 @@ nmi_XXX5 = c0d1f+1
     jsr cac0f                                                         ; ac0c: 20 0f ac     ..
 ; ***************************************************************************************
 ; On Exit:
-;     A is preserved
+;     A, X and Y are preserved
 ; ***************************************************************************************
 ; &ac0f referenced 11 times by &81a7, &834f, &837d, &aa8f, &aab0, &ab2a, &ab62, &ab75, &ab88, &abd2, &ac0c
 .cac0f
@@ -8843,6 +8843,7 @@ jump_address_low = c0050+1
 .cb280
     jmp cb203                                                         ; b280: 4c 03 b2    L..
 
+; A table of 20 bytes, indexed by X (0 to 19), read at &b275
 ; &b283 referenced 1 time by &b275
 .lb283
     equb &0a                                                          ; b283: 0a          .

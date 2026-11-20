@@ -7691,7 +7691,7 @@ loop_cab80
     ; Print "**"
     lda #$2a ; '*'                                                    ; 4b80: a9 2a       .*  :ab80[1]
     jsr OSASCI                                                        ; 4b82: 20 e3 ff     .. :ab82[1]   ; Write character 42
-    jsr OSASCI                                                        ; 4b85: 20 e3 ff     .. :ab85[1]   ; Write character
+    jsr OSASCI                                                        ; 4b85: 20 e3 ff     .. :ab85[1]   ; Write character 42
     jsr cac0f                                                         ; 4b88: 20 0f ac     .. :ab88[1]
     lda #0                                                            ; 4b8b: a9 00       ..  :ab8b[1]
     sta (l00ac,x)                                                     ; 4b8d: 81 ac       ..  :ab8d[1]
@@ -7780,7 +7780,7 @@ sub_cac0c
     jsr cac0f                                                         ; 4c0c: 20 0f ac     .. :ac0c[1]
 ; ***************************************************************************************
 ; On Exit:
-;     A is preserved
+;     A, X and Y are preserved
 ; ***************************************************************************************
 ; $4c0f referenced 11 times by $81a7[1], $834f[1], $837d[1], $aa8f[1], $aab0[1], $ab2a[1], $ab62[1], $ab75[1], $ab88[1], $abd2[1], $ac0c[1]
 cac0f
@@ -8785,6 +8785,7 @@ loop_cb275
 cb280
     jmp cb203                                                         ; 5280: 4c 03 b2    L.. :b280[1]
 
+; A table of 20 bytes, indexed by X (0 to 19), read at $b275
 ; $5283 referenced 1 time by $b275[1]
 lb283
     !byte $0a                                                         ; 5283: 0a          .   :b283[1]

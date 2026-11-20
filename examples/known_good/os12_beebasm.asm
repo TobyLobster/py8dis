@@ -10998,15 +10998,29 @@ lffb3 = osbyte150EntryPoint+1
     jmp (filev)                                                       ; ffdd: 6c 12 02    l..
 
 ; ***************************************************************************************
+; On Exit:
+;     A: the character read
+;     C: set if Escape was pressed
+;     D: clear
+;     X and Y are preserved
+; ***************************************************************************************
 ; &ffe0 referenced 1 time by &e924
 .OSRDCH
     jmp (rdchv)                                                       ; ffe0: 6c 10 02    l.. ; Read a character from the current input stream
 
 ; ***************************************************************************************
+; On Exit:
+;     D: clear
+;     A, X and Y are preserved
+; ***************************************************************************************
 ; &ffe3 referenced 2 times by &deb4, &fa62
 .OSASCI
     cmp #&0d                                                          ; ffe3: c9 0d       ..  ; Write character
     bne OSWRCH                                                        ; ffe5: d0 07       ..  ; Write character
+; ***************************************************************************************
+; On Exit:
+;     D: clear
+;     A, X and Y are preserved
 ; ***************************************************************************************
 ; &ffe7 referenced 5 times by &dbf7, &dbfa, &dc5f, &dc62, &e96c
 .OSNEWL
@@ -11016,6 +11030,10 @@ lffb3 = osbyte150EntryPoint+1
 ; ***************************************************************************************
 .OSWRCR
     lda #&0d                                                          ; ffec: a9 0d       ..  ; Write carriage return (character 13)
+; ***************************************************************************************
+; On Exit:
+;     D: clear
+;     A, X and Y are preserved
 ; ***************************************************************************************
 ; &ffee referenced 8 times by &e921, &e94b, &f8ca, &f8dc, &f98e, &faef, &ffe5, &ffe9
 .OSWRCH

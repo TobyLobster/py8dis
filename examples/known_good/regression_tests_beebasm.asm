@@ -56,8 +56,8 @@ l03a0       = &03a0
 ;     Y: (ignored)
 ; 
 ; On Exit:
-;     A: (preserved)
 ;     Y: count
+;     A is preserved
 ; ***************************************************************************************
 ; &202f referenced 2 times by &2004, &2080
 .store_value

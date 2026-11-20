@@ -27,7 +27,7 @@ section pydis, org = &2000, filename = "local_labels_baron"
 ; 
 ; On Exit:
 ;     X: Holds the number of bits set.
-;     Y: (preserved)
+;     Y is preserved
 ; ***************************************************************************************
 .pydis_start
 .test_for_local_labels

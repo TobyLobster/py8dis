@@ -754,6 +754,36 @@ def substitute_constants(instruction, reg, constants_dict, define_all_constants=
 
     session.current().trace.substitute_constant_list.append(cpu6502.SubConst(instruction, reg, constants_dict, define_all_constants is not None))
 
+# The order of the registers and flags in the line of those a subroutine
+# preserves, as in the 'On Exit' notes py8dis writes itself (see
+# Cpu6502.comment_subroutine_exits())
+_PRESERVED_ORDER = "axyczvndi"
+
+def _on_exit_lines(on_exit):
+    """The lines of a subroutine header's 'On Exit:' notes for on_exit (see
+    subroutine()): 'X: description' for each register or flag, as given,
+    except that '(clear)' or '(set)' for a flag is written 'clear' or 'set',
+    and those whose description is '(preserved)' are together on a line of
+    their own at the end, e.g. 'A, X and Y are preserved' (as py8dis's own
+    notes are)."""
+    lines = []
+    preserved = []
+    for reg in on_exit:
+        description = on_exit[reg]
+        name = str(reg)
+        keyword = str(description).strip().lower()
+        if keyword == "(preserved)":
+            preserved.append(name)
+        elif name.lower() in "nvdizc" and len(name) == 1 and keyword in ("(clear)", "(set)"):
+            lines.append(name.upper() + ": " + keyword[1:-1])
+        else:
+            lines.append(name.upper() + ": " + description)
+    if preserved:
+        preserved.sort(key=lambda name: _PRESERVED_ORDER.find(name.lower()) if len(name) == 1 and name.lower() in _PRESERVED_ORDER else len(_PRESERVED_ORDER))
+        names = utils.and_list(name.upper() for name in preserved)
+        lines.append(names + (" is" if len(preserved) == 1 else " are") + " preserved")
+    return lines
+
 def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=None, on_exit=None, hook=None, move_id=None, is_entry_point=True):
     """
     Define a subroutine.
@@ -823,8 +853,8 @@ def subroutine(runtime_addr, name=None, title=None, description=None, on_entry=N
                 middle += config.get_indent_string() + reg.upper() + ": " + on_entry[reg] + "\n"
         if on_exit is not None and len(on_exit)>0:
             middle += "\nOn Exit:\n"
-            for reg in on_exit:
-                middle += config.get_indent_string() + reg.upper() + ": " + on_exit[reg] + "\n"
+            for line in _on_exit_lines(on_exit):
+                middle += config.get_indent_string() + line + "\n"
         if middle.startswith("\n"):
             middle = middle[1:]
         if middle.endswith("\n"):

@@ -24,13 +24,13 @@ start
     jsr OSWRCH                                                        // 2011: 20 ee ff     .. // Write character 1
     lda #0                                                            // 2014: a9 00       ..
     jsr OSWRCH                                                        // 2016: 20 ee ff     .. // Write character 0
-    jsr OSWRCH                                                        // 2019: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 201c: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 201f: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 2022: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 2025: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 2028: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 202b: 20 ee ff     .. // Write character
+    jsr OSWRCH                                                        // 2019: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 201c: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 201f: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 2022: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 2025: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 2028: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 202b: 20 ee ff     .. // Write character 0
     // Set logical colour 1 to physical colour 4
     ldx #$13                                                          // 202e: a2 13       ..
     txa                                                               // 2030: 8a          .   // A=$13
@@ -41,13 +41,13 @@ start
     jsr OSWRCH                                                        // 203b: 20 ee ff     .. // Write character 4
     lda #0                                                            // 203e: a9 00       ..
     jsr OSWRCH                                                        // 2040: 20 ee ff     .. // Write character 0
-    jsr OSWRCH                                                        // 2043: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 2046: 20 ee ff     .. // Write character
-    // Position text cursor at (X,Y)
+    jsr OSWRCH                                                        // 2043: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 2046: 20 ee ff     .. // Write character 0
+    // Position text cursor at (19,Y)
     lda #$1f                                                          // 2049: a9 1f       ..
     jsr OSWRCH                                                        // 204b: 20 ee ff     .. // Write character 31
-    txa                                                               // 204e: 8a          .
-    jsr OSWRCH                                                        // 204f: 20 ee ff     .. // Write character
+    txa                                                               // 204e: 8a          .   // A=$13
+    jsr OSWRCH                                                        // 204f: 20 ee ff     .. // Write character 19
     tya                                                               // 2052: 98          .
     jsr OSWRCH                                                        // 2053: 20 ee ff     .. // Write character
     // Position text cursor at (?,3)
@@ -90,8 +90,8 @@ end_of_plot
     // The end of a VDU sequence that earlier code started
     lda #0                                                            // 20a0: a9 00       ..
     jsr OSWRCH                                                        // 20a2: 20 ee ff     .. // Write character 0
-    jsr OSWRCH                                                        // 20a5: 20 ee ff     .. // Write character
-    jsr OSWRCH                                                        // 20a8: 20 ee ff     .. // Write character
+    jsr OSWRCH                                                        // 20a5: 20 ee ff     .. // Write character 0
+    jsr OSWRCH                                                        // 20a8: 20 ee ff     .. // Write character 0
     // Position text cursor at (5,6)
     lda #$1f                                                          // 20ab: a9 1f       ..
     jsr OSWRCH                                                        // 20ad: 20 ee ff     .. // Write character 31

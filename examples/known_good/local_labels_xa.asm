@@ -23,7 +23,7 @@ OSWRCH                  = $ffee
 // 
 // On Exit:
 //     X: Holds the number of bits set.
-//     Y: (preserved)
+//     Y is preserved
 // ***************************************************************************************
 pydis_start
 test_for_local_labels

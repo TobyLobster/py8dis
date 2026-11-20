@@ -61,8 +61,8 @@ c202c
 ;     Y: (ignored)
 ; 
 ; On Exit:
-;     A: (preserved)
 ;     Y: count
+;     A is preserved
 ; ***************************************************************************************
 ; $202f referenced 2 times by $2004, $2080
 store_value

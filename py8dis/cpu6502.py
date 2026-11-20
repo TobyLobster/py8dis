@@ -397,6 +397,31 @@ class CpuStateDisposition:
             assert item is None or item == 'pending' or utils.is_integer_type(item)
         self._d[key] = item
 
+    def apply_exit(self, preserved, values):
+        """What's known after a call to a subroutine whose subroutine()
+        declares what it leaves (see Cpu6502.declared_exits()): the
+        registers and flags in 'preserved' (a set of 'axynvdizc') are as
+        they were ('pending' becomes unknown), the rest are unknown, then the
+        flags in 'values' (a dict) have those values. What a flag says
+        about the registers (z_from, n_from, c_from) is kept if the flag and
+        the registers are preserved."""
+        for reg in "axy":
+            if reg not in preserved:
+                self._d[reg].clear()
+        for flag in "nvdizc":
+            if flag not in preserved or self._d[flag] == "pending":
+                self._d[flag] = None
+        for flag, value in values.items():
+            self._d[flag] = value
+        def kept(flag, regs):
+            return flag in preserved and all(r in preserved for r in regs)
+        if self.z_from is not None and not kept("z", self.z_from[0]):
+            self.z_from = None
+        if self.n_from is not None and not kept("n", self.n_from):
+            self.n_from = None
+        if self.c_from is not None and not kept("c", (self.c_from[0],)):
+            self.c_from = None
+
     def update_clear_nz(self, binary_addr):
         """N and Z become unknown."""
         self._d['n'] = None
@@ -1651,7 +1676,14 @@ class Cpu6502(cpu.Cpu):
                 if session.current().cpu.is_entered_inside(binary_addr, self.length()):
                     state.clear(pessimistic_only=True)
             else:
-                state.clear(pessimistic_only=False)
+                # (After a call to a subroutine whose subroutine() declares
+                # what it leaves, that's known; otherwise nothing is)
+                declared = session.current().cpu.declared_exits().get(self.target(binary_addr)) if isinstance(self, Cpu6502.OpcodeJsr) else None
+                if declared is None:
+                    state.clear(pessimistic_only=False)
+                else:
+                    state.optimistic.apply_exit(*declared)
+                    state.pessimistic.apply_exit(*declared)
 
         def is_block_end(self):
             """Whether the instruction ends a block of code, i.e. the code
@@ -3548,6 +3580,45 @@ class Cpu6502(cpu.Cpu):
             binary_addr, _ = movemanager.r2b(memorymanager.RuntimeAddr(runtime_addr & 0xffff))
         return binary_addr if binary_addr in node_set else None
 
+    # The descriptions in a subroutine()'s on_exit that declare what it
+    # leaves: a register or flag it doesn't change, and a flag's value
+    _PRESERVED_DESCRIPTION = "(preserved)"
+    _FLAG_VALUE_DESCRIPTIONS = {"(clear)": False, "(set)": True}
+
+    def declared_exits(self):
+        """What the subroutines given with subroutine() (see
+        trace.add_subroutine()) declare they leave behind, by runtime
+        address: (the registers and flags it preserves, as a set of
+        'axynvdizc', and the flags' values, as a dict), from on_exit
+        descriptions of exactly '(preserved)' (for a register or a flag),
+        or '(clear)' or '(set)' (for a flag), e.g. on_exit={'x':
+        '(preserved)', 'c': '(clear)'}. (E.g. acorn.mos_labels() declares
+        that OSWRCH preserves A, X and Y, and clears D.) Only those with at
+        least one such description are included. (Worked out again only
+        when a subroutine has been added since.)"""
+        subroutines = session.current().trace.subroutines_list
+        cached = getattr(self, "_declared_exits", None)
+        if cached is not None and cached[0] == len(subroutines):
+            return cached[1]
+        result = {}
+        for sub in subroutines:
+            preserved = set()
+            values = {}
+            for key, description in sub.on_exit.items():
+                name = str(key).lower()
+                description = str(description).strip().lower()
+                if name not in self._ALL_RESOURCES:
+                    continue
+                if description == self._PRESERVED_DESCRIPTION:
+                    preserved.add(name)
+                elif name in "nvdizc" and description in self._FLAG_VALUE_DESCRIPTIONS:
+                    values[name] = self._FLAG_VALUE_DESCRIPTIONS[description]
+            if preserved or values:
+                old_preserved, old_values = result.get(sub.runtime_addr, (set(), {}))
+                result[sub.runtime_addr] = (old_preserved | preserved, dict(old_values, **values))
+        self._declared_exits = (len(subroutines), result)
+        return result
+
     def subroutine_summaries(self, nodes, node_set):
         """A SubroutineSummary for each subroutine (each instruction a traced
         JSR goes to), by its binary address: what it may change, and where
@@ -3730,10 +3801,15 @@ class Cpu6502(cpu.Cpu):
         that isn't as it was at a return, or before a tail call, or that the
         tail call changes, is written. What it has pushed is forgotten (so
         pulling it gets nothing back) at a write to the stack, or a call to
-        a subroutine that may write to it (see SubroutineSummary.touches_stack)."""
+        a subroutine that may write to it (see SubroutineSummary.touches_stack).
+        A call to code outside the binary (e.g. an OS routine) changes
+        everything but what its subroutine() declares it preserves (see
+        declared_exits()), and what the subroutine itself is declared to
+        preserve isn't written."""
         regs = "axy"
         flags_all = self._FLAGS
         everything = set(self._ALL_RESOURCES)
+        declared = self.declared_exits()
 
         def join(s1, s2):
             holds = tuple(h1 if h1 == h2 else None for h1, h2 in zip(s1[0], s2[0]))
@@ -3783,7 +3859,12 @@ class Cpu6502(cpu.Cpu):
                 flags -= {"n", "z"}
             elif isinstance(c, self.OpcodeJsr):
                 callee = callee_of[b]
-                callee_written = everything if callee is None else entries[callee].written
+                if callee is None:
+                    # (Outside the code: e.g. an OS routine, which may change
+                    # anything it isn't declared to preserve)
+                    callee_written = everything - declared.get(c.target(b), (set(), {}))[0]
+                else:
+                    callee_written = entries[callee].written
                 for r in regs:
                     if r in callee_written:
                         holds[r] = None
@@ -3816,7 +3897,8 @@ class Cpu6502(cpu.Cpu):
                 if new != old:
                     states[f] = new
                     todo.append(f)
-        return written
+        # (Less what its subroutine() declares it preserves)
+        return written - declared.get(movemanager.b2r(BinaryAddr(entry)), (set(), {}))[0]
 
     def join_states_at_labels(self):
         """Work out what's known for certain (the pessimistic state) after
@@ -3946,6 +4028,8 @@ class Cpu6502(cpu.Cpu):
                         result = s if result is None else result.join(s)
             return result
 
+        declared = self.declared_exits()
+
         def after_call(p):
             """What's known after the JSR at p returns, if what the subroutine
             leaves is known: what it doesn't change is as before the call,
@@ -3977,6 +4061,9 @@ class Cpu6502(cpu.Cpu):
                     if value is not None and any(r in written for r in regs_of(value)):
                         value = None
                     setattr(result, name, value)
+            # (And the flags its subroutine() says it leaves set or clear)
+            for flag, value in declared.get(movemanager.b2r(BinaryAddr(callee)), (set(), {}))[1].items():
+                result[flag] = value
             return result
 
         def way_state(p, kind):
