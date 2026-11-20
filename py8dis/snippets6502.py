@@ -48,13 +48,16 @@ as acorn.py and commodore.py, and control files, add their own.
 """
 
 import classification
+import config
 import disassembly
 import effectpattern
+import movemanager
 import snippet6502
 import utils
 import session
 from align import Align
 from binaryaddrtype import BinaryAddrType
+from memorymanager import BinaryAddr
 from maker import make_add
 from snippethelper import *
 
@@ -591,15 +594,142 @@ def _state_entering(p, label_name):
             return state.pessimistic
     return None
 
-def comment_set_memory_one_register_loop(p, reg):
-    """Comment a loop that stores A in one or more runs of bytes (up to four
-    stores each time round), with one register ('reg') as both the index
-    and the count, e.g. 'sta table,y : iny : cpy #16 : bne loop' or 'sta
-    table,x : sta table+256,x : dex : bne loop': e.g. 'Clear 16 bytes of
-    memory from table onwards', 'Clear 512 bytes of memory from table
-    onwards' (runs that join up are given as one), or 'Set 8 bytes of
-    memory from table+1 onwards to 255'. The comment goes before the
-    loop's label.
+def _index_loop(p):
+    """For a loop whose index register is also its count (see
+    comment_set_memory_one_register_loop() and comment_search_loop()), with
+    its update (INX, DEX, INY or DEY), its compare (perhaps none) and its
+    branch back: (step, branch opcode, whether there's a compare, the
+    compare's value or None, a function that says whether the loop goes
+    round again for the register's new value), or None if that isn't known
+    (a BCC without a compare)."""
+    step = 1 if p.get_memory('update') in (OPCODE_INX, OPCODE_INY) else -1
+    branch = p.get_memory('branch')
+    has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
+    limit = p.get_memory('compare', 1) if has_compare else None
+    if has_compare:
+        if branch == OPCODE_BNE:
+            keep_going = lambda r: r != limit
+        elif branch == OPCODE_BCC:
+            keep_going = lambda r: r < limit
+        else:
+            # (BPL: while the difference is positive)
+            keep_going = lambda r: ((r - limit) & 0xff) < 0x80
+    elif branch == OPCODE_BNE:
+        keep_going = lambda r: r != 0
+    elif branch == OPCODE_BPL:
+        keep_going = lambda r: r < 0x80
+    else:
+        # (BCC without a compare: the carry doesn't change in the loop)
+        return None
+    return step, branch, has_compare, limit, keep_going
+
+def _is_traced(p, names):
+    """Whether the instructions at the names' positions are traced code
+    with CPU states (a post-trace function only comments code)."""
+    cpu = session.current().cpu
+    for name in names:
+        binary_addr = p.get_binary_address(name)
+        if not (isinstance(classification.get_classification(binary_addr), cpu.Opcode) and cpu.cpu_states[binary_addr] is not None):
+            return False
+    return True
+
+def _matched(p, name):
+    """Whether the name matched. (Only names in the snippet are asked for:
+    asking for another would add it to the pattern's names.)"""
+    return name in p.labels and p.get_memory(name) is not None
+
+def _operand_modified(p, name, kind):
+    """Whether the code changes the operand ('name', of a kind 'abs', 'zp' or
+    'indirect') of a loop's instruction (self-modifying code: see
+    Cpu6502.is_operand_modified()), so it isn't what it says."""
+    return session.current().cpu.is_operand_modified(p.get_binary_address(name) - 1, 2 if kind == "abs" else 1)
+
+def _pointed_to(p, state, name, offset):
+    """For an indirect operand, the label of the byte 'offset' on from where
+    the pointer points, if what's known entering the loop ('state') says
+    where that is (see CpuStateDisposition.pointer()), otherwise None."""
+    pointer = state.pointer(p.get_memory(name))
+    if pointer is None:
+        return None
+    return disassembly.get_label((pointer + offset) & 0xffff, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+
+def _first_byte(p, state, name, kind, lowest):
+    """The first byte a loop's instruction uses, for its comment: the
+    operand ('name', of a kind 'abs', 'zp' or 'indirect') plus 'lowest' (and
+    an absolute operand is written as that byte's label minus 'lowest',
+    unless the operand's address has a name of its own, when the first byte
+    is e.g. 'buffer+1'; and an indirect one as the label of the byte it
+    points to, if that's known). An absolute operand that the code changes
+    (see _operand_modified()) is 'the address in' the label of the
+    operand's bytes (e.g. 'the address in dest_low'). None if it can't be
+    said: another operand that the code changes, or one that the code
+    changes and isn't the first byte."""
+    if _operand_modified(p, name, kind):
+        if kind != "abs" or lowest:
+            return None
+        operand = p.get_binary_address(name)
+        label = disassembly.get_label(movemanager.b2r(BinaryAddr(operand)), operand, binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+        return utils.LazyString("the address in %s", label)
+    if kind == "indirect":
+        known = _pointed_to(p, state, name, lowest)
+        if known is not None:
+            return known
+        return utils.LazyString("(%s)%s", p.get_expr(name), "+{0}".format(lowest) if lowest else "")
+    if kind == "zp":
+        zp_addr = p.get_memory(name)
+        if lowest and zp_addr + lowest <= 0xff:
+            # (Named by its own label, e.g. 'l00e2', rather than as 'l0000 + 226')
+            return disassembly.get_label(zp_addr + lowest, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
+        return make_add(p.get_expr(name), lowest) if lowest else p.get_expr(name)
+    if lowest and _has_name(p.get_memory(name)):
+        return make_add(p.get_expr(name), lowest)
+    first = p.get_expr(name, label_offset=0, final_offset=lowest)
+    if lowest:
+        store_operand = p.get_binary_address(name)
+        proposed_expression = p.make_subtract_wrapped(first, name, lowest)
+        new_expression = classification.add_expression(store_operand, proposed_expression, force=False)
+        if new_expression is not None and new_expression != proposed_expression:
+            first = make_add(new_expression, lowest)
+    return first
+
+def _has_name(runtime_addr):
+    """Whether the label at the runtime address (if any) has a name of its
+    own (from label() and the like), rather than one py8dis makes up."""
+    label = session.current().labels.labels.get(runtime_addr)
+    return label is not None and any(label.explicit_names.values())
+
+def _from_register_to(p, state, name, kind, register, limit):
+    """For a loop counting up from the register's value (not known) to
+    'limit', the bytes the operand ('name', of a kind 'abs', 'zp' or
+    'indirect') covers, e.g. 'from table+X to table+63', or None if the code
+    changes the operand (see _operand_modified())."""
+    if _operand_modified(p, name, kind):
+        return None
+    if kind == "indirect":
+        first, last = _pointed_to(p, state, name, 0), _pointed_to(p, state, name, limit - 1)
+        if first is not None:
+            return utils.LazyString("from %s+%s to %s", first, register, last)
+        last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
+        return utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last)
+    if kind == "zp":
+        return utils.LazyString("from %s+%s to %s", p.get_expr(name), register, make_add(p.get_expr(name), limit - 1))
+    if _has_name(p.get_memory(name)):
+        # (e.g. 'table+7', as for the first byte in _first_byte(), rather
+        # than a new label in the middle of the table)
+        last = make_add(p.get_expr(name), limit - 1)
+    else:
+        last = p.get_expr(name, label_offset=0, final_offset=limit - 1)
+    return utils.LazyString("from %s+%s to %s", p.get_expr(name), register, last)
+
+def comment_set_memory_one_register_loop(p, reg, zero=False):
+    """Comment a loop that stores A (or with 'zero', zero: the 65C02's STZ)
+    in one or more runs of bytes (up to four stores each time round), with
+    one register ('reg') as both the index and the count, e.g. 'sta table,y
+    : iny : cpy #16 : bne loop' or 'sta table,x : sta table+256,x : dex :
+    bne loop': e.g. 'Clear 16 bytes of memory from table onwards', 'Clear
+    512 bytes of memory from table onwards' (runs that join up are given as
+    one), or 'Set 8 bytes of memory from table+1 onwards to 255'. The
+    comment goes before the loop's label.
 
     The register's first value and A's value are what's known for certain
     on coming into the loop from the instruction before it (see
@@ -622,86 +752,36 @@ def comment_set_memory_one_register_loop(p, reg):
     that way: see Cpu6502.name_pointer_loads()), otherwise as e.g.
     '(ptr)+2'."""
     cpu = session.current().cpu
-    for name in ('loop', 'update', 'branch'):
-        binary_addr = p.get_binary_address(name)
-        if not (isinstance(classification.get_classification(binary_addr), cpu.Opcode) and cpu.cpu_states[binary_addr] is not None):
-            # (It isn't traced code)
-            return
+    if not _is_traced(p, ('loop', 'update', 'branch')):
+        return
     if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
         return
     state = _state_entering(p, 'loop')
     if state is None:
         return
     start = state[reg].value
-    to_value = state['a'].value
-    step = 1 if p.get_memory('update') in (OPCODE_INX, OPCODE_INY) else -1
-    branch = p.get_memory('branch')
-    has_compare = p.get_binary_address('compare') != p.get_binary_address('branch')
-    limit = p.get_memory('compare', 1) if has_compare else None
-    if has_compare:
-        if branch == OPCODE_BNE:
-            keep_going = lambda r: r != limit
-        elif branch == OPCODE_BCC:
-            keep_going = lambda r: r < limit
-        else:
-            # (BPL: while the difference is positive)
-            keep_going = lambda r: ((r - limit) & 0xff) < 0x80
-    elif branch == OPCODE_BNE:
-        keep_going = lambda r: r != 0
-    elif branch == OPCODE_BPL:
-        keep_going = lambda r: r < 0x80
-    else:
-        # (BCC without a compare: the carry doesn't change in the loop)
+    to_value = 0 if zero else state['a'].value
+    loop = _index_loop(p)
+    if loop is None:
         return
-
-    # (Only names in this snippet are asked for: asking for another would
-    # add it to the pattern's names)
-    def matched(name):
-        return name in p.labels and p.get_memory(name) is not None
+    step, branch, has_compare, limit, keep_going = loop
 
     # The stores, each as (the name of its operand, and the kind: 'abs',
     # 'zp' or 'indirect')
     stores = []
     for n in range(1, 5):
         for name, kind in (("addr%d" % n, "abs"), ("zpaddr%d" % n, "zp"), ("zpptr%d" % n, "indirect")):
-            if matched(name):
+            if _matched(p, name):
                 stores.append((name, kind))
     if not stores:
         return
-
-    def pointed_to(name, offset):
-        """For an indirect store, the label of the byte 'offset' on from
-        where the pointer points, if what's known entering the loop says
-        where that is (see CpuStateDisposition.pointer()), otherwise None."""
-        pointer = state.pointer(p.get_memory(name))
-        if pointer is None:
-            return None
-        return disassembly.get_label((pointer + offset) & 0xffff, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-
-    def first_byte(name, kind, lowest):
-        """The first byte the store writes, for the comment: the operand plus
-        'lowest' (and an absolute operand is written as that byte's label
-        minus 'lowest'; and an indirect one as the label of the byte it
-        points to, if that's known)."""
-        if kind == "indirect":
-            known = pointed_to(name, lowest)
-            if known is not None:
-                return known
-            return utils.LazyString("(%s)%s", p.get_expr(name), "+{0}".format(lowest) if lowest else "")
-        if kind == "zp":
-            zp_addr = p.get_memory(name)
-            if lowest and zp_addr + lowest <= 0xff:
-                # (Named by its own label, e.g. 'l00e2', rather than as 'l0000 + 226')
-                return disassembly.get_label(zp_addr + lowest, p.get_binary_address(name), binary_addr_type=BinaryAddrType.BINARY_ADDR_IS_AT_LABEL_USAGE)
-            return make_add(p.get_expr(name), lowest) if lowest else p.get_expr(name)
-        first = p.get_expr(name, label_offset=0, final_offset=lowest)
-        if lowest:
-            store_operand = p.get_binary_address(name)
-            proposed_expression = p.make_subtract_wrapped(first, name, lowest)
-            new_expression = classification.add_expression(store_operand, proposed_expression, force=False)
-            if new_expression is not None and new_expression != proposed_expression:
-                first = make_add(new_expression, lowest)
-        return first
+    if zero:
+        # (Only the 65C02's STZ: the same opcodes are other instructions on
+        # the 6510)
+        for name, _ in stores:
+            c = classification.get_classification(p.get_binary_address(name) - 1)
+            if not (isinstance(c, cpu.Opcode) and c.mnemonic.upper() == "STZ"):
+                return
 
     if to_value == 0:
         verb, to_text = "Clear", ""
@@ -726,24 +806,16 @@ def comment_set_memory_one_register_loop(p, reg):
         parts = []
         for i, (address, n, (name, kind)) in enumerate(runs):
             units = ("byte of memory", "bytes of memory") if i == 0 else ("byte", "bytes")
-            parts.append(utils.LazyString("%s from %s onwards", utils.count_with_units(n, *units), first_byte(name, kind, lowest)))
+            first = _first_byte(p, state, name, kind, lowest)
+            if first is None:
+                return
+            parts.append(utils.LazyString("%s from %s onwards", utils.count_with_units(n, *units), first))
     elif step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
         # Counting up to the limit, from the register's value: the last
         # byte is at limit-1
-        parts = []
-        for name, kind in stores:
-            if kind == "indirect":
-                first, last = pointed_to(name, 0), pointed_to(name, limit - 1)
-                if first is not None:
-                    parts.append(utils.LazyString("from %s+%s to %s", first, register, last))
-                else:
-                    last = utils.LazyString("(%s)+%d", p.get_expr(name), limit - 1)
-                    parts.append(utils.LazyString("from (%s)+%s to %s", p.get_expr(name), register, last))
-            elif kind == "zp":
-                parts.append(utils.LazyString("from %s+%s to %s", p.get_expr(name), register, make_add(p.get_expr(name), limit - 1)))
-            else:
-                last = p.get_expr(name, label_offset=0, final_offset=limit - 1)
-                parts.append(utils.LazyString("from %s+%s to %s", p.get_expr(name), register, last))
+        parts = [_from_register_to(p, state, name, kind, register, limit) for name, kind in stores]
+        if None in parts:
+            return
         parts[0] = utils.LazyString("memory %s", parts[0])
     elif step == -1 and not has_compare:
         # Counting down to zero (the register's value down to 1) or past it
@@ -753,7 +825,10 @@ def comment_set_memory_one_register_loop(p, reg):
         parts = []
         for i, (name, kind) in enumerate(stores):
             units = "bytes of memory" if i == 0 else "bytes"
-            parts.append(utils.LazyString("%s %s from %s onwards", count, units, first_byte(name, kind, lowest)))
+            first = _first_byte(p, state, name, kind, lowest)
+            if first is None:
+                return
+            parts.append(utils.LazyString("%s %s from %s onwards", count, units, first))
     else:
         return
 
@@ -778,6 +853,99 @@ def comment_set_memory_x_index_loop(p):
     """Post-trace function for a loop that stores A with X as both the
     index and the count (see comment_set_memory_one_register_loop())."""
     comment_set_memory_one_register_loop(p, 'x')
+
+OPCODE_BEQ                      = 0xf0      # beq found
+# (LDA with an operand, for comment_search_loop())
+OPCODES_LDA                     = {0xbd, 0xb5, 0xb9, 0xb1}
+
+def comment_search_loop(p, reg):
+    """Comment a loop that looks through a run of bytes for one, with one
+    register ('reg') as both the index and the count, e.g. 'cmp table,x : beq
+    found : inx : cpx #16 : bne loop' ('Search 16 bytes from table for A'),
+    'lda (ptr),y : beq found : iny : bne loop' ('Search 256 bytes from (ptr)
+    for 0'), or 'lda table,x : cmp #13 : bne found : dex : bpl loop'
+    ('Search 8 bytes from table for a byte other than 13'). What's searched
+    for is A (or its value, if it's known entering the loop), 0 (LDA), or
+    the CMP's value; with BNE rather than BEQ, it's a byte other than that.
+    The comment goes before the loop's label.
+
+    The bytes are worked out as for comment_set_memory_one_register_loop()
+    (which see), from the register's first value, or, if that isn't known,
+    in terms of it: e.g. 'Search X+1 bytes from table for A' for 'dex : bpl
+    loop'."""
+    if not _is_traced(p, ('loop', 'found_branch', 'update', 'branch')):
+        return
+    if not p.check_branch_matches('loop') or p.num_references('loop') != 1:
+        return
+    state = _state_entering(p, 'loop')
+    if state is None:
+        return
+    loop = _index_loop(p)
+    if loop is None:
+        return
+    step, branch, has_compare, limit, keep_going = loop
+    operand = next(((name, kind) for name, kind in (("addr1", "abs"), ("zpaddr1", "zp"), ("zpptr1", "indirect")) if _matched(p, name)), None)
+    if operand is None:
+        return
+    name, kind = operand
+    register = reg.upper()
+
+    # What it looks for
+    hex = config.get_assembler().hex
+    def number(v):
+        return hex(v) if v > 9 else str(v)
+    if _matched(p, 'value'):
+        target = number(p.get_memory('value'))
+    elif p.memory_binary[p.get_binary_address('loop')] in OPCODES_LDA:
+        target = "0"
+    else:
+        a = state['a'].value
+        target = "A" if a is None else number(a)
+    if p.get_memory('found_branch') != OPCODE_BEQ:
+        target = "a non-zero byte" if target == "0" else "a byte other than " + target
+
+    start = state[reg].value
+    if start is not None:
+        run = _loop_run(start, step, keep_going)
+        if run is None:
+            return
+        lowest, count = run
+        first = _first_byte(p, state, name, kind, lowest)
+        where = None if first is None else utils.LazyString("%s from %s", utils.count_with_units(count, "byte", "bytes"), first)
+    elif step == 1 and has_compare and branch in (OPCODE_BNE, OPCODE_BCC) and limit > 0:
+        where = _from_register_to(p, state, name, kind, register, limit)
+    elif step == -1 and not has_compare:
+        count = register if branch == OPCODE_BNE else register + "+1"
+        lowest = 1 if branch == OPCODE_BNE else 0
+        first = _first_byte(p, state, name, kind, lowest)
+        where = None if first is None else utils.LazyString("%s bytes from %s", count, first)
+    else:
+        return
+    if where is None:
+        return
+    _comment_loop(p.get_start_loc(), utils.LazyString("Search %s for %s", where, target))
+    # (And the loads that set a pointer whose value is known, as for a loop
+    # that sets memory)
+    if kind == "indirect":
+        pointer = state.pointer(p.get_memory(name))
+        if pointer is not None:
+            session.current().cpu.name_pointer_loads(p.get_binary_address('loop'), p.get_memory(name), pointer)
+
+def comment_search_x_index_loop(p):
+    """Post-trace function for a loop that looks through bytes with X as
+    both the index and the count (see comment_search_loop())."""
+    comment_search_loop(p, 'x')
+
+def comment_search_y_index_loop(p):
+    """Post-trace function for a loop that looks through bytes with Y as
+    both the index and the count (see comment_search_loop())."""
+    comment_search_loop(p, 'y')
+
+def comment_clear_memory_x_index_loop(p):
+    """Post-trace function for a loop that stores zero (the 65C02's STZ)
+    with X as both the index and the count (see
+    comment_set_memory_one_register_loop())."""
+    comment_set_memory_one_register_loop(p, 'x', zero=True)
 
 
 # ************************************************************************************************
@@ -1028,6 +1196,56 @@ update
     inx | dex
 compare
 ?   cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+# The 65C02's STZ in such a loop, which clears the bytes, e.g. 'ldx #15 :
+# loop stz table,x : dex : bpl loop' ('Clear 16 bytes of memory from table
+# onwards'). (Not traced, as above: only the 65C02's code has STZ.)
+register_snippet(None, comment_clear_memory_x_index_loop, """
+loop
+    stz addr1,x | stz zpaddr1,x
+?   stz addr2,x | stz zpaddr2,x
+?   stz addr3,x | stz zpaddr3,x
+?   stz addr4,x | stz zpaddr4,x
+update
+    inx | dex
+compare
+?   cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+# Loops that look through bytes for one, with one register as both the
+# index and the count: comparing A with each byte ('cmp table,x'), loading
+# each to look for 0 ('lda table,x'), or loading each and comparing it with a
+# value ('lda table,x : cmp #13'), and leaving the loop when it's found (BEQ),
+# or when a byte other than that is found (BNE). Commented e.g. 'Search 16
+# bytes from table for A' (see comment_search_loop()). (Not traced, as
+# above.)
+register_snippet(None, comment_search_x_index_loop, """
+loop
+    lda addr1,x : cmp #value | lda zpaddr1,x : cmp #value | cmp addr1,x | cmp zpaddr1,x | lda addr1,x | lda zpaddr1,x
+found_branch
+    beq found | bne found
+update
+    inx | dex
+compare
+?   cpx #nn
+branch
+    bne loop | bpl loop | bcc loop
+""")
+
+register_snippet(None, comment_search_y_index_loop, """
+loop
+    lda addr1,y : cmp #value | lda (zpptr1),y : cmp #value | cmp addr1,y | cmp (zpptr1),y | lda addr1,y | lda (zpptr1),y
+found_branch
+    beq found | bne found
+update
+    iny | dey
+compare
+?   cpy #nn
 branch
     bne loop | bpl loop | bcc loop
 """)

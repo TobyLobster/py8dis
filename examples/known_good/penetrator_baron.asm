@@ -1658,6 +1658,7 @@ l5fac = logo_picture+8108
     cmp #&ad ; '-'                                                    ; 613d: c9 ad       I-
     bcs c6167                                                         ; 613f: b0 26       0.
     ldx #1                                                            ; 6141: a2 01       ".
+    ; Search 2 bytes from lb31e for 0
 ; &6143 referenced 1 time by &6149
 .loop_c6143
     lda lb31e,x                                                       ; 6143: bd 1e b3    =.3
@@ -2575,6 +2576,7 @@ l5fac = logo_picture+8108
 l671e = c671d+1
     ldx #0                                                            ; 671d: a2 00       ".
 ; &671e referenced 2 times by &66fd, &6715
+    ; Search X+1 bytes from the address in l6720 for A
 ; &671f referenced 1 time by &6725
 .loop_c671f
 l6720 = loop_c671f+1
@@ -3287,9 +3289,9 @@ l6721 = loop_c671f+2
 .uiFileLoadSave
     sta tempBlock+15                                                  ; 6c0d: 85 65       ..
     jsr drawClearScreen                                               ; 6c0f: 20 38 7e    ...
-    lda #&0c                                                          ; 6c12: a9 0c       ).
+    lda #<lb30c                                                       ; 6c12: a9 0c       ).
     sta zWorldPtr                                                     ; 6c14: 85 50       ..
-    lda #&b3 ; '3'                                                    ; 6c16: a9 b3       )3
+    lda #>lb30c                                                       ; 6c16: a9 b3       )3
     sta zWorldPtr+1                                                   ; 6c18: 85 51       ..
     lda #&0c                                                          ; 6c1a: a9 0c       ).
     sta tempBlock+18                                                  ; 6c1c: 85 68       ..
@@ -3297,6 +3299,7 @@ l6721 = loop_c671f+2
     sty KBDSTRB                                                       ; 6c20: 8c 10 c0    ..@ ; Clear the keyboard strobe
     sty lastInput                                                     ; 6c23: 84 92       ..
     sty tempBlock+16                                                  ; 6c25: 84 66       ..
+    ; Search 256 bytes from lb30c for 0
 ; &6c27 referenced 1 time by &6c2c
 .loop_c6c27
     lda (zWorldPtr),y                                                 ; 6c27: b1 50       1.
@@ -6594,6 +6597,7 @@ l7fa5 = c7fa3+2
 ; &81df referenced 1 time by &7142
 .drawBombs
     ldx #1                                                            ; 81df: a2 01       ".
+    ; Search 2 bytes from lb31e for a non-zero byte
 ; &81e1 referenced 1 time by &81e7
 .loop_c81e1
     lda lb31e,x                                                       ; 81e1: bd 1e b3    =.3
@@ -7405,6 +7409,7 @@ l8465 = c8463+2
     sta numPlayers                                                    ; 865c: 85 79       ..
     lda pathname                                                      ; 865e: ad 80 02    -..
     tax                                                               ; 8661: aa          *
+    ; Search X bytes from pathname + 1 for &2f
 ; &8662 referenced 1 time by &866a
 .loop_c8662
     lda pathname,x                                                    ; 8662: bd 80 02    =..
@@ -8647,6 +8652,7 @@ lb2a4 = lb2a3+1
 ; &b308 referenced 3 times by &7518, &7523, &752d
 .lb308
     equb &31, &32, &33, 0                                             ; b308: 31 32 33... ...
+.lb30c
     equb &50, &45, &4e, &45, &57, &4f, &52, &4c, &44, &30, &31, 0, 0  ; b30c: 50 45 4e... ...
 ; &b319 referenced 1 time by &855c
 .lb319
@@ -8755,6 +8761,8 @@ lb2a4 = lb2a3+1
     equb 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0               ; b912: 00 00 00... ...
 .pydis_end
 
+    assert (<lb30c) = &0c
+    assert (>lb30c) = &b3
     assert (close_params) = &b2a7
     assert (create_params) = &b285
     assert (data_buffer) = &8c23
@@ -10844,6 +10852,7 @@ endsection
 ;     lb300
 ;     lb301
 ;     lb308
+;     lb30c
 ;     lb319
 ;     lb31c
 ;     lb31e

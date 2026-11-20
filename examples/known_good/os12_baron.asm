@@ -3299,6 +3299,7 @@ lc4ab = lc4aa+1
 ; &cfdc referenced 2 times by &cac4, &cfba
 .ccfdc
     ldy #2                                                            ; cfdc: a0 02       ..
+    ; Search 3 bytes from lc4b6 for A
 ; &cfde referenced 1 time by &cfe4
 .loop_ccfde
     cmp lc4b6,y                                                       ; cfde: d9 b6 c4    ...
@@ -5883,6 +5884,7 @@ lc4ab = lc4aa+1
     lda #8                                                            ; df8d: a9 08       ..
     jsr ce031                                                         ; df8f: 20 31 e0     1.
     ldy #0                                                            ; df92: a0 00       ..
+    ; Search 256 bytes from (os_text_ptr) for &0d
 ; &df94 referenced 1 time by &df9b
 .loop_cdf94
     lda (os_text_ptr),y                                               ; df94: b1 f2       ..

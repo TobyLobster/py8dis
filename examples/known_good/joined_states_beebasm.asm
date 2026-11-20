@@ -52,6 +52,7 @@ l0072   = &0072
 .sub_c202e
     lda l0072                                                         ; 202e: a5 72       .r  A:-- X:-- Y:-- ------
     ldx #0                                                            ; 2030: a2 00       ..  A:-- X:00 Y:-- n---Z-
+    ; Search 4 bytes from l2058 for A
 ; &2032 referenced 1 time by &203a
 .loop_c2032
     cmp l2058,x                                                       ; 2032: dd 58 20    .X  A:-- X:0- Y:-- ----??

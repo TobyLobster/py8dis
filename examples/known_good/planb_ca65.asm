@@ -11071,7 +11071,7 @@ write_collision_map_loop:
     ldy sprite_pixel_width_minus_one                                  ; 43c9: a4 02       ..
     dey                                                               ; 43cb: 88          .
     lda collision_map_byte_to_write                                   ; 43cc: a5 0c       ..
-    ; Set Y+1 bytes of memory from address_to_overwrite onwards
+    ; Set Y+1 bytes of memory from the address in collision_map_dest_low onwards
 inner_loop:
 collision_map_dest_low = inner_loop+1
 collision_map_dest_high = inner_loop+2

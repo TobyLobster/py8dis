@@ -9,7 +9,15 @@ These are for going further than the ordinary commands: teaching py8dis to recog
 
 ## Snippets
 
-A snippet recognises a common piece of 6502 code and comments it, or traces the code it leads to. py8dis has some built in (e.g. memory copying loops, and loops that set memory, e.g. `; Clear 16 bytes of memory from buffer onwards` before `sta buffer,y : iny : cpy #16 : bne loop`, using what's known about the registers coming into the loop; these comments go before the loop's label, indented if the code before runs on into the loop), and `acorn.bbc()`, `commodore.c64()` etc. add more (e.g. code that sets an OS vector). A control file can add its own:
+A snippet recognises a common piece of 6502 code and comments it, or traces the code it leads to. py8dis has some built in, for loops, using what's known about the registers coming into the loop (these comments go before the loop's label, indented if the code before runs on into the loop):
+
+- loops that copy memory;
+- loops that set memory, e.g. `; Clear 16 bytes of memory from buffer onwards` before `sta buffer,y : iny : cpy #16 : bne loop`, and the 65C02's `stz buffer,x` loops;
+- loops that search memory for a byte, with the index register as the count: e.g. `; Search 16 bytes from key_table for A` before `cmp key_table,x : beq found : inx : cpx #16 : bne loop`, `; Search 256 bytes from (ptr) for 0` before `lda (ptr),y : beq found : iny : bne loop`, and `; Search 40 bytes from buffer for a byte other than $20` before `lda buffer,y : cmp #' ' : bne found : iny : cpy #40 : bcc loop`.
+
+Where the index register's first value isn't known, the comment is in terms of it, e.g. `; Search X+1 bytes from table for A` for `dex : bpl loop`, or `; Search from table+X to table + 7 for A` for `inx : cpx #8 : bne loop`. Where the first byte isn't the operand's address, it's named by its own label and the operand is written as that label minus the difference (`stz table - 1,x`), unless the operand's address has a name of its own (e.g. from `label()`), when the first byte is e.g. `buffer + 1`. For loops that set or search memory, an absolute operand that the code changes (self-modifying code) is "the address in" the label of its bytes, e.g. `; Set Y+1 bytes of memory from the address in dest_low onwards`, if the loop starts at the operand's address; otherwise the loop gets no comment, since the operand assembled isn't where it looks.
+
+`acorn.bbc()`, `commodore.c64()` etc. add more snippets (e.g. code that sets an OS vector). A control file can add its own:
 
 `snippets6502.register_snippet(pre_trace_fn, post_trace_fn, snippet)`
 

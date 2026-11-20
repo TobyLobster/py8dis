@@ -1972,6 +1972,7 @@ lc959 = cc958+1
     jsr pop_to_52                                                     ; c9c0: 20 cb c3     ..
     ldy #0                                                            ; c9c3: a0 00       ..
     lda #&0d                                                          ; c9c5: a9 0d       ..
+    ; Search 256 bytes from (l0052) for &0d
 ; &c9c7 referenced 1 time by &c9cc
 .loop_cc9c7
     cmp (l0052),y                                                     ; c9c7: d1 52       .R

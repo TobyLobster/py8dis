@@ -1024,6 +1024,7 @@ ce8ad
     bmi ce8bf                                                         ; e8b0: 30 0d       0.
     tya                                                               ; e8b2: 98          .
     ldx #3                                                            ; e8b3: a2 03       ..
+    ; Search 4 bytes from lea87 for A
 ; $e8b5 referenced 1 time by $e8bb
 loop_ce8b5
     cmp lea87,x                                                       ; e8b5: dd 87 ea    ...
@@ -4403,6 +4404,7 @@ sub_cfc03
     inx                                                               ; fc05: e8          .
     bne cfc12                                                         ; fc06: d0 0a       P.
     ldx #6                                                            ; fc08: a2 06       ..
+    ; Search 7 bytes from lebc1 for A
 ; $fc0a referenced 1 time by $fc10
 loop_cfc0a
     cmp lebc1,x                                                       ; fc0a: dd c1 eb    .A.

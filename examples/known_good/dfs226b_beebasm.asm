@@ -2506,6 +2506,7 @@ l8004 = service_entry+1
 ; &2c56 referenced 1 time by &8c1c[1]
 .sub_c8c56
     ldx #5                                                            ; 2c56: a2 05       ..  :8c56[1]
+    ; Search 6 bytes from l9139 for A
 ; &2c58 referenced 1 time by &8c5e[1]
 .loop_c8c58
     cmp l9139,x                                                       ; 2c58: dd 39 91    .9. :8c58[1]

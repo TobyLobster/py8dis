@@ -353,10 +353,11 @@ CLALL   = &ffe7
 .ca271
     inc basic_multiply_result+3                                       ; a271: e6 29       .)
 ; &a273 referenced 3 times by &affd, &b998, &b9b2
-.return_14
+.return_20
     rts                                                               ; a273: 60          .
 
 ; A table of 22 bytes, indexed by Y (1 to 22), read at &affd
+.la274
     equb &3e, &3d, &3c, &2f, &2d, &2a ; petscii ">=</-*"              ; a274: 3e 3d 3c... >=<
     equb &5e                                                          ; a27a: 5e          .
     equb &2b, &51, &23, &28, &4b, &58, &59, &57 ; petscii "+q#(kxyw"  ; a27b: 2b 51 23... +q#
@@ -993,6 +994,7 @@ CLALL   = &ffe7
 .la69b
     equb &60                                                          ; a69b: 60          .
 ; A table of 14 bytes, indexed by X (1 to 14) and Y (1 to 14), read at &aff3, &b979 and &b98e
+.la69c
     equb &20, &55, &46, &4c, &44, &50, &49, &41 ; petscii " ufldpia"  ; a69c: 20 55 46...  uf
     equb &52, &4f, &53, &4e, &45, &54 ; petscii "rosnet"              ; a6a4: 52 4f 53... ros
 
@@ -2374,16 +2376,18 @@ la6cc = ca6cb+1
 ; &aff1 referenced 1 time by &afeb
 .caff1
     ldy #&0e                                                          ; aff1: a0 0e       ..
+    ; Search 14 bytes from la69c for A
 ; &aff3 referenced 1 time by &aff9
 .loop_caff3
-    cmp la69b,y                                                       ; aff3: d9 9b a6    Y..
+    cmp la69c - 1,y                                                   ; aff3: d9 9b a6    Y..
     beq cb006                                                         ; aff6: f0 0e       ..
     dey                                                               ; aff8: 88          .
     bne loop_caff3                                                    ; aff9: d0 f8       P.
     ldy #&16                                                          ; affb: a0 16       ..
+    ; Search 22 bytes from la274 for A
 ; &affd referenced 1 time by &b003
 .loop_caffd
-    cmp return_14,y                                                   ; affd: d9 73 a2    Y..
+    cmp la274 - 1,y                                                   ; affd: d9 73 a2    Y..
     beq cb045                                                         ; b000: f0 43       .c
     dey                                                               ; b002: 88          .
     bne loop_caffd                                                    ; b003: d0 f8       P.
@@ -2416,12 +2420,12 @@ la6cc = ca6cb+1
     inc l0101                                                         ; b027: ee 01 01    ...
     lda l0101                                                         ; b02a: ad 01 01    ...
     cmp #7                                                            ; b02d: c9 07       I.
-    beq return_15                                                     ; b02f: f0 07       ..
+    beq return_14                                                     ; b02f: f0 07       ..
     lda l01ff,x                                                       ; b031: bd ff 01    ...
     cmp #&41 ; 'a'                                                    ; b034: c9 41       Ia
     bcs cafde                                                         ; b036: b0 a6       ..
 ; &b038 referenced 1 time by &b02f
-.return_15
+.return_14
     rts                                                               ; b038: 60          .
 
 ; &b039 referenced 1 time by &b009
@@ -2523,11 +2527,11 @@ la6cc = ca6cb+1
 .sub_cb1c8
     lda basic_variable_name+1                                         ; b1c8: a5 46       .f
     cmp #&c9 ; 'I'                                                    ; b1ca: c9 c9       II
-    bne return_16                                                     ; b1cc: d0 04       P.
+    bne return_15                                                     ; b1cc: d0 04       P.
     lda basic_variable_name                                           ; b1ce: a5 45       .e
     cmp #&54 ; 't'                                                    ; b1d0: c9 54       It
 ; &b1d2 referenced 1 time by &b1cc
-.return_16
+.return_15
     rts                                                               ; b1d2: 60          .
 
     equb &1f, &f7, &1c,   0, &f1, &12, &b8, &f7, &16, &f1, &12, &0f   ; b1d3: 1f f7 1c... ...
@@ -2817,7 +2821,7 @@ la6cc = ca6cb+1
 ; &b56b referenced 1 time by &b6a7
 .sub_cb56b
     dec l0101                                                         ; b56b: ce 01 01    N..
-    beq return_17                                                     ; b56e: f0 1f       ..
+    beq return_16                                                     ; b56e: f0 1f       ..
     asl l0103                                                         ; b570: 0e 03 01    ...
     rol l0102                                                         ; b573: 2e 02 01    ...
     bcs cb599                                                         ; b576: b0 21       .!
@@ -2833,7 +2837,7 @@ la6cc = ca6cb+1
     sta l0106,y                                                       ; b589: 99 06 01    ...
     dec l0104                                                         ; b58c: ce 04 01    N..
 ; &b58f referenced 1 time by &b56e
-.return_17
+.return_16
     rts                                                               ; b58f: 60          .
 
 ; &b590 referenced 1 time by &b57e
@@ -2978,7 +2982,7 @@ la6cc = ca6cb+1
 .cb66c
     lda l0100                                                         ; b66c: ad 00 01    ...
     cmp basic_search_char                                             ; b66f: c5 07       E.
-    beq return_18                                                     ; b671: f0 4d       .m
+    beq return_17                                                     ; b671: f0 4d       .m
     ldx l0100                                                         ; b673: ae 00 01    ...
     lda basic_input_buffer,x                                          ; b676: bd 00 02    ...
     cmp #&22 ; '"'                                                    ; b679: c9 22       I"
@@ -3020,7 +3024,7 @@ la6cc = ca6cb+1
     cmp #&0f                                                          ; b6bc: c9 0f       I.
     bne cb66c                                                         ; b6be: d0 ac       P.
 ; &b6c0 referenced 2 times by &b671, &b6ca
-.return_18
+.return_17
     rts                                                               ; b6c0: 60          .
 
 ; &b6c1 referenced 2 times by &b67b, &b6d0
@@ -3028,7 +3032,7 @@ la6cc = ca6cb+1
     inc l0100                                                         ; b6c1: ee 00 01    ...
     ldx l0100                                                         ; b6c4: ae 00 01    ...
     lda basic_input_buffer,x                                          ; b6c7: bd 00 02    ...
-    beq return_18                                                     ; b6ca: f0 f4       ..
+    beq return_17                                                     ; b6ca: f0 f4       ..
     cmp #&22 ; '"'                                                    ; b6cc: c9 22       I"
     beq cb6da                                                         ; b6ce: f0 0a       ..
     bne cb6c1                                                         ; b6d0: d0 ef       P.  ; ALWAYS branch
@@ -3239,11 +3243,11 @@ lb6d5 = cb6d4+1
 .sub_cb948
     lda basic_string_descriptor_ptr+2                                 ; b948: a5 52       .r
     cmp basic_strings_bottom+1                                        ; b94a: c5 34       E4
-    bne return_19                                                     ; b94c: d0 04       P.
+    bne return_18                                                     ; b94c: d0 04       P.
     lda basic_string_descriptor_ptr+1                                 ; b94e: a5 51       .q
     cmp basic_strings_bottom                                          ; b950: c5 33       E3
 ; &b952 referenced 1 time by &b94c
-.return_19
+.return_18
     rts                                                               ; b952: 60          .
 
 ; &b953 referenced 2 times by &a2b1, &a6fa
@@ -3276,7 +3280,7 @@ lb6d5 = cb6d4+1
 .cb96e
     lda (basic_string_temp_ptr),y                                     ; b96e: b1 35       .5
     and #&0f                                                          ; b970: 29 0f       ).
-    beq return_20                                                     ; b972: f0 47       .g
+    beq return_19                                                     ; b972: f0 47       .g
     cmp #&0f                                                          ; b974: c9 0f       I.
     beq cb9a1                                                         ; b976: f0 29       .)
     tax                                                               ; b978: aa          .
@@ -3286,7 +3290,7 @@ lb6d5 = cb6d4+1
 .cb97f
     lda (basic_string_temp_ptr),y                                     ; b97f: b1 35       .5
     and #&f0                                                          ; b981: 29 f0       ).
-    beq return_20                                                     ; b983: f0 36       .6
+    beq return_19                                                     ; b983: f0 36       .6
     cmp #&f0                                                          ; b985: c9 f0       I.
     beq cb994                                                         ; b987: f0 0b       ..
     lsr a                                                             ; b989: 4a          j
@@ -3302,7 +3306,7 @@ lb6d5 = cb6d4+1
     iny                                                               ; b994: c8          H
     lda (basic_string_temp_ptr),y                                     ; b995: b1 35       .5
     tax                                                               ; b997: aa          .
-    lda return_14,x                                                   ; b998: bd 73 a2    ... ; A=character to output
+    lda return_20,x                                                   ; b998: bd 73 a2    ... ; A=character to output
 ; &b99b referenced 1 time by &b991
 .cb99b
     jsr CHROUT                                                        ; b99b: 20 d2 ff     R. ; Output a character
@@ -3321,12 +3325,12 @@ lb6d5 = cb6d4+1
     adc l0100,x                                                       ; b9ad: 7d 00 01    ...
     txs                                                               ; b9b0: 9a          .
     tax                                                               ; b9b1: aa          .
-    lda return_14,x                                                   ; b9b2: bd 73 a2    ... ; A=character to output
+    lda return_20,x                                                   ; b9b2: bd 73 a2    ... ; A=character to output
     jsr CHROUT                                                        ; b9b5: 20 d2 ff     R. ; Output a character
     jmp cb97f                                                         ; b9b8: 4c 7f b9    l..
 
 ; &b9bb referenced 2 times by &b972, &b983
-.return_20
+.return_19
     rts                                                               ; b9bb: 60          .
 
     equb &81, 0, 0, 0, 0                                              ; b9bc: 81 00 00... ...
@@ -4467,6 +4471,8 @@ lbd26 = cbd25+1
     assert &bd == >(sub_cbdef - 1)
     assert &e394 == basic_cold_start
     assert &e3b7 == basic_warm_start
+    assert &a273 == la274 - 1
+    assert &a69b == la69c - 1
 
 save pydis_start, pydis_end
 
@@ -4565,7 +4571,7 @@ save pydis_start, pydis_end
 ;     le265:                         3
 ;     le4cd:                         3
 ;     return_13:                     3
-;     return_14:                     3
+;     return_20:                     3
 ;     sub_ca1df:                     3
 ;     sub_ca290:                     3
 ;     sub_ca746:                     3
@@ -4638,8 +4644,8 @@ save pydis_start, pydis_end
 ;     le3eb:                         2
 ;     le404:                         2
 ;     leb8c:                         2
-;     return_18:                     2
-;     return_20:                     2
+;     return_17:                     2
+;     return_19:                     2
 ;     return_25:                     2
 ;     return_4:                      2
 ;     sub_ca185:                     2
@@ -5006,10 +5012,10 @@ save pydis_start, pydis_end
 ;     return_10:                     1
 ;     return_11:                     1
 ;     return_12:                     1
+;     return_14:                     1
 ;     return_15:                     1
 ;     return_16:                     1
-;     return_17:                     1
-;     return_19:                     1
+;     return_18:                     1
 ;     return_2:                      1
 ;     return_21:                     1
 ;     return_22:                     1
@@ -5381,10 +5387,12 @@ save pydis_start, pydis_end
 ;     l99a9
 ;     la175
 ;     la181
+;     la274
 ;     la34a
 ;     la359
 ;     la368
 ;     la69b
+;     la69c
 ;     la6c1
 ;     la6c3
 ;     la6c8

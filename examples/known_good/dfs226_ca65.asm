@@ -2506,6 +2506,7 @@ c8c4e:
 ; $8c56 referenced 1 time by $8c1c
 sub_c8c56:
     ldx #5                                                            ; 8c56: a2 05       ..
+    ; Search 6 bytes from l9139 for A
 ; $8c58 referenced 1 time by $8c5e
 loop_c8c58:
     cmp l9139,x                                                       ; 8c58: dd 39 91    .9.

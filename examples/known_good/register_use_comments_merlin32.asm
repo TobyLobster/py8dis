@@ -65,10 +65,10 @@ loop_c2035
 sub_c203c
     lda #0                                                            ; 203c: a9 00       ..
     ldy #4                                                            ; 203e: a0 04       ..
-    ; Clear 4 bytes of memory from l2072 onwards
+    ; Clear 4 bytes of memory from table3 + 1 onwards
 ; $2040 referenced 1 time by $2044
 loop_c2040
-    sta l2072 - 1,y                                                   ; 2040: 99 71 20    .q  ; A=0
+    sta table3,y                                                      ; 2040: 99 71 20    .q  ; A=0
     dey                                                               ; 2043: 88          .
     bne loop_c2040                                                    ; 2044: d0 fa       ..
     rts                                                               ; 2046: 60          `
@@ -109,11 +109,9 @@ table2
 table3
     dfb $33                                                           ; 2071: 33          3
 ; A table of 4 bytes, indexed by Y (1 to 4), written at $2040
-l2072
     dfb $33, $33, $33, $33                                            ; 2072: 33 33 33... 333
 pydis_end
 
-    err l2072 - 1 - $2071
 
 ; Label references by decreasing frequency:
 ;     l0074:        3
@@ -144,7 +142,6 @@ pydis_end
 ;     l0074
 ;     l0076
 ;     l2056
-;     l2072
 ;     loop_c2028
 ;     loop_c2035
 ;     loop_c2040

@@ -5928,6 +5928,7 @@ error_template_minus_1 = c96b3+1
     pha                                                               ; a16b: 48          H
     lda (l00be),y                                                     ; a16c: b1 be       ..
     ldy #9                                                            ; a16e: a0 09       ..
+    ; Search 10 bytes from la17c for A
 ; &a170 referenced 1 time by &a176
 .loop_ca170
     cmp la17c,y                                                       ; a170: d9 7c a1    .|.
@@ -9101,9 +9102,10 @@ lb487 = cb485+2
 .sub_cb509
     pha                                                               ; b509: 48          H
     ldx #&20 ; ' '                                                    ; b50a: a2 20       .
+    ; Search 16 bytes from l1030 for 0
 ; &b50c referenced 1 time by &b514
 .loop_cb50c
-    lda l1010,x                                                       ; b50c: bd 10 10    ...
+    lda l1030 - 32,x                                                  ; b50c: bd 10 10    ...
     beq cb51a                                                         ; b50f: f0 09       ..
     inx                                                               ; b511: e8          .
     cpx #&30 ; '0'                                                    ; b512: e0 30       .0
@@ -10222,6 +10224,7 @@ lb487 = cb485+2
     bne loop_cbbe7                                                    ; bbf2: d0 f3       ..
     dey                                                               ; bbf4: 88          .              ; Y=5
     dey                                                               ; bbf5: 88          .              ; Y=4
+    ; Search 4 bytes from (l00ae)+1 for a byte other than &ff
 ; &bbf6 referenced 1 time by &bbfd
 .loop_cbbf6
     lda (l00ae),y                                                     ; bbf6: b1 ae       ..
@@ -11009,6 +11012,7 @@ lbd94 = cbd93+1
     assert &0d6c == l0d6d - 1
     assert &0dff == l0e00 - 1
     assert &0f03 == l0f04 - 1
+    assert &1010 == l1030 - 32
     assert &1071 == l1072 - 1
     assert &8f48 == l8f49 - 1
     assert &8d61 == print - &f8

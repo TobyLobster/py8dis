@@ -414,8 +414,6 @@ command_run:
 command_wait:
     jsr lc4e4                                                         ; f14c: 20 e4 c4     ..
     jsr wait_for_flyback                                              ; f14f: 20 66 fe     f. ; Wait for the start of the next field flyback
-cf152:
-lf154 = cf152+2
     jmp lc55b                                                         ; f152: 4c 5b c5    L[.
 
 ; $f154 referenced 1 time by $f3c6
@@ -679,9 +677,10 @@ loop_cf3b1:
     rol l0069                                                         ; f3c0: 26 69       &i
     ldx #$40 ; '@'                                                    ; f3c2: a2 40       .@
     lda l0069                                                         ; f3c4: a5 69       .i
+    ; Search 64 bytes from assembler_mnemonics_high for A
 ; $f3c6 referenced 1 time by $f3cc
 loop_cf3c6:
-    cmp lf154,x                                                       ; f3c6: dd 54 f1    .T.
+    cmp assembler_mnemonics_high - 1,x                                ; f3c6: dd 54 f1    .T.
     beq cf3cf                                                         ; f3c9: f0 04       ..
 ; $f3cb referenced 1 time by $f3d4
 loop_cf3cb:
@@ -2192,9 +2191,10 @@ cfbb4:
     plp                                                               ; fbba: 28          (
     ldy #4                                                            ; fbbb: a0 04       ..
     lda #$2a ; '*'                                                    ; fbbd: a9 2a       .*
+    ; Search 4 bytes from l00d4 for a byte other than $2a
 ; $fbbf referenced 1 time by $fbc5
 loop_cfbbf:
-    cmp l00d3,y                                                       ; fbbf: d9 d3 00    ...
+    cmp l00d4 - 1,y                                                   ; fbbf: d9 d3 00    ...
     bne return_7                                                      ; fbc2: d0 03       ..
     dey                                                               ; fbc4: 88          .
     bne loop_cfbbf                                                    ; fbc5: d0 f8       ..
@@ -3180,6 +3180,7 @@ pydis_end:
 .assert (>star_nomon) = $fa, error, "Assertion failed: >star_nomon = $fa"
 .assert (>star_run) = $fa, error, "Assertion failed: >star_run = $fa"
 .assert (>star_save) = $fa, error, "Assertion failed: >star_save = $fa"
+.assert (assembler_mnemonics_high - 1) = $f154, error, "Assertion failed: assembler_mnemonics_high - 1 = $f154"
 .assert (irq_handler) = $ffb2, error, "Assertion failed: irq_handler = $ffb2"
 .assert (kernel_bget) = $fbee, error, "Assertion failed: kernel_bget = $fbee"
 .assert (kernel_bput) = $fc7c, error, "Assertion failed: kernel_bput = $fc7c"
@@ -3189,6 +3190,7 @@ pydis_end:
 .assert (kernel_rdch) = $fe94, error, "Assertion failed: kernel_rdch = $fe94"
 .assert (kernel_save) = $fae5, error, "Assertion failed: kernel_save = $fae5"
 .assert (kernel_wrch) = $fe52, error, "Assertion failed: kernel_wrch = $fe52"
+.assert (l00d4 - 1) = $d3, error, "Assertion failed: l00d4 - 1 = $d3"
 .assert (l8001 - 1) = $8000, error, "Assertion failed: l8001 - 1 = $8000"
 .assert (l8101 - 1) = $8100, error, "Assertion failed: l8101 - 1 = $8100"
 .assert (la000) = $a000, error, "Assertion failed: la000 = $a000"
@@ -3532,7 +3534,6 @@ pydis_end:
 ;     lefff:                        1
 ;     lf001:                        1
 ;     lf084:                        1
-;     lf154:                        1
 ;     lf194:                        1
 ;     lf210:                        1
 ;     lf250:                        1
@@ -3655,7 +3656,6 @@ pydis_end:
 ;     cf119
 ;     cf11b
 ;     cf13e
-;     cf152
 ;     cf291
 ;     cf2ef
 ;     cf2ff
@@ -3901,7 +3901,6 @@ pydis_end:
 ;     lf001
 ;     lf084
 ;     lf11c
-;     lf154
 ;     lf194
 ;     lf210
 ;     lf250

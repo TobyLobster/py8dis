@@ -140,7 +140,7 @@ l0460   = $0460
 l0464   = $0464
 l0469   = $0469
 l046c   = $046c
-l047f   = $047f
+l0480   = $0480
 l04ff   = $04ff
 l0500   = $0500
 l0513   = $0513
@@ -880,6 +880,7 @@ c8392
     sta l0033,x                                                       ; 8398: 95 33       .3
     lda l0031                                                         ; 839a: a5 31       .1
     sta l0032,x                                                       ; 839c: 95 32       .2
+    ; Clear X+1 bytes of memory from l0031 onwards
 ; $839e referenced 1 time by $83a1
 loop_c839e
     stz l0031,x                                                       ; 839e: 74 31       t1
@@ -10665,9 +10666,10 @@ loop_cbbed
     dex                                                               ; bbf3: ca          .
     bne loop_cbbed                                                    ; bbf4: d0 f7       ..
     ldx #$80                                                          ; bbf6: a2 80       ..
+    ; Clear 128 bytes of memory from l0480 onwards
 ; $bbf8 referenced 1 time by $bbfc
 loop_cbbf8
-    stz l047f,x                                                       ; bbf8: 9e 7f 04    ...
+    stz l0480 - 1,x                                                   ; bbf8: 9e 7f 04    ...
     dex                                                               ; bbfb: ca          .
     bne loop_cbbf8                                                    ; bbfc: d0 fa       ..
     rts                                                               ; bbfe: 60          `
@@ -11445,6 +11447,9 @@ pydis_end
 }
 !if (copyright - rom_header - 1) != $13 {
     !error "Assertion failed: copyright - rom_header - 1 == $13"
+}
+!if (l0480 - 1) != $047f {
+    !error "Assertion failed: l0480 - 1 == $047f"
 }
 !if (l0600 - 1) != $05ff {
     !error "Assertion failed: l0600 - 1 == $05ff"
@@ -12903,7 +12908,6 @@ pydis_end
 ;     l0460:                1
 ;     l0464:                1
 ;     l0469:                1
-;     l047f:                1
 ;     l04ff:                1
 ;     l0500:                1
 ;     l0513:                1
@@ -14148,7 +14152,7 @@ pydis_end
 ;     l0464
 ;     l0469
 ;     l046c
-;     l047f
+;     l0480
 ;     l04ff
 ;     l0500
 ;     l0513

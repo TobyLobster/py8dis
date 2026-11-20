@@ -287,6 +287,7 @@ section pydis, org = &1bff, filename = "memory128_baron"
     cmp #&58 ; 'x'                                                    ; 2119: c9 58       Ix  ; A=character read
     beq quit_game                                                     ; 211b: f0 1f       ..
     ldx #0                                                            ; 211d: a2 00       ..
+    ; Search 16 bytes from key_table for A
 ; &211f referenced 1 time by &2127
 .search_loop
     cmp key_table,x                                                   ; 211f: dd 3f 21    .?!
