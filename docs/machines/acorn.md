@@ -68,7 +68,7 @@ expr(0x2101, acorn.inkey_enum)       # lda #inkey_key_space, rather than lda #&9
 
 `acorn.os_call_name("osbyte")` gives an OS call's name in the case chosen with `config.set_upper_case_os_calls()`.
 
-See `examples/python/acorn_os_calls.py`, `acorn_vdu.py` and `acorn_vectors.py` for small examples, and `planb.py`, `dfs226.py` and `anfs418.py` for real programs.
+See `examples/tests/python/acorn_os_calls.py`, `acorn_vdu.py` and `acorn_vectors.py` for small examples, and `examples/disassemblies/python/planb.py`, `dfs226.py` and `anfs418.py` for real programs.
 
 ## The Acorn Atom
 
@@ -168,7 +168,7 @@ go()
 
 ### The Atom's kernel ROM
 
-`examples/python/atom_kernel.py` disassembles the Atom's kernel ROM (its OS, and the BASIC statements and COS commands it adds), loaded at #F000, with `acorn.atom()`, as a larger example. It traces the code from:
+`examples/disassemblies/python/atom_kernel.py` disassembles the Atom's kernel ROM (its OS, and the BASIC statements and COS commands it adds), loaded at #F000, with `acorn.atom()`, as a larger example. It traces the code from:
 - the 6502's vectors;
 - the default vectors the kernel copies to #0204 on reset;
 - its two command tables (the BASIC statements PLOT, DRAW, MOVE, CLEAR, DIM, `[`, OLD and WAIT at #F000, and the * commands at #F8BE, each entry a name and then the routine's address, high byte first);
@@ -180,14 +180,14 @@ It classifies and names the tables, and names every OS entry point and kernel ro
 
 ### The Atom's BASIC ROM
 
-`examples/python/atom_basic_rom.py` disassembles the Atom's BASIC ROM, loaded at #C000, with `acorn.atom()`. Atom BASIC isn't tokenised: it finds each keyword in the program's text as it runs it, with two matchers, which it calls with a starting index in X (`ldx #n : jmp #C233`, or `jmp #C27B` for single characters). The control file finds those calls, then decodes the matchers' tables, to trace every routine they give and name it after its keyword (e.g. `statement_print`, `function_rnd`, `op_add`), and marks the tables as text and the routines' high and low bytes. It also traces and names the routines the kernel calls, and the BASIC ROM's calls to the floating point ROM's handlers (through #D002 and #D004), and marks its other data: the powers of ten for printing numbers, and its default error handler, which is a line of BASIC.
+`examples/disassemblies/python/atom_basic_rom.py` disassembles the Atom's BASIC ROM, loaded at #C000, with `acorn.atom()`. Atom BASIC isn't tokenised: it finds each keyword in the program's text as it runs it, with two matchers, which it calls with a starting index in X (`ldx #n : jmp #C233`, or `jmp #C27B` for single characters). The control file finds those calls, then decodes the matchers' tables, to trace every routine they give and name it after its keyword (e.g. `statement_print`, `function_rnd`, `op_add`), and marks the tables as text and the routines' high and low bytes. It also traces and names the routines the kernel calls, and the BASIC ROM's calls to the floating point ROM's handlers (through #D002 and #D004), and marks its other data: the powers of ten for printing numbers, and its default error handler, which is a line of BASIC.
 
 ### The Atom's floating point ROM
 
-`examples/python/atom_float_rom.py` disassembles the Atom's floating point ROM, loaded at #D000, with `acorn.atom()`. It names the ROM's workspace (the two floating point accumulators, `float8A` and `float8B`, and the temporary values at #03C5-#03D8) and its keyword table at #D006 (each keyword, then its routine's address, high byte first), traces each keyword's routine, and marks the series of coefficients that LOG, ATN and EXP evaluate, and the COLOUR statement's tables of plot routines.
+`examples/disassemblies/python/atom_float_rom.py` disassembles the Atom's floating point ROM, loaded at #D000, with `acorn.atom()`. It names the ROM's workspace (the two floating point accumulators, `float8A` and `float8B`, and the temporary values at #03C5-#03D8) and its keyword table at #D006 (each keyword, then its routine's address, high byte first), traces each keyword's routine, and marks the series of coefficients that LOG, ATN and EXP evaluate, and the COLOUR statement's tables of plot routines.
 
 ### The Atom's DOS ROM
 
-`examples/python/atom_dos_rom.py` disassembles the Atom's DOS ROM, loaded at #E000, with `acorn.atom()`. It traces the code from the vectors the DOS sets up (OSCLI, NMI, and LODVEC to SHTVEC), its command table (in the same format as the kernel's), and the vectors that *VDU, *EXEC and *SPOOL set. It names the 8271 disc controller's registers at #0A00 and the routines that drive it, and comments the commands the DOS sends to it when it starts. The NMI routines that move each byte to or from the 8271 run in zero page, at #F2, where one of two is copied, so they're disassembled there with two `move()`s to the same address; py8dis warns that the NMI handler's jump to #F2 isn't traced, since it can't tell which is there. *VDU's screen driver uses a 6845 CRTC at #0800, and the assembler source of its keyboard routine is left over at the end of the ROM.
+`examples/disassemblies/python/atom_dos_rom.py` disassembles the Atom's DOS ROM, loaded at #E000, with `acorn.atom()`. It traces the code from the vectors the DOS sets up (OSCLI, NMI, and LODVEC to SHTVEC), its command table (in the same format as the kernel's), and the vectors that *VDU, *EXEC and *SPOOL set. It names the 8271 disc controller's registers at #0A00 and the routines that drive it, and comments the commands the DOS sends to it when it starts. The NMI routines that move each byte to or from the 8271 run in zero page, at #F2, where one of two is copied, so they're disassembled there with two `move()`s to the same address; py8dis warns that the NMI handler's jump to #F2 isn't traced, since it can't tell which is there. *VDU's screen driver uses a 6845 CRTC at #0800, and the assembler source of its keyboard routine is left over at the end of the ROM.
 
-The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/python/atom_test.py`.
+The tables are in `acornatom` (e.g. `acornatom.atom_vectors`, `acornatom.atom_control_codes`). See `examples/tests/python/atom_test.py`.

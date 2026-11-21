@@ -34,4 +34,4 @@ The names are those of Digital Research's CP/M 3 documentation (see [seasip.info
 
 Many programs call the BDOS through a routine of their own (e.g. one that saves the registers first). This says that the routine at `runtime_addr` does, with the function number in the register: `"c"` (as the BDOS has it) or `"a"`. Calls to it are then commented in the same way. Call it after `cpm.cpm()`.
 
-See `examples/python/bbcbasic.py`, `zexdoc.py` and `cpm_8080.py`.
+See `examples/disassemblies/python/bbcbasic.py` and `zexdoc.py`, and `examples/tests/python/cpm_8080.py`.

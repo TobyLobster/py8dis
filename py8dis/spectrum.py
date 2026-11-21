@@ -32,7 +32,7 @@ them) and sets up three kinds of help, which work on what the trace finds:
 The functions rom() uses for the ROM's tables (offset_table(),
 keyed_offset_table(), syntax_table(), stringhi_list() etc.) are there for a
 disassembly of another ROM with the same kinds of table, e.g. a replacement
-ROM (see examples/python/opense.py).
+ROM (see examples/disassemblies/python/opense.py).
 
 The names and the other data (the error reports, keywords, colours etc.)
 are in spectrumtables.py. docs/machines/spectrum.md describes all this for
@@ -278,7 +278,7 @@ def calculator(addr):
 def calculator_hook(target, caller):
     """The hook for RST $28 (FP-CALC), and for a CALL to GEN-ENT-1 or
     GEN-ENT-2 (or, in another ROM, a routine like them: see
-    examples/python/opense.py), called while tracing (see hook_subroutine()
+    examples/disassemblies/python/opense.py), called while tracing (see hook_subroutine()
     in commands.py). The calculator's bytecode follows the instruction,
     which is 1 byte for the RST and 3 for a CALL. Returns where the code
     carries on, after the end-calc, or None (see calculator())."""
@@ -618,7 +618,7 @@ def spectrum48(rom_labels=True):
     restarts are at the same addresses in any ROM), but the GEN-ENT-1 and
     GEN-ENT-2 ones, and RST $10's comments, like the other ROM routines',
     aren't (a replacement ROM's routines are elsewhere: see
-    examples/python/opense.py). This stops with an error if the CPU isn't the
+    examples/disassemblies/python/opense.py). This stops with an error if the CPU isn't the
     Z80, or if it has been called already.
     """
     cpu = session.current().cpu
@@ -702,7 +702,7 @@ def syntax_table(addr, routine_classes=(0x00, 0x03, 0x05), last_classes=(0x02, 0
     routine, which is classified as a code pointer, so it's traced) or in
     last_classes (by default 2, for LET, 7 or $0B, which have none). A
     replacement ROM may have other classes, e.g. OpenSE BASIC's $0C (see
-    examples/python/opense.py)."""
+    examples/disassemblies/python/opense.py)."""
     while True:
         c = get_u8_runtime(addr)
         byte(addr)

@@ -160,7 +160,7 @@ atom_workspace = [
 # int_workspace_stack_mid1-1, not int_workspace_stack_low+14). (These names,
 # and parsing_ptr's and workspace_stack_pointer's above, are from Toby
 # Nelson's annotation of the floating point ROM: see
-# examples/python/atom_float_rom.py.)
+# examples/disassemblies/python/atom_float_rom.py.)
 ATOM_WORKSPACE_STACK_LEVELS = 15
 atom_workspace_stack = [
     (0x16, "int_workspace_stack_low"),

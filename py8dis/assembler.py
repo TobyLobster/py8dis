@@ -121,7 +121,7 @@ class Assembler:
         A prefix for a label's name in an expression (see expr()) that makes
         an instruction using it take zero page addressing, e.g. '<' (low
         byte) for acme, or an empty string. py8dis itself doesn't call this:
-        control files do (e.g. examples/python/dfs226.py).
+        control files do (e.g. examples/disassemblies/python/dfs226.py).
 
     byte_prefix(), word_prefix(), string_prefix()
         The directive, with a space after it, that starts a line of data:

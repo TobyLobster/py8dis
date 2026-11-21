@@ -124,7 +124,7 @@ The 6502's undocumented opcodes are written as data, as for beebasm, Baron and x
 
 Merlin 32 doesn't accept a register's name (`a`, `x`, `y`) as a label (`x` would replace the index register in `lda table,x`), so py8dis stops with an error for one. Rename it.
 
-An expression given as text (e.g. to `expr()`) is written as it is, so it has to be in Merlin's syntax, with `{` and `}` rather than brackets. A control file can get the assembler's brackets with `config.get_assembler().expression_brackets()` (see `examples/python/starship.py`), or make the expression with `make_add()` etc., which write it for each assembler.
+An expression given as text (e.g. to `expr()`) is written as it is, so it has to be in Merlin's syntax, with `{` and `}` rather than brackets. A control file can get the assembler's brackets with `config.get_assembler().expression_brackets()` (see `examples/disassemblies/python/starship.py`), or make the expression with `make_add()` etc., which write it for each assembler.
 
 Merlin 32 isn't packaged, but it builds from [its source](https://github.com/lroathe/merlin32) on Linux and macOS with `make -C Source` (its v1.1.11 tag, which reports itself as v1.1.10).
 

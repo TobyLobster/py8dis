@@ -168,7 +168,7 @@ with bank1:
 
 In the same way, give a bank's labels with `label()` or `expr_label()` in a `with` block for its move. Outside one, a label at an address that more than one bank has is for the code that isn't moved (e.g. the main program's `lda &8000`).
 
-The output assembles to all the loaded files, at their load addresses, with the gaps between them filled with zeroes. See `examples/python/banks_test.py`.
+The output assembles to all the loaded files, at their load addresses, with the gaps between them filled with zeroes. See `examples/tests/python/banks_test.py`.
 
 ### include_binary_file
 

@@ -245,4 +245,4 @@ For a cartridge: names its header (the cold and warm start vectors, and the sign
 
 `commodore.kernal_rom()` and `commodore.basic_rom()`
 
-For disassembling a Kernal ROM (at $e000, or $c000 on the C128 and Plus/4) or BASIC ROM (at $a000 on the C64, $c000 on the VIC-20, $4000 on the C128, $8000 on the Plus/4) itself: they trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors (or JMPs, on the C128 and Plus/4). `examples/python/open_roms_kernal.py` and `open_roms_basic.py` disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.
+For disassembling a Kernal ROM (at $e000, or $c000 on the C128 and Plus/4) or BASIC ROM (at $a000 on the C64, $c000 on the VIC-20, $4000 on the C128, $8000 on the Plus/4) itself: they trace the code from the Kernal's jump table and the 6502's vectors, or BASIC's cold and warm start vectors (or JMPs, on the C128 and Plus/4). `examples/disassemblies/python/open_roms_kernal.py` and `open_roms_basic.py` disassemble the ROMs of [MEGA65's Open ROMs](https://github.com/MEGA65/open-roms), a free replacement for the C64's.

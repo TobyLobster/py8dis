@@ -34,7 +34,7 @@ The ROM keeps IY at ERR_NR's address, $5C3A, so a system variable addressed with
 
 `spectrum.rom()`
 
-For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`, which mustn't have `rom_labels=False`): it traces the ROM's code from the restarts, the interrupt, the NMI and its tables of routines, marks its data (the tokens, the messages, the calculator's constants and the character set) and names every routine and table. See `examples/python/spectrum48.py`.
+For disassembling the 48K ROM itself (loaded at 0, after `spectrum48()`, which mustn't have `rom_labels=False`): it traces the ROM's code from the restarts, the interrupt, the NMI and its tables of routines, marks its data (the tokens, the messages, the calculator's constants and the character set) and names every routine and table. See `examples/disassemblies/python/spectrum48.py`.
 
 For a ROM with the same kinds of table at other addresses (e.g. a replacement ROM), the functions `rom()` uses for them are there to call:
 
@@ -46,4 +46,4 @@ For a ROM with the same kinds of table at other addresses (e.g. a replacement RO
 | `spectrum.syntax_table(addr, routine_classes=(0, 3, 5), last_classes=(2, 7, 11))` | a command's parameter classes, ending with the address of its routine or not |
 | `spectrum.stringhi_list(addr, end)` | text, each item ending with a character with bit 7 set |
 
-See `examples/python/opense.py`, for OpenSE BASIC.
+See `examples/disassemblies/python/opense.py`, for OpenSE BASIC.

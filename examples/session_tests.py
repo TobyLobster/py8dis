@@ -8,7 +8,9 @@ when all the tests are run.
 All the state of a disassembly (its memory, labels, classifications,
 settings and so on) belongs to a session, so that a program can use py8dis
 as a library and make several disassemblies in one process. These tests do
-that: they run control files from python/ in this one process, each in a
+that: they run control files from tests/python/ and disassemblies/python/
+in this one process (each in its own folder, as run_tests.py runs it), each
+in a
 new session made with session.new_session() (with use_command_line(False),
 so that py8dis doesn't read this script's command line), and check:
 
@@ -33,8 +35,8 @@ Usage: ./session_tests.py      (there are no options; it prints a line for
 The outputs are compared with the known_good/ files that run_tests.py
 checks. Baron's and Merlin 32's output depends on the asm file's name and
 folder, so it's written to a file of the same name as run_tests.py's, but in
-a temporary folder beside build/ (at the same depth, so the paths in it are
-the same), which is removed afterwards. (run_tests.py runs this script at
+a temporary folder beside the control file's folder's build/ (at the same
+depth, so the paths in it are the same), which is removed afterwards. (run_tests.py runs this script at
 the same time as its own tests, so writing to build/ too could clash with
 them.)
 
@@ -58,6 +60,14 @@ from pathlib import Path
 
 EXAMPLES_DIR = Path(__file__).resolve().parent
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
+# The folders of tests (as in run_tests.py): the small programs written to
+# test py8dis, and real programs
+GROUP_DIRS   = [EXAMPLES_DIR / "tests", EXAMPLES_DIR / "disassemblies"]
+
+def group_dir(name):
+    """The folder (tests/ or disassemblies/) with the control file
+    python/<name>.py."""
+    return next(folder for folder in GROUP_DIRS if (folder / "python" / f"{name}.py").exists())
 
 # Pairs of (control file, assembler) to interleave: the first runs up to its
 # go(), then the second runs completely, then the first's go() runs. These
@@ -76,9 +86,13 @@ INTERLEAVED = [
     (("dfs226",           "merlin32"), ("apple_text",           "64tass")),
 ]
 
-# The temporary folder for Baron's and Merlin 32's output (see
-# asm_filename()), which main() makes
-asm_dir = None
+# The temporary folders for Baron's and Merlin 32's output (see
+# asm_filename_for()), by the folder of tests they're in, which main() makes
+asm_dirs = {}
+
+# The folder of tests each session's control file is in (see go_in()), by
+# the session's id()
+session_dirs = {}
 
 # Module level names that are allowed to change, as (module, name): the
 # session module's pointer to the current session, and its setting from
@@ -176,8 +190,11 @@ def run_control_file(name, assembler, stop_before_go=False):
 
     # (Baron's and Merlin 32's output is written to a file, as run_tests.py
     # does, since it depends on the asm file's name and folder)
+    # (The control file's file names are relative to its folder)
+    os.chdir(group_dir(name))
     asm_filename = asm_filename_for(name, assembler)
     s = session.new_session(assembler=assembler, asm_filename=asm_filename)
+    session_dirs[id(s)] = group_dir(name)
     real_go = commands.go
     def deferred_go(*args, **kwargs):
         """Stop the control file (see DeferredGo)."""
@@ -187,7 +204,7 @@ def run_control_file(name, assembler, stop_before_go=False):
     out = io.StringIO()
     try:
         with contextlib.redirect_stdout(out):
-            runpy.run_path(str(EXAMPLES_DIR / "python" / (name + ".py")), run_name="__main__")
+            runpy.run_path(str(group_dir(name) / "python" / (name + ".py")), run_name="__main__")
     except DeferredGo:
         return s, out.getvalue()
     finally:
@@ -200,6 +217,7 @@ def go_in(s):
     import commands
     import session
     session.set_current(s)
+    os.chdir(session_dirs[id(s)])
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         commands.go()
@@ -210,16 +228,16 @@ def asm_filename_for(name, assembler):
     to be printed). Their output depends on the asm file's name and folder
     (e.g. the path of an included binary file, relative to it), so for it
     to be the same as known_good, the file has the name run_tests.py gives
-    it, in a folder at the same depth as build/ (asm_dir, rather than build/
-    itself, where run_tests.py may be writing the same file at the same
-    time)."""
-    return str(Path(asm_dir) / f"{name}_{assembler}.asm") if assembler in ("baron", "merlin32") else None
+    it, in a folder at the same depth as its folder's build/ (in asm_dirs,
+    rather than build/ itself, where run_tests.py may be writing the same
+    file at the same time)."""
+    return str(Path(asm_dirs[group_dir(name)]) / f"{name}_{assembler}.asm") if assembler in ("baron", "merlin32") else None
 
 def check(results, label, output, name, assembler):
     """Compare the asm 'output' with known_good/<name>_<assembler>.asm, and
     add (label, whether it's the same) to 'results'. If it isn't, the label
     says where they first differ."""
-    expected = (EXAMPLES_DIR / "known_good" / f"{name}_{assembler}.asm").read_text()
+    expected = (group_dir(name) / "known_good" / f"{name}_{assembler}.asm").read_text()
     ok = (output == expected)
     if not ok:
         a, b = output.splitlines(), expected.splitlines()
@@ -231,17 +249,18 @@ def check(results, label, output, name, assembler):
 def main():
     """Run the checks described at the top of this file, print a line for
     each, then the totals, and return the exit code: 1 if any failed, else
-    0. (Baron's and Merlin 32's output goes in a temporary folder in the
-    examples folder, removed afterwards: see asm_filename_for().)"""
-    global asm_dir
-    with tempfile.TemporaryDirectory(prefix="session_tests_", dir=EXAMPLES_DIR) as asm_dir:
+    0. (Baron's and Merlin 32's output goes in a temporary folder in each
+    folder of tests, removed afterwards: see asm_filename_for().)"""
+    with contextlib.ExitStack() as stack:
+        for folder in GROUP_DIRS:
+            asm_dirs[folder] = stack.enter_context(tempfile.TemporaryDirectory(prefix="session_tests_", dir=folder))
         return run_checks()
 
 def run_checks():
     """main()'s checks."""
-    # (The control files' file names are relative to the examples folder,
-    # and they import py8dis's modules by name, e.g. 'from commands import
-    # *')
+    # (The control files import py8dis's modules by name, e.g. 'from
+    # commands import *'; each is run in its own folder, see
+    # run_control_file())
     os.chdir(EXAMPLES_DIR)
     sys.path.insert(0, str(PY8DIS_DIR))
     sys.argv = [sys.argv[0]]            # (no assembler options on the command line)

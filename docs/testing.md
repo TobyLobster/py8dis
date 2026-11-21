@@ -1,11 +1,13 @@
 # Running the tests
 
-The `examples` folder holds py8dis's tests:
+The `examples` folder holds py8dis's tests, in two folders: `examples/tests`, small programs written to test py8dis, and `examples/disassemblies`, real programs (games, ROMs and so on). Each has:
 
-- `examples/python`: the control files;
-- `examples/orig`: the programs they disassemble;
-- `examples/known_good`: the output they should give;
-- `examples/asm_to_create_test_binaries`: the source of the small test programs written for py8dis, and `go`, which builds them.
+- `python`: the control files;
+- `orig`: the programs they disassemble;
+- `known_good`: the output they should give;
+- `build`: what they give now (made by the tests).
+
+`examples/tests/asm` has the source of the small test programs, and `go`, which builds them into `examples/tests/orig`. A control file is run in its own folder (e.g. `cd examples/disassemblies` and `python3 python/os12.py`), since the file names in it are relative to that folder.
 
 To run them all and check the output:
 
@@ -34,8 +36,8 @@ py8dis itself needs only Python 3. The tests also use these, when they're instal
 
 The tests and what each one covers are listed in `run_tests.py`. Besides the disassemblies, it has:
 
-- the error tests (control files in `examples/python/errors`), each of which should make py8dis stop with a particular error message;
-- the warning tests (in `examples/python/warnings`), each of which should give a particular warning (or note, such as a jump table suggestion: one of more than one line must appear as lines one after another).
+- the error tests (control files in `examples/tests/python/errors`), each of which should make py8dis stop with a particular error message;
+- the warning tests (in `examples/tests/python/warnings`), each of which should give a particular warning (or note, such as a jump table suggestion: one of more than one line must appear as lines one after another).
 
 With `-c`, when all the tests are run, it also runs `session_tests.py` (several disassemblies in one process, using py8dis as a library, and a check that each of py8dis's modules can be imported on its own) `render_tests.py` (how each kind of line is written for each assembler; `./render_tests.py --print` shows what each test gives now) and `cpu_state_tests.py` (that what py8dis knows about the 6502's registers and flags is right: the functions in `py8dis/valuesets.py` are checked against working them out value by value; each update of the CPU state, from random sets of values for the registers and some flags known, is checked against a simple 6502 for states that agree with what was known, and where there are few enough of those to try them all, checked to be exact; and random programs with branches and loops, and with subroutines that call each other, tail call and push and pull, are disassembled, then run on the simple 6502 with a real stack, checking what py8dis says it knows at every instruction run and after every call that returns).
 

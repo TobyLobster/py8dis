@@ -3,9 +3,18 @@
 Run the py8dis tests
 
 This is py8dis's main test script (docs/testing.md describes the tests for
-users). Each test in TESTS disassembles a program from orig/ with its
-control file from python/, once for each of the assemblers listed for it,
-and checks the output. For each test and assembler:
+users). The examples are in two folders, each laid out the same way:
+tests/, the small programs written to test py8dis (with their sources in
+tests/asm/), and disassemblies/, real programs (games, ROMs and so on). In
+each, python/ has the control files, orig/ the programs they disassemble,
+known_good/ the output they should give, and build/ (made here) what they
+give now. A test's control file is run in its folder (so its file names,
+e.g. 'orig/os12.orig', are relative to it), and the paths below are
+relative to that folder too.
+
+Each test in TESTS disassembles a program from orig/ with its control file
+from python/, once for each of the assemblers listed for it, and checks the
+output. For each test and assembler:
 
   1. Run the control file in python/ (in a process of its own, using the
      py8dis in this repository) to produce build/<test>_<assembler>.asm,
@@ -33,11 +42,11 @@ and checks the output. For each test and assembler:
      symbol file and the cross-reference listing for the tests in
      EXTRAS_KNOWN_GOOD.
 
-The error tests (ERROR_TESTS below) are control files in python/errors/ that
+The error tests (ERROR_TESTS below) are control files in tests/python/errors/ that
 py8dis should stop with an error for, e.g. an expr() with the wrong value. Each
 passes if py8dis fails with exactly the expected message as the last line of
 its error output. They're run with beebasm, whose hex format the messages use.
-The warning tests (WARNING_TESTS) are control files in python/warnings/ that
+The warning tests (WARNING_TESTS) are control files in tests/python/warnings/ that
 should run successfully and give the expected warning. Neither kind is run
 with -a.
 
@@ -69,19 +78,19 @@ of the lists below. The script exits with 1 if any test fails. Examples:
   ./run_tests.py -c -a acme             # just the acme versions of the tests
   ./run_tests.py -m regression_tests    # make known good files
 
-To add a test of a disassembly, put the program in orig/<name>.orig (for a
-small test program written for py8dis, put its source in
-asm_to_create_test_binaries/ and add a line to the 'go' script there, which
-builds the programs into orig/), write its control file python/<name>.py,
-and add (name, assemblers, description) to TESTS. Then make its known good
+To add a test of a disassembly, put the program in orig/<name>.orig in the
+folder it belongs in (for a small test program written for py8dis, put its
+source in tests/asm/ and add a line to the 'go' script there, which builds
+the programs into tests/orig/), write its control file python/<name>.py in
+the same folder, and add (name, assemblers, description) to TESTS. Then make its known good
 files with './run_tests.py -m <name>' (with the assemblers installed, since
 they're only made once the binary has been checked), and check them by hand.
 Add its name to EXTRAS_KNOWN_GOOD as well to keep its JSON, symbol file and
 cross-reference listing in known_good/ too.
 
-To add an error test, write python/errors/<name>.py, with a docstring saying
-what it tests, and add (name, the error message) to ERROR_TESTS. A warning
-test is the same, with python/warnings/ and WARNING_TESTS.
+To add an error test, write tests/python/errors/<name>.py, with a docstring
+saying what it tests, and add (name, the error message) to ERROR_TESTS. A
+warning test is the same, with tests/python/warnings/ and WARNING_TESTS.
 """
 
 import argparse
@@ -98,10 +107,10 @@ import time
 from pathlib import Path
 
 # Each test is (name, assemblers, description). The control file is
-# python/<name>.py and the original binary is orig/<name>.orig. The
-# assemblers are names from ASSEMBLER_PROGRAMS below ("z88dk-8080" for 8080
-# code and "z88dk" for Z80 code, both z88dk-z80asm), and the description is
-# only for the reader. The tests are started, and reported, in this order.
+# python/<name>.py and the original binary is orig/<name>.orig, in tests/ or
+# disassemblies/ (see group_dir()). The assemblers are names from
+# ASSEMBLER_PROGRAMS below ("z88dk-8080" for 8080 code and "z88dk" for Z80
+# code, both z88dk-z80asm), and the description is only for the reader. The tests are started, and reported, in this order.
 TESTS = [
     # 8080 code
     ("example8080",              ["z88dk-8080"],               "hello world example for the 8080 instruction set"),
@@ -380,16 +389,36 @@ ASSEMBLER_PROGRAMS = {
 # it exits with 0.
 OTHER_TEST_SCRIPTS = ["session_tests.py", "render_tests.py", "cpu_state_tests.py"]
 
-# The examples folder (main() makes it the current folder, so the paths
-# below are relative to it), the py8dis being tested and the JSON schema
+# The examples folder, its two folders of tests (the small programs
+# written to test py8dis, and real programs), the py8dis being tested and
+# the JSON schema
 EXAMPLES_DIR = Path(__file__).resolve().parent
+TESTS_DIR    = EXAMPLES_DIR / "tests"
+DISASSEMBLIES_DIR = EXAMPLES_DIR / "disassemblies"
+GROUP_DIRS   = [TESTS_DIR, DISASSEMBLIES_DIR]
 PY8DIS_DIR   = EXAMPLES_DIR.parent / "py8dis"
 JSON_SCHEMA  = EXAMPLES_DIR.parent / "docs" / "py8dis-json.schema.json"
 
 
+def group_dir(name):
+    """The folder (tests/ or disassemblies/) whose python/ has the control
+    file for the test 'name' (tests/, if neither has it, for the failure to
+    say where it was looked for)."""
+    for folder in GROUP_DIRS:
+        if (folder / "python" / f"{name}.py").exists():
+            return folder
+    return TESTS_DIR
+
+def shown(path):
+    """A path as it's shown in a message: relative to the examples folder."""
+    return os.path.relpath(path, EXAMPLES_DIR)
+
+
 class Paths:
-    """The files for one test with one assembler, relative to the examples
-    folder:
+    """The files for one test with one assembler, in its folder ('root',
+    tests/ or disassemblies/, see group_dir()), as absolute paths, so that
+    they're the same whatever the current folder is (py8dis and the
+    assemblers are run in 'root'):
 
     control_file and original are the control file and the program it
     disassembles. asm, json, py8dis_symbols and xref are what py8dis writes,
@@ -405,22 +434,23 @@ class Paths:
     program in."""
 
     def __init__(self, name, assembler):
-        self.control_file  = Path("python")     / f"{name}.py"
-        self.original      = Path("orig")       / f"{name}.orig"
-        self.asm           = Path("build")      / f"{name}_{assembler}.asm"
-        self.json          = Path("build")      / f"{name}_{assembler}.json"
-        self.binary        = Path("build")      / f"{name}_{assembler}.dat"
-        self.known_good    = Path("known_good") / f"{name}_{assembler}.asm"
-        self.known_good_json = Path("known_good") / f"{name}_{assembler}.json"
-        self.py8dis_symbols = Path("build")      / f"{name}_{assembler}.symbols"
-        self.xref          = Path("build")      / f"{name}_{assembler}.xref"
-        self.known_good_symbols = Path("known_good") / f"{name}_{assembler}.symbols"
-        self.known_good_xref    = Path("known_good") / f"{name}_{assembler}.xref"
-        self.beebasm_symbols = Path("build")    / f"{name}_{assembler}_beebasm_symbols.txt"
-        self.assembler_symbols = Path("build")  / f"{name}_{assembler}_assembler_symbols.txt"
-        self.report        = Path("build")      / f"{name}_{assembler}_report.txt"
-        self.symbols       = Path("build")      / f"{name}_{assembler}_symbols.txt"
-        self.output_dir    = Path("build")      / f"{name}_{assembler}_output"
+        root = self.root   = group_dir(name)
+        self.control_file  = root / "python"     / f"{name}.py"
+        self.original      = root / "orig"       / f"{name}.orig"
+        self.asm           = root / "build"      / f"{name}_{assembler}.asm"
+        self.json          = root / "build"      / f"{name}_{assembler}.json"
+        self.binary        = root / "build"      / f"{name}_{assembler}.dat"
+        self.known_good    = root / "known_good" / f"{name}_{assembler}.asm"
+        self.known_good_json = root / "known_good" / f"{name}_{assembler}.json"
+        self.py8dis_symbols = root / "build"      / f"{name}_{assembler}.symbols"
+        self.xref          = root / "build"      / f"{name}_{assembler}.xref"
+        self.known_good_symbols = root / "known_good" / f"{name}_{assembler}.symbols"
+        self.known_good_xref    = root / "known_good" / f"{name}_{assembler}.xref"
+        self.beebasm_symbols = root / "build"    / f"{name}_{assembler}_beebasm_symbols.txt"
+        self.assembler_symbols = root / "build"  / f"{name}_{assembler}_assembler_symbols.txt"
+        self.report        = root / "build"      / f"{name}_{assembler}_report.txt"
+        self.symbols       = root / "build"      / f"{name}_{assembler}_symbols.txt"
+        self.output_dir    = root / "build"      / f"{name}_{assembler}_output"
 
 
 class Result:
@@ -496,7 +526,7 @@ def assemble_command(assembler, p, make_extras):
         # binary; '-t none', since cl65's default target is the C64, whose
         # character map would change the strings. -g -Ln writes ld65's own
         # symbols, to check py8dis's against.)
-        cmd = ["cl65", "-t", "none", "-g", "-C", "ca65.cfg", "-o", str(p.binary), "-Ln", str(p.assembler_symbols)]
+        cmd = ["cl65", "-t", "none", "-g", "-C", str(EXAMPLES_DIR / "ca65.cfg"), "-o", str(p.binary), "-Ln", str(p.assembler_symbols)]
         if make_extras:
             cmd += ["-l", str(p.report)]
         return cmd + [str(p.asm)]
@@ -665,7 +695,7 @@ def check_json_labels(path, doc):
     for label in doc["labels"]:
         addr = label["runtime_addr"]
         if labels and addr <= max(labels):
-            return f"{path}: the label at {addr:#06x} is out of order, or listed twice"
+            return f"{shown(path)}: the label at {addr:#06x} is out of order, or listed twice"
         labels[addr] = label
 
     def names_at(addr):
@@ -686,7 +716,7 @@ def check_json_labels(path, doc):
     item_at = {}            # (binary address of each byte) -> item
     inline_at = {}          # runtime address -> the names defined inline there
     for item in doc["items"]:
-        where = f"{path}: the item at {item['binary_addr']:#06x}"
+        where = f"{shown(path)}: the item at {item['binary_addr']:#06x}"
         for i in range(item["length"]):
             item_at[item["binary_addr"] + i] = item
         inline_at.setdefault(item["runtime_addr"], set()).update(item.get("labels", []))
@@ -712,7 +742,7 @@ def check_json_labels(path, doc):
     previous = None
     for end in doc["range_boundaries"]:
         key = (end["binary_addr"], end.get("move_id", 0))
-        where = f"{path}: the range boundary at {end['binary_addr']:#06x}"
+        where = f"{shown(path)}: the range boundary at {end['binary_addr']:#06x}"
         if previous is not None and key <= previous:
             return f"{where} is out of order, or listed twice"
         previous = key
@@ -724,7 +754,7 @@ def check_json_labels(path, doc):
         inline_at.setdefault(end["runtime_addr"], set()).update(end.get("labels", []))
 
     for addr, label in labels.items():
-        where = f"{path}: the label at {addr:#06x}"
+        where = f"{shown(path)}: the label at {addr:#06x}"
         # Each inline name is defined by an item there, or at the start or
         # end of a range there. (Not necessarily in the name's own move: a
         # name for a move that's never output at its address is defined in
@@ -766,23 +796,23 @@ def check_json_annotations(path, doc, asm):
             if c.get("kind") == "overlapping":
                 text = text.split(None, 1)[0]       # ("overlapping:", since the instruction is laid out)
             if collapse(text) not in asm_text:
-                return f"{path}: the comment {c['text']!r} at {item['binary_addr']:#06x} isn't in the asm"
+                return f"{shown(path)}: the comment {c['text']!r} at {item['binary_addr']:#06x} isn't in the asm"
 
     asm_lines = asm.splitlines()
     for c in doc["constants"]:
         if not any(c["name"] in line and c["text"] in line for line in asm_lines):
-            return f"{path}: the constant {c['name']!r} = {c['text']!r} isn't defined in the asm"
+            return f"{shown(path)}: the constant {c['name']!r} = {c['text']!r} isn't defined in the asm"
 
     labels = {label["runtime_addr"]: label for label in doc["labels"]}
     for s in doc["subroutines"]:
         if "name" in s:
             names = {n["name"] for n in labels.get(s["runtime_addr"], {}).get("names", [])}
             if s["name"] not in names:
-                return f"{path}: the subroutine {s['name']!r} at {s['runtime_addr']:#06x} isn't a name of the label there"
+                return f"{shown(path)}: the subroutine {s['name']!r} at {s['runtime_addr']:#06x} isn't a name of the label there"
 
     regions = doc["memory_regions"]
     if regions != sorted(regions, key=lambda r: (r["start"], r["start"] - r["end"])):
-        return f"{path}: the memory regions are out of order"
+        return f"{shown(path)}: the memory regions are out of order"
     # (A local name can have a heading of its own: commodore.py's 'Other
     # banks', for the C128's names in other banks, 'Other memory
     # configurations', for the C64's names in other memory configurations,
@@ -801,9 +831,9 @@ def check_json_annotations(path, doc, asm):
     for label in doc["labels"]:
         for n in label.get("names", []) + label.get("local_names", []):
             if "memory_region" in n and n["memory_region"] not in region_names:
-                return f"{path}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't a memory region"
+                return f"{shown(path)}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't a memory region"
             if "memory_region" in n and n["memory_region"] not in asm_headings:
-                return f"{path}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't in the asm"
+                return f"{shown(path)}: the label at {label['runtime_addr']:#06x} is under the heading {n['memory_region']!r}, which isn't in the asm"
     return None
 
 def asm_comment_prefix(asm):
@@ -811,12 +841,14 @@ def asm_comment_prefix(asm):
     line starting with it)."""
     return "//" if re.search(r"^//", asm, re.M) else ";"
 
-def check_json(path, asm_path=None):
+def check_json(path, asm_path=None, root=EXAMPLES_DIR):
     """Check the JSON output (see docs/json-format.md), returning a message
     describing the first problem, or None.
 
     'path' is the JSON file, and 'asm_path' the asm py8dis wrote with it:
-    the checks that compare the two are left out without it. The checks
+    the checks that compare the two are left out without it. The files the
+    JSON says were loaded are relative to 'root' (the folder the control
+    file was run in). The checks
     are, in order, that the JSON matches the schema (if jsonschema is
     installed), that the items cover the loaded data exactly, that the
     expressions' trees give their values, that the labels agree with the
@@ -826,7 +858,7 @@ def check_json(path, asm_path=None):
     try:
         doc = json.loads(path.read_text())
     except ValueError as e:
-        return f"{path} isn't valid JSON: {e}"
+        return f"{shown(path)} isn't valid JSON: {e}"
 
     validator = json_validator()
     if validator is not None:
@@ -834,7 +866,7 @@ def check_json(path, asm_path=None):
         # jsonschema finds them in)
         error = next(iter(sorted(validator.iter_errors(json_sample(doc)), key=lambda e: list(e.path))), None)
         if error is not None:
-            return f"{path} doesn't match the schema at {'/'.join(str(x) for x in error.path) or 'the top'}: {error.message}"
+            return f"{shown(path)} doesn't match the schema at {'/'.join(str(x) for x in error.path) or 'the top'}: {error.message}"
 
     # The items must cover the loaded data exactly, each with the bytes loaded
     # there (later loads replacing earlier ones, as py8dis does). The loaded
@@ -843,35 +875,35 @@ def check_json(path, asm_path=None):
     loaded = {}
     for load in doc["loads"]:
         offset = load.get("offset", 0)
-        data = Path(load["filename"]).read_bytes()[offset:offset + load["end"] - load["start"]]
+        data = (root / load["filename"]).read_bytes()[offset:offset + load["end"] - load["start"]]
         if load["start"] + len(data) != load["end"]:
-            return f"{path}: the load of {load['filename']} at {load['start']:#06x} should end at {load['start'] + len(data):#06x}, not {load['end']:#06x}"
+            return f"{shown(path)}: the load of {load['filename']} at {load['start']:#06x} should end at {load['start'] + len(data):#06x}, not {load['end']:#06x}"
         for i, b in enumerate(data):
             loaded[load["start"] + i] = b
     covered = set()
     for item in doc["items"]:
         start = item["binary_addr"]
         if len(item["bytes"]) != item["length"]:
-            return f"{path}: the item at {start:#06x} has {len(item['bytes'])} bytes, but its length is {item['length']}"
+            return f"{shown(path)}: the item at {start:#06x} has {len(item['bytes'])} bytes, but its length is {item['length']}"
         for i, b in enumerate(item["bytes"]):
             addr = start + i
             if addr in covered:
-                return f"{path}: the item at {start:#06x} overlaps another at {addr:#06x}"
+                return f"{shown(path)}: the item at {start:#06x} overlaps another at {addr:#06x}"
             if addr not in loaded:
-                return f"{path}: the item at {start:#06x} includes {addr:#06x}, where nothing is loaded"
+                return f"{shown(path)}: the item at {start:#06x} includes {addr:#06x}, where nothing is loaded"
             if loaded[addr] != b:
-                return f"{path}: the item at {start:#06x} has {b:#04x} at {addr:#06x}, but {loaded[addr]:#04x} is loaded there"
+                return f"{shown(path)}: the item at {start:#06x} has {b:#04x} at {addr:#06x}, but {loaded[addr]:#04x} is loaded there"
             covered.add(addr)
     missing = sorted(set(loaded) - covered)
     if missing:
-        return f"{path}: no item covers the loaded data at {missing[0]:#06x}" + (f" (and {len(missing) - 1} more bytes)" if len(missing) > 1 else "")
+        return f"{shown(path)}: no item covers the loaded data at {missing[0]:#06x}" + (f" (and {len(missing) - 1} more bytes)" if len(missing) > 1 else "")
 
     # Each expression's tree gives its value (where it can be worked out):
     # an instruction's operand, and a data item's expressions (None for a
     # value written without one). An operand's text must also be in the
     # instruction's text.
     for item in doc["items"]:
-        where = f"{path}: the item at {item['binary_addr']:#06x}"
+        where = f"{shown(path)}: the item at {item['binary_addr']:#06x}"
         checks = []
         if "operand" in item:
             checks.append((item["operand"]["expr"], item["operand"]["value"]))
@@ -911,7 +943,7 @@ def check_json(path, asm_path=None):
                 asm = [line for addr in range(start, start + item["length"]) for line in by_address.get(addr, [])]
                 text = [" ".join(t.split()) for t in item["text"]]
                 if len(asm) != len(text) or not all(a.startswith(t) for a, t in zip(asm, text)):
-                    return f"{path}: the item at {start:#06x} has the text {item['text']!r}, but the asm has {asm!r}"
+                    return f"{shown(path)}: the item at {start:#06x} has the text {item['text']!r}, but the asm has {asm!r}"
     return None
 
 
@@ -967,7 +999,7 @@ def run_merlin32(p, make_extras):
         for path in (saved, p.binary):
             if path.exists():
                 path.unlink()
-        proc = subprocess.run(assemble_command("merlin32", p, make_extras), capture_output=True, text=True)
+        proc = subprocess.run(assemble_command("merlin32", p, make_extras), capture_output=True, text=True, cwd=p.root)
         if saved.exists():
             shutil.move(str(saved), str(p.binary))
         listing = p.asm.parent / (saved.name + "_Output.txt")
@@ -1004,7 +1036,7 @@ def run_test(name, assembler, options, env):
     output = ["-o", str(p.asm)] if assembler in ("baron", "merlin32") else []
     proc = subprocess.run([sys.executable, str(p.control_file), "--" + assembler, "--json", str(p.json),
                            "--symbols", str(p.py8dis_symbols), "--symbols-format", SYMBOLS_FORMATS[assembler], "--xref", str(p.xref)] + output,
-                          capture_output=True, text=True, env=env)
+                          capture_output=True, text=True, env=env, cwd=p.root)
     result.stderr = proc.stderr.strip()
     if proc.returncode != 0:
         result.failure = "py8dis failed"
@@ -1016,22 +1048,22 @@ def run_test(name, assembler, options, env):
     # tests in EXTRAS_KNOWN_GOOD) the other outputs against known good
     if options.check_disassembly:
         if not p.known_good.exists():
-            result.failure = f"{p.known_good} not found"
+            result.failure = f"{shown(p.known_good)} not found"
             return result
         if not filecmp.cmp(p.asm, p.known_good, shallow=False):
-            result.failure = f"{p.asm} differs from {p.known_good}, " + first_difference(p.asm, p.known_good)
+            result.failure = f"{shown(p.asm)} differs from {shown(p.known_good)}, " + first_difference(p.asm, p.known_good)
             return result
-        problem = check_json(p.json, p.asm)
+        problem = check_json(p.json, p.asm, p.root)
         if problem:
             result.failure = problem
             return result
         if name in EXTRAS_KNOWN_GOOD:
             for got, expected in ((p.json, p.known_good_json), (p.py8dis_symbols, p.known_good_symbols), (p.xref, p.known_good_xref)):
                 if not expected.exists():
-                    result.failure = f"{expected} not found"
+                    result.failure = f"{shown(expected)} not found"
                     return result
                 if not filecmp.cmp(got, expected, shallow=False):
-                    result.failure = f"{got} differs from {expected}, " + first_difference(got, expected)
+                    result.failure = f"{shown(got)} differs from {shown(expected)}, " + first_difference(got, expected)
                     return result
 
     # 3. Assemble and check the binary, if the assembler is installed
@@ -1050,7 +1082,7 @@ def run_test(name, assembler, options, env):
     if assembler == "merlin32":
         proc = run_merlin32(p, options.make_extras)
     else:
-        proc = subprocess.run(assemble_command(assembler, p, options.make_extras), capture_output=True, text=True)
+        proc = subprocess.run(assemble_command(assembler, p, options.make_extras), capture_output=True, text=True, cwd=p.root)
     if assembler in ("beebasm", "baron") and options.make_extras:
         p.report.write_text(proc.stdout)
     if proc.returncode != 0:
@@ -1064,7 +1096,7 @@ def run_test(name, assembler, options, env):
         # (The one file Baron saved, named in the section)
         saved = list(p.output_dir.iterdir())
         if len(saved) != 1:
-            result.failure = f"{program} saved {len(saved)} files in {p.output_dir}, not one"
+            result.failure = f"{program} saved {len(saved)} files in {shown(p.output_dir)}, not one"
             return result
         shutil.move(str(saved[0]), str(p.binary))
     if assembler == "ca65" and "Warning" in proc.stderr:
@@ -1073,7 +1105,7 @@ def run_test(name, assembler, options, env):
         result.failure = f"{program} gave a warning:\n" + proc.stderr.strip()
         return result
     if not filecmp.cmp(p.binary, p.original, shallow=False):
-        result.failure = f"assembled binary {p.binary} differs from {p.original}"
+        result.failure = f"assembled binary {shown(p.binary)} differs from {shown(p.original)}"
         return result
 
     # Then the labels the assembler reports are checked against py8dis's
@@ -1152,12 +1184,12 @@ def run_test(name, assembler, options, env):
 def run_error_test(name, expected, env):
     """Run one error test, returning a Result.
 
-    It runs python/errors/<name>.py with --beebasm, in the environment
-    'env', and passes if that fails (a non-zero exit code) with 'expected'
+    It runs python/errors/<name>.py with --beebasm, in tests/ and the
+    environment 'env', and passes if that fails (a non-zero exit code) with 'expected'
     as the last line it writes to stderr (ignoring blank lines)."""
     result = Result(name, "error")
     proc = subprocess.run([sys.executable, str(Path("python") / "errors" / f"{name}.py"), "--beebasm"],
-                          capture_output=True, text=True, env=env)
+                          capture_output=True, text=True, env=env, cwd=TESTS_DIR)
     lines = [line for line in proc.stderr.splitlines() if line.strip()]
     got = lines[-1] if lines else "<no error output>"
     if proc.returncode == 0:
@@ -1170,14 +1202,14 @@ def run_error_test(name, expected, env):
 def run_warning_test(name, expected, env):
     """Run one warning test, returning a Result.
 
-    It runs python/warnings/<name>.py with --beebasm, in the environment
-    'env', and passes if that succeeds and 'expected' is one of the lines it
+    It runs python/warnings/<name>.py with --beebasm, in tests/ and the
+    environment 'env', and passes if that succeeds and 'expected' is one of the lines it
     writes to stderr (ignoring the spaces at either end), or for an
     'expected' of more than one line, they're lines it writes one after
     another. Its asm, printed to stdout, isn't checked."""
     result = Result(name, "warning")
     proc = subprocess.run([sys.executable, str(Path("python") / "warnings" / f"{name}.py"), "--beebasm"],
-                          capture_output=True, text=True, env=env)
+                          capture_output=True, text=True, env=env, cwd=TESTS_DIR)
     lines = [line.strip() for line in proc.stderr.splitlines() if line.strip()]
     if proc.returncode != 0:
         result.failure = "py8dis stopped with an error:\n      " + (lines[-1] if lines else "<no error output>")
@@ -1204,11 +1236,12 @@ def main():
     if unknown:
         parser.error("unknown test(s): {0}\nknown tests: {1}".format(", ".join(unknown), ", ".join(known_names)))
 
-    # (The paths in Paths, and the file names in the control files, are
-    # relative to the examples folder)
+    # (The other test scripts are run in the examples folder; the tests
+    # themselves in their own folders, see Paths)
     os.chdir(EXAMPLES_DIR)
-    Path("build").mkdir(exist_ok=True)
-    Path("known_good").mkdir(exist_ok=True)
+    for folder in GROUP_DIRS:
+        (folder / "build").mkdir(exist_ok=True)
+        (folder / "known_good").mkdir(exist_ok=True)
 
     # Use the py8dis in this repository (the control files import its
     # modules, e.g. 'from commands import *', so it goes first on the

@@ -1,5 +1,7 @@
 *.pyc
 examples/build/
+examples/*/build/
+examples/*/session_tests_*/
 examples/session_tests_*/
 test/
 *.bbprojectd/
