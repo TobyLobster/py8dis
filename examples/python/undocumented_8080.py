@@ -20,4 +20,5 @@ label(0x0117, "finish")
 config.set_show_cycles(True)
 config.set_show_cpu_state(True)
 
+config.set_label_references(True)
 go()

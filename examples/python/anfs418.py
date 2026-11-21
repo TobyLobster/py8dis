@@ -228,4 +228,5 @@ entry(0xbec3)
 entry(0xbf95)
 entry(0xbfd2)
 
+config.set_label_references(True)
 go()

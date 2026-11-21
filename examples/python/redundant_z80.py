@@ -8,4 +8,5 @@ from commands import *
 load(0x8000, "orig/redundant_z80.orig", "z80", "7d4deef6a9de9900ee99880d2bac5a9a")
 entry(0x8000, "start")
 
+config.set_label_references(True)
 go()

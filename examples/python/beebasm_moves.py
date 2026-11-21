@@ -12,4 +12,5 @@ load(0x4000, "orig/beebasm_moves.orig", "6502", "2e3f8dac0b869224191587ecef9adc8
 load(0xa000, "orig/beebasm_moves.orig", "6502", offset=0x6000)
 move(0x4010, 0xa000, 0x10)
 entry(0x4000, "start")
+config.set_label_references(True)
 go()

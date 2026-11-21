@@ -15,4 +15,5 @@ import apple
 load(0x0803, "orig/apple2c_test.orig", "65C02", "6ae2b9c7361cdc22cce1f2c9555cffa3")
 apple.apple2(model="iic")
 entry(0x0803, "start")
+config.set_label_references(True)
 go()

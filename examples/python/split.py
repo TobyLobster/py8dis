@@ -24,4 +24,5 @@ entry(0x2000)
 label(0x900, "print_and_inc_zp")
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

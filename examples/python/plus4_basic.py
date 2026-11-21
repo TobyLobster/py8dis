@@ -7,4 +7,5 @@ import commodore
 
 load_prg("orig/plus4_basic.orig", "6502", "f088868ccb7a0afb7dd1c83eed23bad9")
 commodore.plus4()
+config.set_label_references(True)
 go()

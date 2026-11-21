@@ -26,4 +26,5 @@ label(0xec4c, "control_codes")
 label(0xec5d, "control_code_routines_low")
 label(0xec6e, "control_code_routines_high")
 
+config.set_label_references(True)
 go()

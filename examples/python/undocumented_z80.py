@@ -17,4 +17,5 @@ word(0x807c)
 
 config.set_show_cycles(True)
 
+config.set_label_references(True)
 go()

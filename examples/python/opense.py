@@ -100,4 +100,5 @@ for i in range(0x62):
     if i >= 2:
         comment(addr, spectrum.character_description(0x20 + i - 2), inline=True)
 
+config.set_label_references(True)
 go()

@@ -15,4 +15,5 @@ import apple
 start = load_dos33_binary("orig/dos33_test.orig", "6502", "908931e49e9257a01332fe68a1b73dff")
 entry(start, "start")
 apple.apple2()
+config.set_label_references(True)
 go()

@@ -13,4 +13,5 @@ string(0x2058, 4)
 
 config.set_show_cpu_state(True)
 
+config.set_label_references(True)
 go()

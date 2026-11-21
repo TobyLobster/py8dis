@@ -14,4 +14,5 @@ entry(0x8000, "start")
 config.set_redundant_instruction_comments(False)
 config.set_show_cpu_state(True)
 
+config.set_label_references(True)
 go()

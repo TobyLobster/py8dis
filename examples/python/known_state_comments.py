@@ -20,4 +20,5 @@ entry(0x201d, "bits")
 
 config.set_show_cpu_state(True)
 
+config.set_label_references(True)
 go()

@@ -53,7 +53,7 @@ class Settings:
     def __init__(self):
         self.lower_case                            = True
         self.hex_dump                              = True
-        self.label_references                      = True
+        self.label_references                      = False
         self.inline_comment_column                 = 70
         self.word_wrap_comment_column              = 87
         self.indent_string                         = " "*4
@@ -114,10 +114,10 @@ def get_label_references():
     return session.current().settings.label_references
 
 def set_label_references(b):
-    """Say where each label is used from (True, the default), or not: in a
-    comment before the label, e.g. '; $2002 referenced 1 time by $200b' (see
-    Cpu.add_references_comments()), and in the list of labels by how often
-    they're used at the end of the output."""
+    """Say where each label is used from (True), or not (False, the
+    default): in a comment before the label, e.g. '; $2002 referenced 1 time
+    by $200b' (see Cpu.add_references_comments()), and in the list of labels
+    by how often they're used at the end of the output."""
     session.current().settings.label_references = b
 
 def get_inline_comment_column():

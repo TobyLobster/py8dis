@@ -111,4 +111,5 @@ byte(addr("crctab"), 1024, cols=4)
 # The rest of the last 128 byte CP/M record (whatever was in memory)
 byte(0x2289, 0x2300 - 0x2289)
 
+config.set_label_references(True)
 go()

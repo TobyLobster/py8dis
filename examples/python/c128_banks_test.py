@@ -32,4 +32,5 @@ import commodore
 load_prg("orig/c128_banks_test.orig", "6502", "a1eace66151a6ecad511e56199df70b9")
 commodore.c128()
 commodore.c128_bank(0x1c5f, 0x1c76, 0)
+config.set_label_references(True)
 go()

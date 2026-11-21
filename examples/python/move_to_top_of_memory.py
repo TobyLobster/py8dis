@@ -8,4 +8,5 @@ from commands import *
 load(0x2000, "orig/move_to_top_of_memory.orig", "6502", "8ee64467ccf6acbdb6203cbeb93b9687")
 move(0xfff0, 0x2010, 0x10)
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

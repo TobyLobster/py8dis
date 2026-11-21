@@ -22,4 +22,5 @@ with move(0x900, 0x201e, 0x202d-0x201e):
     label(0x900, "print_and_inc_zp")
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

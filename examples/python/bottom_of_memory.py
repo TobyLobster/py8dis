@@ -8,4 +8,5 @@ from commands import *
 
 load(0x0000, "orig/bottom_of_memory.orig", "6502", "bfd7c2b6c9c548b89af730ded79c2b9a")
 entry(0x0000, "start")
+config.set_label_references(True)
 go()

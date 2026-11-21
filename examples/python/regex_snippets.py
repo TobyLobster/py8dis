@@ -28,4 +28,5 @@ register_snippet(None, "Snippet 2 matched", """
     rts
 """)
 
+config.set_label_references(True)
 go()

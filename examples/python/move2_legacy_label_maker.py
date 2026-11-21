@@ -31,4 +31,5 @@ def my_label_maker(addr, context, suggestion):
 
 set_label_maker_hook(my_label_maker)
 
+config.set_label_references(True)
 go()

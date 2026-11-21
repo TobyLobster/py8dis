@@ -15,4 +15,5 @@ commodore.c64()
 # is for &0500 in the drive code
 drive_move = commodore.drive1541_code(0x0500, 0x083b, 0x0111)
 label(0x0500, "drive_code", drive_move)
+config.set_label_references(True)
 go()

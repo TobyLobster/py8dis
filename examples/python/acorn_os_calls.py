@@ -262,4 +262,5 @@ label(0x4199, "osfile_block")
 
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

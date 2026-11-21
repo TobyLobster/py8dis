@@ -31,4 +31,5 @@ with low_b_move_id:
     entry(0x90d, "low_b_baz")
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

@@ -20,4 +20,5 @@ expr(0x800d, "table")
 # An instruction cut off by the end of the loaded data: it's written as data
 entry(0x8014, "cut_off")
 
+config.set_label_references(True)
 go()

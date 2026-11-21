@@ -12,4 +12,5 @@ import acorn
 load(0x2900, "orig/atom_test.orig", "6502", "ca8495d3f556bb95987f2c6dd627974a")
 acorn.atom()
 entry(0x2900, "start")
+config.set_label_references(True)
 go()

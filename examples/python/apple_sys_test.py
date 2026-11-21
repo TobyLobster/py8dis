@@ -8,4 +8,5 @@ from commands import *
 
 start = load_apple_file("orig/apple_sys_test#ff2000", "6502", "01e4ff32fe03be1de1dca8235f8a8634")
 assert start == 0x2000
+config.set_label_references(True)
 go()

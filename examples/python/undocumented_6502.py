@@ -10,4 +10,5 @@ config.set_show_cpu_state(True)
 
 load(0x2000, "orig/undocumented_6502.orig", "6510", "7e9ced71b52b8909e29edf25e5427ca0")
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

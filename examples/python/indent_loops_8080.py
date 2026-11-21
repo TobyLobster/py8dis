@@ -11,4 +11,5 @@ config.set_indent_loops(True)
 load(0x1000, "orig/indent_loops_8080.orig", "8080", "9dba35b10999191dcd44aab0a5e32e14")
 entry(0x1000)
 
+config.set_label_references(True)
 go()

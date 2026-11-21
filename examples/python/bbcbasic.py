@@ -96,4 +96,5 @@ while get_u8_runtime(addr) != 0xff:
     addr += 2
 byte(addr)
 
+config.set_label_references(True)
 go()

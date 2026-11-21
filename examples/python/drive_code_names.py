@@ -12,4 +12,5 @@ import commodore
 load_prg("orig/drive_code_names.orig", "6502", "195791e1b8956cd255abb6124c5a8c70")
 commodore.c64()
 commodore.drive1541_code(0x0500, 0x0813, 7)
+config.set_label_references(True)
 go()

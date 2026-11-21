@@ -176,4 +176,5 @@ for i in range(1, 22):
 
 # The loader jumps here
 entry(0x6000)
+config.set_label_references(True)
 go()

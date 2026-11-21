@@ -17,4 +17,5 @@ load(0x0803, "orig/smartport_test.orig", "6502", "d79ecffcffa0e5f17f0a85c8348869
 apple.apple2(model="iie")
 apple.smartport_calls(0x085b)
 entry(0x0803, "start")
+config.set_label_references(True)
 go()

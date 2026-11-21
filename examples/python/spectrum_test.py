@@ -25,4 +25,5 @@ label(0x806c, "clear_screen")
 label(0x8070, "my_print")
 label(0x8073, "table")
 
+config.set_label_references(True)
 go()

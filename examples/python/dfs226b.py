@@ -391,4 +391,5 @@ with move(0x8000, 0x2000, 0x4000):
     for i in range(4):
         pc = string(pc, 4)
 
+config.set_label_references(True)
 go()

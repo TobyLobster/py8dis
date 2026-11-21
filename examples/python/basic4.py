@@ -33,4 +33,5 @@ set_label_maker_hook(our_label_maker)
 # errors without letting autostring() do it - it's not a big deal, but
 # it can interpret error codes as ASCII.
 
+config.set_label_references(True)
 go()

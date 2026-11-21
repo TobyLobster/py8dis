@@ -13,4 +13,5 @@ spectrum.rom()
 
 config.set_show_cycles(True)
 
+config.set_label_references(True)
 go()

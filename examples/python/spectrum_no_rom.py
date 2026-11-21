@@ -12,4 +12,5 @@ spectrum.spectrum48(rom_labels=False)
 
 entry(0x8000, "start")
 
+config.set_label_references(True)
 go()

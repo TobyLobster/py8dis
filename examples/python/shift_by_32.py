@@ -13,4 +13,5 @@ entry(0x2000)
 # 'cpx #$0e', the length of the message
 expr(0x200a, make_op2(make_hex(0x0e), ">>", 32))
 
+config.set_label_references(True)
 go()

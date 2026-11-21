@@ -14,4 +14,5 @@ from commands import *
 load(0xffe0, "orig/top_of_memory.orig", "6502", "330856f6a6272f61f8224a916847a259")
 entry(0xffe0, "start")
 entry(0xfffe)
+config.set_label_references(True)
 go()

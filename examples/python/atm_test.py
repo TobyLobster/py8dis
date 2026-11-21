@@ -10,4 +10,5 @@ import acorn
 start = load_atm("orig/atm_test.orig", "6502", "ad3d9da00024294445d21744ee3f5e3e")
 assert start == 0x2900
 acorn.atom()
+config.set_label_references(True)
 go()

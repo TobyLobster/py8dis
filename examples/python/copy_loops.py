@@ -17,4 +17,5 @@ expr(0x2019, "table3+3")
 label(0x3cf0, "table7")
 expr(0x2050, "table7+16")
 
+config.set_label_references(True)
 go()

@@ -112,4 +112,5 @@ def label_maker_hook(lmd):
         lmd.name = "store_target"
 set_label_maker_hook(label_maker_hook)
 
+config.set_label_references(True)
 go()

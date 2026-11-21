@@ -11,4 +11,5 @@ import acorn
 load(0x2000, "orig/acorn_fixes.orig", "6502", "07a10f02bf6c33318356098c639f0227")
 acorn.bbc()
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

@@ -17,4 +17,5 @@ commodore.c64()
 entry(0x085f, "kernal_out_routine_entry")
 commodore.c64_configuration(0x085f, 0x0863, 0x35)
 
+config.set_label_references(True)
 go()

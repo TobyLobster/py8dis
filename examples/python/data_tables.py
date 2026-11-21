@@ -22,4 +22,5 @@ entry(0x20fd, "words_in_bytes")
 label(0x20ce, "table8")
 byte(0x20ce, 4)
 
+config.set_label_references(True)
 go()

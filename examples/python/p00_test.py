@@ -10,4 +10,5 @@ assert start == 0x0801
 
 label(0xffd2, "chrout")
 entry(0x080d, "start")
+config.set_label_references(True)
 go()

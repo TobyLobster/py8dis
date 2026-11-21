@@ -28,4 +28,5 @@ byte(0x858c, 4)
 config.set_redundant_instruction_comments(False)
 config.set_show_cycles(True)
 
+config.set_label_references(True)
 go()

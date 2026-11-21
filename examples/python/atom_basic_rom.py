@@ -230,4 +230,5 @@ label(0xc9e7, "default_error_handler")
 comment(0xc9e7, "BASIC's default error handler, in BASIC: it prints ERROR, the error number (?0) and, if there is one, the line number")
 comment(0xca1b, "A line 0 of BASIC (its line number's high byte is also a BRK)")
 
+config.set_label_references(True)
 go()

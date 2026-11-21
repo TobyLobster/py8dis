@@ -8,4 +8,5 @@ import commodore
 load(0xa000, "orig/vic20_cartridge_test.orig", "6502", "9596066f8efb9ab79f7d5601664dd74d")
 commodore.vic20()
 commodore.is_cartridge()
+config.set_label_references(True)
 go()

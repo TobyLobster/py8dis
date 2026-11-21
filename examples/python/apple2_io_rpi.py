@@ -32,4 +32,5 @@ for addr, target, name in ((0xc70d, 0xc711, "CommInit"), (0xc70e, 0xc743, "CommR
     comment(addr, "Offset of " + name, align=Align.INLINE)
 
 apple.slot_rom(7)
+config.set_label_references(True)
 go()

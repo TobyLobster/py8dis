@@ -21,4 +21,5 @@ load(0xc200, "orig/slot_roms_test.orig", "6502", "c8cd3c47d81c0a8c6ea176e277eb3d
 apple.apple2()
 for slot in (2, 3, 4, 5):
     apple.slot_rom(slot)
+config.set_label_references(True)
 go()

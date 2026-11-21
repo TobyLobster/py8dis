@@ -183,4 +183,5 @@ while memory[addr] != 0 or memory[addr + 1] != 0:
     addr = end + 1
 byte(addr, 0xf000 - addr)
 
+config.set_label_references(True)
 go()

@@ -22,4 +22,5 @@ config.set_show_cpu_state(True)
 subroutine(0x3000, "external_routine", on_exit={'x': "(preserved)", 'c': "(clear)"}, is_entry_point=False, zero_page_written=[0x81])
 subroutine(0x2059, "vectored", "Jump through the vector at &0230", on_exit={'y': "(preserved)"})
 
+config.set_label_references(True)
 go()

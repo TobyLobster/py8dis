@@ -14,4 +14,5 @@ import apple
 
 load_apple_file("orig/prodos_test#ff2000", "6502", "3bac7aa9f3fdd66c139c6fa9808daafc")
 apple.apple2()
+config.set_label_references(True)
 go()

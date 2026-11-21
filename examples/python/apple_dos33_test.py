@@ -10,4 +10,5 @@ from commands import *
 start = load_dos33_binary("orig/apple_dos33_test.orig", "6502", "be8da81a2a59bab83ed4605d2aac9e0f")
 assert start == 0x6000
 entry(start, "start")
+config.set_label_references(True)
 go()

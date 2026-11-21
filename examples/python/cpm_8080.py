@@ -14,4 +14,5 @@ entry(0x0100)
 label(0x015a, "file")
 cpm.bdos_wrapper(0x015a, "a")
 
+config.set_label_references(True)
 go()

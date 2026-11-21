@@ -8,4 +8,5 @@ import commodore
 
 load_prg("orig/vic20_8k_test.orig", "6502", "570078f6c6797fa96ce8b8d859bca973")
 commodore.vic20()
+config.set_label_references(True)
 go()

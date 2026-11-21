@@ -47,4 +47,5 @@ byte(after_name, 2)
 expr(after_name, make_hi("start"))
 expr(after_name + 1, make_lo("start"))
 
+config.set_label_references(True)
 go()

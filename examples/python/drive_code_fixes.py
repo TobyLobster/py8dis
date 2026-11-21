@@ -13,4 +13,5 @@ import commodore
 load_prg("orig/drive_code_fixes.orig", "6502", "7532a6bda91f8e2e804e7bb3615079fd")
 commodore.c64()
 commodore.drive1541_code(0x0310, 0x080e, 15)
+config.set_label_references(True)
 go()

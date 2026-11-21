@@ -15,4 +15,5 @@ entry(0x2000, "start")
 
 config.set_show_cpu_state(True)
 
+config.set_label_references(True)
 go()

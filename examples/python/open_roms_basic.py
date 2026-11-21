@@ -29,4 +29,5 @@ for i in range(0xa7 - 0x80):
 for i in range(3):
     rts_code_ptr(0xbfee + i, 0xbff1 + i)
 
+config.set_label_references(True)
 go()

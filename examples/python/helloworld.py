@@ -10,5 +10,8 @@ entry(0x2000)
 
 # Add extra commands here as the disassembly progresses...
 
+# Say where each label is used from, in a comment before it.
+config.set_label_references(True)
+
 # Use all the information provided to actually disassemble the program.
 go()

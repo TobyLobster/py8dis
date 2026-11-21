@@ -11,4 +11,5 @@ import commodore
 
 load_prg("orig/plus4_test.orig", "6502", "212114c931d195facc29ebb2c7a39123")
 commodore.plus4()
+config.set_label_references(True)
 go()

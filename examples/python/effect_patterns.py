@@ -105,4 +105,5 @@ mode_value
 """)
 
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

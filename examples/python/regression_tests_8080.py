@@ -35,4 +35,5 @@ expr(0x100f, make_hi('addr_val'))                                           # $1
 expr(0x1011, make_lo(make_add('addr_val', 1)))                              # $35
 expr(0x1013, "(addr_val + 1)")                                              # $1235
 
+config.set_label_references(True)
 go()

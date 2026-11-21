@@ -20,4 +20,5 @@ byte(0x2054, 6)
 label(0x205f, "table5")
 byte(0x205f, 6)
 
+config.set_label_references(True)
 go()

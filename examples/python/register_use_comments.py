@@ -13,4 +13,5 @@ label(0x2059, "table1")
 label(0x2069, "table2")
 label(0x2071, "table3")
 
+config.set_label_references(True)
 go()

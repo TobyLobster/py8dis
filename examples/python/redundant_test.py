@@ -14,4 +14,5 @@ entry(0x2000, "start")
 # $2003, which code later branches to; so the BIT isn't redundant
 label(0x2003, "middle")
 
+config.set_label_references(True)
 go()

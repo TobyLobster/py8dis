@@ -10,4 +10,5 @@ config.set_show_cycles(True)
 
 load(0x2000, "orig/cycles_65c02.orig", "65c02", "85a02d73645ae17ca6e02281e5a7a61a")
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

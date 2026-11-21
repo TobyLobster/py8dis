@@ -13,4 +13,5 @@ entry(0x201d, "unguarded")
 
 config.set_jump_table_suggestions(False)
 
+config.set_label_references(True)
 go()

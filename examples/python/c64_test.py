@@ -9,4 +9,5 @@ import commodore
 
 load_prg("orig/c64_test.orig", "6510", "657fc0b303538731752e3d327d294bca")
 commodore.c64()
+config.set_label_references(True)
 go()

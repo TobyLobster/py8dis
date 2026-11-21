@@ -8,4 +8,5 @@ import commodore
 load(0x8000, "orig/cartridge_test.orig", "6502", "5e908240b929ffa6bbb18fde18d9114b")
 commodore.c64()
 commodore.is_cartridge()
+config.set_label_references(True)
 go()

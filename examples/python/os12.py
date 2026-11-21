@@ -139,4 +139,5 @@ entry(0xfff1, acorn.os_call_name("osword"))
 entry(0xff51)
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

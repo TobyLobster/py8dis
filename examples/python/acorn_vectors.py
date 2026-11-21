@@ -17,4 +17,5 @@ import acorn
 load(0x2000, "orig/acorn_vectors.orig", "6502", "64af27fd6accda6afdb0c6a2ab5406d8")
 acorn.bbc()
 entry(0x2000, "start")
+config.set_label_references(True)
 go()

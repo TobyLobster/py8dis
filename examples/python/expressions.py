@@ -61,4 +61,5 @@ test(0x2016, make_subtract(0, "k"))                                 # (0 - k) AN
 word(0x2017)
 expr(0x2017, make_op1("NOT", "table"))                              # NOT(table) AND $ffff
 
+config.set_label_references(True)
 go()

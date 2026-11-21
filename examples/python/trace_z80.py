@@ -53,4 +53,5 @@ label(0x0057, "routine_end")
 
 config.set_show_cycles(True)
 
+config.set_label_references(True)
 go()

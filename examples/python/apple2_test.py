@@ -16,4 +16,5 @@ import apple
 load(0x0803, "orig/apple2_test.orig", "6502", "9b67f7c1ea43e09878f82ace39566579")
 apple.apple2()
 entry(0x0803, "start")
+config.set_label_references(True)
 go()

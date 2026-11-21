@@ -8,4 +8,5 @@ import commodore
 load(0x0500, "orig/drive1541_names_test.orig", "6502", "583f9f28a1cbd3fb3e9cacab5ffe3c97")
 commodore.drive1541(rom="1541-ii", names="commodore")
 entry(0x0500, "drive_code")
+config.set_label_references(True)
 go()

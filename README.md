@@ -54,6 +54,9 @@ entry(0x2000)
 
 # Add extra commands here as the disassembly progresses...
 
+# Say where each label is used from, in a comment before it.
+config.set_label_references(True)
+
 # Use all the information provided to actually disassemble the program.
 go()
 ```
@@ -109,7 +112,7 @@ This is for the beebasm assembler, py8dis's default. Some things to notice:
 
 - py8dis has made up names (*labels*) for the addresses the code uses: `l200e` for data at &200E, `loop_c2002` for a loop, and `lffe3` for an address outside the program. The list of "automatically generated labels" at the end is a to-do list of names to give.
 - The comment at the end of each line is its address and bytes (and the bytes as characters).
-- "referenced 1 time by &200b" says where a label is used from.
+- "referenced 1 time by &200b" says where a label is used from, and the list of "label references" at the end says how often each is used. They're there because the control file turns them on with `config.set_label_references(True)` (they're off by default).
 - py8dis found the string "Hello, world!" by itself.
 
 ## Working on a disassembly
@@ -129,6 +132,7 @@ label(0x200e, "message")
 comment(0x2000, "Print the message, one character at a time")
 stringcr(0x200e)
 
+config.set_label_references(True)
 go()
 ```
 

@@ -11,4 +11,5 @@ import commodore
 
 load_prg("orig/pet4_test.orig", "6502", "8f7d50fdbedeb165b312eac42f8786f3")
 commodore.pet(basic=4, columns=80)
+config.set_label_references(True)
 go()

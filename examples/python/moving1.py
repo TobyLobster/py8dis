@@ -17,4 +17,5 @@ move(0x3001, 0x3002, 255)
 # Note: beebasm's COPYBLOCK, which the output uses to put the block in
 # place, takes its arguments in a different order: <start>,<end>,<dest>
 
+config.set_label_references(True)
 go()

@@ -26,4 +26,5 @@ with bank_b:
 # The second call is to bank B's entry point (bank_select is 1)
 expr(0x100c, "bank_b")
 
+config.set_label_references(True)
 go()

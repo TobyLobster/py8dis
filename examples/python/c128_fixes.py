@@ -10,4 +10,5 @@ import commodore
 
 load_prg("orig/c128_fixes.orig", "6502", "837177a34f96153121d3bf55909df025")
 commodore.c128()
+config.set_label_references(True)
 go()

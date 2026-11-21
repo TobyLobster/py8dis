@@ -121,4 +121,5 @@ low_byte_table(0xfeee, 0xfd, ["rdch_space_or_zero", "rdch_keys_1_to_4", "rdch_lo
                               "rdch_keys_8_to_13", "rdch_copy", "rdch_delete", "rdch_space_or_zero",
                               "rdch_digits", "rdch_keys_28_to_31", "rdch_at", "rdch_letters", "rdch_keys_59_to_63"])
 
+config.set_label_references(True)
 go()

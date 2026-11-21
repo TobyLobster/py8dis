@@ -19,4 +19,5 @@ label(0x0400, "buffer")
 label(0x0500, "buffer2")
 io_range(0x7e, 0x7f)
 
+config.set_label_references(True)
 go()

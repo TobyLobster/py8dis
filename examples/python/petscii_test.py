@@ -27,4 +27,5 @@ stringhi(0xc086, include_terminator_fn=lambda c: True, encoding="ascii")  # asci
 # literals, so it's a number, with the character in a comment
 char(0xc01e)
 
+config.set_label_references(True)
 go()

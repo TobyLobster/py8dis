@@ -9,4 +9,5 @@ import commodore
 
 load_prg("orig/pet1_test.orig", "6502", "9438e99030deae2ad5316653646d0086")
 commodore.pet(basic=1, names="commodore")
+config.set_label_references(True)
 go()

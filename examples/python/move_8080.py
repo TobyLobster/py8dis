@@ -14,4 +14,5 @@ entry(0x100, "start")
 # The bytes from &0120 to the end are the same as this file (which 'go' makes
 # from the end of the program), so they're written as an include of it
 include_binary_file(0x120, "orig/move_8080_table.bin")
+config.set_label_references(True)
 go()

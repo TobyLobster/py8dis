@@ -393,4 +393,5 @@ decimal(0x8150) # TODO: slightly silly (at least inconsistent) use, just to test
 hexadecimal(0x8208) # TODO: slightly silly use, just to test
 byte(0x9146, 32, cols=3) # TODO: slightly silly use, just to test
 
+config.set_label_references(True)
 go()

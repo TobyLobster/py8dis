@@ -10,4 +10,5 @@ load(0x080d, "orig/prg_test.orig", "6502", offset=14)
 
 label(0xffd2, "chrout")
 entry(0x080d, "start")
+config.set_label_references(True)
 go()

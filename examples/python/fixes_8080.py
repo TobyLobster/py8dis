@@ -25,4 +25,5 @@ def finish_hook(runtime_addr, state, subroutine):
         comment(runtime_addr, "Finish, with Z {0}".format("unknown" if state["z"] is None else "known"), inline=True)
 subroutine(0x001a, hook=finish_hook)
 
+config.set_label_references(True)
 go()

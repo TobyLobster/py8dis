@@ -24,4 +24,5 @@ for i in range(0,256):
     char(0x2001 + 2*i)
 
 # Use all the information provided to actually disassemble the program.
+config.set_label_references(True)
 go()

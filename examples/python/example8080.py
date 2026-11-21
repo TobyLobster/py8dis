@@ -9,4 +9,5 @@ from commands import *
 load(0x1000, "orig/example8080.orig", "8080")
 entry(0x1000)
 
+config.set_label_references(True)
 go()

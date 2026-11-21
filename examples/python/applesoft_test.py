@@ -14,4 +14,5 @@ import apple
 load(0x0801, "orig/applesoft_test.orig", "6502", "cde315b480d00576a1e57cd653ddf6ea")
 apple.apple2()
 apple.applesoft_program()
+config.set_label_references(True)
 go()

@@ -11,4 +11,5 @@ from commands import *
 start = load_apple_file("orig/apple_applesingle_test.orig", "6502", "594a6317b42f0939885abb31fb9158c0")
 assert start == 0x0803
 entry(start, "start")
+config.set_label_references(True)
 go()

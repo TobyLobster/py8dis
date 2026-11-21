@@ -26,4 +26,5 @@ label(0x209b, "table6")
 rts_code_ptr(0x209b)
 rts_code_ptr(0x209d)
 
+config.set_label_references(True)
 go()

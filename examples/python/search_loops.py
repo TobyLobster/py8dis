@@ -19,4 +19,5 @@ label(0x2328, "text5")
 label(0x2428, "table8")
 label(0x2438, "table9")
 
+config.set_label_references(True)
 go()

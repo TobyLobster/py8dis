@@ -13,4 +13,5 @@ end = acorn.atom_basic_program()
 assert end == 0x2943
 # (There's no program at the machine code, so nothing is classified there)
 assert acorn.atom_basic_program(0x2950) is None
+config.set_label_references(True)
 go()

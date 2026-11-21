@@ -33,4 +33,5 @@ with move_f:
     label(0x14c1, "f_table")
     byte(0x14c1, 4)
 
+config.set_label_references(True)
 go()
