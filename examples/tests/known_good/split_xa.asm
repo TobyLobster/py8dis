@@ -22,7 +22,7 @@ print_and_inc_zp
 
 // $0908 referenced 1 time by $0902
 sub_c0908
-    jsr OSASCI                                                        // 0908: 20 e3 ff     .. // Write character
+    jsr OSASCI                                                        // 0908: 20 e3 ff     .. // Write character A
     clc                                                               // 090b: 18          .
     adc #1                                                            // 090c: 69 01       i.
     rts                                                               // 090e: 60          `

@@ -5764,7 +5764,7 @@ lc4ab = lc4aa+1
 .cdeb1
     iny                                                               ; deb1: c8          .
     lda (l00fd),y                                                     ; deb2: b1 fd       ..
-    jsr OSASCI                                                        ; deb4: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; deb4: 20 e3 ff     .. ; Write character A
     tax                                                               ; deb7: aa          .
     bne cdeb1                                                         ; deb8: d0 f7       ..
     rts                                                               ; deba: 60          `
@@ -7393,7 +7393,7 @@ le5b4 = le5b3+1
     iny                                                               ; e920: c8          .
 ; &e921 referenced 2 times by &e935, &e940
 .ce921
-    jsr OSWRCH                                                        ; e921: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; e921: 20 ee ff     .. ; Write character A
 ; &e924 referenced 4 times by &e91b, &e93d, &e947, &e951
 .ce924
     jsr OSRDCH                                                        ; e924: 20 e0 ff     .. ; Read a character from the current input stream
@@ -10326,7 +10326,7 @@ lf1a4 = lf1a3+1
     adc #6                                                            ; f98c: 69 06       i.  ; Carry is set, so adding 7
 ; &f98e referenced 2 times by &f98a, &f993
 .cf98e
-    jmp OSWRCH                                                        ; f98e: 4c ee ff    L.. ; Write character
+    jmp OSWRCH                                                        ; f98e: 4c ee ff    L.. ; Write character A
 
 ; &f991 referenced 4 times by &f8eb, &f917, &f922, &f976
 .sub_cf991
@@ -10488,7 +10488,7 @@ lf1a4 = lf1a3+1
     plp                                                               ; fa5e: 28          (
     php                                                               ; fa5f: 08          .
     beq cfa52                                                         ; fa60: f0 f0       ..
-    jsr OSASCI                                                        ; fa62: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; fa62: 20 e3 ff     .. ; Write character A
     jmp cfa52                                                         ; fa65: 4c 52 fa    LR.
 
 ; &fa68 referenced 1 time by &fa5c
@@ -10958,7 +10958,7 @@ lffb3 = osbyte150EntryPoint+1
 
 ; ***************************************************************************************
 .VDUCHR
-    jmp cc4c0                                                         ; ffbc: 4c c0 c4    L.. ; Write character
+    jmp cc4c0                                                         ; ffbc: 4c c0 c4    L.. ; Write character A
 
 ; ***************************************************************************************
 .OSEVEN
@@ -10972,7 +10972,7 @@ lffb3 = osbyte150EntryPoint+1
 
 ; ***************************************************************************************
 .NVWRCH
-    jmp ce0a4                                                         ; ffcb: 4c a4 e0    L.. ; Write character
+    jmp ce0a4                                                         ; ffcb: 4c a4 e0    L.. ; Write character A
 
 ; ***************************************************************************************
 ; &ffce referenced 5 times by &dee3, &e28c, &e296, &f698, &f6a2
@@ -11019,8 +11019,8 @@ lffb3 = osbyte150EntryPoint+1
 ; ***************************************************************************************
 ; &ffe3 referenced 2 times by &deb4, &fa62
 .OSASCI
-    cmp #&0d                                                          ; ffe3: c9 0d       ..  ; Write character
-    bne OSWRCH                                                        ; ffe5: d0 07       ..  ; Write character
+    cmp #&0d                                                          ; ffe3: c9 0d       ..  ; Write character A
+    bne OSWRCH                                                        ; ffe5: d0 07       ..  ; Write character A
 ; ***************************************************************************************
 ; On Exit:
 ;     D: clear

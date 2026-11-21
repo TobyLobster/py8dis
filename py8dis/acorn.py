@@ -703,7 +703,7 @@ def oswrch_hook(runtime_addr, state, subroutine):
             osnewl_hook(runtime_addr, state, subroutine)
             return
     else:
-        a = ""
+        a = " A"
     auto_comment(runtime_addr, "Write character%s" % a, align=Align.INLINE)
 
 def osfile_hook(runtime_addr, state, subroutine):

@@ -468,7 +468,7 @@ c809f
     pla                                                               ; 20af: 68          h   :80af[1]
     tax                                                               ; 20b0: aa          .   :80b0[1]
     pla                                                               ; 20b1: 68          h   :80b1[1]
-    jsr OSASCI                                                        ; 20b2: 20 e3 ff     .. :80b2[1]   ; Write character
+    jsr OSASCI                                                        ; 20b2: 20 e3 ff     .. :80b2[1]   ; Write character A
     jmp c9ad4                                                         ; 20b5: 4c d4 9a    L.. :80b5[1]
 
 ; $20b8 referenced 1 time by $aa62[1]
@@ -7327,11 +7327,11 @@ ca97d
     adc #$30 ; '0'                                                    ; 4980: 69 30       i0  :a980[1]
 ; $4982 referenced 1 time by $a97b[1]
 ca982
-    jsr OSASCI                                                        ; 4982: 20 e3 ff     .. :a982[1]   ; Write character
+    jsr OSASCI                                                        ; 4982: 20 e3 ff     .. :a982[1]   ; Write character A
     cpx #3                                                            ; 4985: e0 03       ..  :a985[1]
     bne ca98d                                                         ; 4987: d0 04       ..  :a987[1]
     tya                                                               ; 4989: 98          .   :a989[1]
-    jsr OSASCI                                                        ; 498a: 20 e3 ff     .. :a98a[1]   ; Write character
+    jsr OSASCI                                                        ; 498a: 20 e3 ff     .. :a98a[1]   ; Write character A
 ; $498d referenced 1 time by $a987[1]
 ca98d
     dex                                                               ; 498d: ca          .   :a98d[1]
@@ -7360,7 +7360,7 @@ loop_ca9ab
     jsr inc16_ae                                                      ; 49ab: 20 dc 83     .. :a9ab[1]
     lda (l00ae),y                                                     ; 49ae: b1 ae       ..  :a9ae[1]
     bmi ca9b8                                                         ; 49b0: 30 06       0.  :a9b0[1]
-    jsr OSASCI                                                        ; 49b2: 20 e3 ff     .. :a9b2[1]   ; Write character
+    jsr OSASCI                                                        ; 49b2: 20 e3 ff     .. :a9b2[1]   ; Write character A
     jmp loop_ca9ab                                                    ; 49b5: 4c ab a9    L.. :a9b5[1]
 
 ; $49b8 referenced 1 time by $a9b0[1]
@@ -7384,7 +7384,7 @@ sub_ca9c2
 ; $49ca referenced 4 times by $a8c0[1], $a8d5[1], $a922[1], $a9c6[1]
 sub_ca9ca
     jsr sub_c80c8                                                     ; 49ca: 20 c8 80     .. :a9ca[1]
-    jmp OSASCI                                                        ; 49cd: 4c e3 ff    L.. :a9cd[1]   ; Write character
+    jmp OSASCI                                                        ; 49cd: 4c e3 ff    L.. :a9cd[1]   ; Write character A
 
 sub_ca9d0
     lda #0                                                            ; 49d0: a9 00       ..  :a9d0[1]
@@ -7634,7 +7634,7 @@ cab1a
     pla                                                               ; 4b2d: 68          h   :ab2d[1]
 ; $4b2e referenced 1 time by $ab24[1]
 cab2e
-    jsr OSASCI                                                        ; 4b2e: 20 e3 ff     .. :ab2e[1]   ; Write character
+    jsr OSASCI                                                        ; 4b2e: 20 e3 ff     .. :ab2e[1]   ; Write character A
     bit l00ff                                                         ; 4b31: 24 ff       $.  :ab31[1]
     bmi cab54                                                         ; 4b33: 30 1f       0.  :ab33[1]
 ; $4b35 referenced 1 time by $ab15[1]
@@ -7722,7 +7722,7 @@ loop_cabad
     ldx #0                                                            ; 4bad: a2 00       ..  :abad[1]
     lda (l00ac,x)                                                     ; 4baf: a1 ac       ..  :abaf[1]
     jsr sub_c842c                                                     ; 4bb1: 20 2c 84     ,. :abb1[1]
-    jsr OSASCI                                                        ; 4bb4: 20 e3 ff     .. :abb4[1]   ; Write character
+    jsr OSASCI                                                        ; 4bb4: 20 e3 ff     .. :abb4[1]   ; Write character A
     dec l00ac                                                         ; 4bb7: c6 ac       ..  :abb7[1]
     bne loop_cabad                                                    ; 4bb9: d0 f2       ..  :abb9[1]
     rts                                                               ; 4bbb: 60          `   :abbb[1]
@@ -7859,7 +7859,7 @@ sub_cac62
 ; $4c6a referenced 1 time by $ac66[1]
 sub_cac6a
     jsr sub_c80c8                                                     ; 4c6a: 20 c8 80     .. :ac6a[1]
-    jsr OSASCI                                                        ; 4c6d: 20 e3 ff     .. :ac6d[1]   ; Write character
+    jsr OSASCI                                                        ; 4c6d: 20 e3 ff     .. :ac6d[1]   ; Write character A
     sec                                                               ; 4c70: 38          8   :ac70[1]
     rts                                                               ; 4c71: 60          `   :ac71[1]
 
@@ -8306,7 +8306,7 @@ tube_banner_loop
     bpl tube_banner_loop                                              ; 4eeb: 10 fb       ..  :aeeb[1]
     lda tube_data_register_1                                          ; 4eed: ad e1 fe    ... :aeed[1]
     beq lda_0_rts                                                     ; 4ef0: f0 43       .C  :aef0[1]
-    jsr OSWRCH                                                        ; 4ef2: 20 ee ff     .. :aef2[1]   ; Write character
+    jsr OSWRCH                                                        ; 4ef2: 20 ee ff     .. :aef2[1]   ; Write character A
     jmp tube_banner_loop                                              ; 4ef5: 4c e8 ae    L.. :aef5[1]
 
 ; $4ef8 referenced 1 time by $aedb[1]
@@ -8386,7 +8386,7 @@ c0036
 ; $4f5d referenced 1 time by $49[4]
 loop_c003b
     lda tube_data_register_1                                          ; 4f5d: ad e1 fe    ... :003b[4]
-    jsr OSWRCH                                                        ; 4f60: 20 ee ff     .. :003e[4]   ; Write character
+    jsr OSWRCH                                                        ; 4f60: 20 ee ff     .. :003e[4]   ; Write character A
 ; $4f63 referenced 1 time by $39[4]
 c0041
     bit tube_status_register_2                                        ; 4f63: 2c e2 fe    ,.. :0041[4]
@@ -8777,7 +8777,7 @@ cb268
 ; $5275 referenced 1 time by $b27e[1]
 loop_cb275
     lda lb283,x                                                       ; 5275: bd 83 b2    ... :b275[1]
-    jsr OSWRCH                                                        ; 5278: 20 ee ff     .. :b278[1]   ; Write character
+    jsr OSWRCH                                                        ; 5278: 20 ee ff     .. :b278[1]   ; Write character A
     inx                                                               ; 527b: e8          .   :b27b[1]
     cpx #$14                                                          ; 527c: e0 14       ..  :b27c[1]
     bne loop_cb275                                                    ; 527e: d0 f5       ..  :b27e[1]
@@ -8820,7 +8820,7 @@ cb2b2
 ; $52b4 referenced 1 time by $b2bb[1]
 loop_cb2b4
     lda lb075,y                                                       ; 52b4: b9 75 b0    .u. :b2b4[1]
-    jsr OSWRCH                                                        ; 52b7: 20 ee ff     .. :b2b7[1]   ; Write character
+    jsr OSWRCH                                                        ; 52b7: 20 ee ff     .. :b2b7[1]   ; Write character A
     iny                                                               ; 52ba: c8          .   :b2ba[1]
     bne loop_cb2b4                                                    ; 52bb: d0 f7       ..  :b2bb[1]
 ; $52bd referenced 1 time by $b2c6[1]
@@ -8828,7 +8828,7 @@ loop_cb2bd
     ; print message
     lda lb175,y                                                       ; 52bd: b9 75 b1    .u. :b2bd[1]
     beq cb280                                                         ; 52c0: f0 be       ..  :b2c0[1]
-    jsr OSWRCH                                                        ; 52c2: 20 ee ff     .. :b2c2[1]   ; Write character
+    jsr OSWRCH                                                        ; 52c2: 20 ee ff     .. :b2c2[1]   ; Write character A
     iny                                                               ; 52c5: c8          .   :b2c5[1]
     bne loop_cb2bd                                                    ; 52c6: d0 f5       ..  :b2c6[1]
 ; $52c8 referenced 1 time by $b1d2[1]
@@ -11078,7 +11078,7 @@ lbf4f
 
 ; $5f78 referenced 1 time by $bf7f[1]
 loop_cbf78
-    jsr OSWRCH                                                        ; 5f78: 20 ee ff     .. :bf78[1]   ; Write character
+    jsr OSWRCH                                                        ; 5f78: 20 ee ff     .. :bf78[1]   ; Write character A
     inx                                                               ; 5f7b: e8          .   :bf7b[1]
 ; $5f7c referenced 3 times by $bf0f[1], $bf3e[1], $bf43[1]
 sub_cbf7c

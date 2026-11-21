@@ -464,7 +464,7 @@ l8004 = service_entry+1
     pla                                                               ; 80af: 68          h
     tax                                                               ; 80b0: aa          .
     pla                                                               ; 80b1: 68          h
-    jsr OSASCI                                                        ; 80b2: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 80b2: 20 e3 ff     ..            ; Write character A
     jmp c9ad4                                                         ; 80b5: 4c d4 9a    L..
 
 ; &80b8 referenced 1 time by &aa62
@@ -7327,11 +7327,11 @@ nmi_XXX5 = c0d1f+1
     adc #'0'                                                          ; a980: 69 30       i0
 ; &a982 referenced 1 time by &a97b
 .ca982
-    jsr OSASCI                                                        ; a982: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; a982: 20 e3 ff     ..            ; Write character A
     cpx #3                                                            ; a985: e0 03       ..
     bne ca98d                                                         ; a987: d0 04       ..
     tya                                                               ; a989: 98          .
-    jsr OSASCI                                                        ; a98a: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; a98a: 20 e3 ff     ..            ; Write character A
 ; &a98d referenced 1 time by &a987
 .ca98d
     dex                                                               ; a98d: ca          .
@@ -7360,7 +7360,7 @@ nmi_XXX5 = c0d1f+1
     jsr inc16_ae                                                      ; a9ab: 20 dc 83     ..
     lda (l00ae),y                                                     ; a9ae: b1 ae       ..
     bmi ca9b8                                                         ; a9b0: 30 06       0.
-    jsr OSASCI                                                        ; a9b2: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; a9b2: 20 e3 ff     ..            ; Write character A
     jmp loop_ca9ab                                                    ; a9b5: 4c ab a9    L..
 
 ; &a9b8 referenced 1 time by &a9b0
@@ -7384,7 +7384,7 @@ nmi_XXX5 = c0d1f+1
 ; &a9ca referenced 4 times by &a8c0, &a8d5, &a922, &a9c6
 .sub_ca9ca
     jsr sub_c80c8                                                     ; a9ca: 20 c8 80     ..
-    jmp OSASCI                                                        ; a9cd: 4c e3 ff    L..            ; Write character
+    jmp OSASCI                                                        ; a9cd: 4c e3 ff    L..            ; Write character A
 
 .sub_ca9d0
     lda #0                                                            ; a9d0: a9 00       ..
@@ -7634,7 +7634,7 @@ nmi_XXX5 = c0d1f+1
     pla                                                               ; ab2d: 68          h
 ; &ab2e referenced 1 time by &ab24
 .cab2e
-    jsr OSASCI                                                        ; ab2e: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; ab2e: 20 e3 ff     ..            ; Write character A
     bit l00ff                                                         ; ab31: 24 ff       $.
     bmi cab54                                                         ; ab33: 30 1f       0.
 ; &ab35 referenced 1 time by &ab15
@@ -7722,7 +7722,7 @@ nmi_XXX5 = c0d1f+1
     ldx #0                                                            ; abad: a2 00       ..
     lda (l00ac,x)                                                     ; abaf: a1 ac       ..
     jsr sub_c842c                                                     ; abb1: 20 2c 84     ,.
-    jsr OSASCI                                                        ; abb4: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; abb4: 20 e3 ff     ..            ; Write character A
     dec l00ac                                                         ; abb7: c6 ac       ..
     bne loop_cabad                                                    ; abb9: d0 f2       ..
     rts                                                               ; abbb: 60          `
@@ -7859,7 +7859,7 @@ nmi_XXX5 = c0d1f+1
 ; &ac6a referenced 1 time by &ac66
 .sub_cac6a
     jsr sub_c80c8                                                     ; ac6a: 20 c8 80     ..
-    jsr OSASCI                                                        ; ac6d: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; ac6d: 20 e3 ff     ..            ; Write character A
     sec                                                               ; ac70: 38          8
     rts                                                               ; ac71: 60          `
 
@@ -8302,7 +8302,7 @@ l0600 = c05ff+1
     bpl tube_banner_loop                                              ; aeeb: 10 fb       ..
     lda tube_data_register_1                                          ; aeed: ad e1 fe    ...
     beq lda_0_rts                                                     ; aef0: f0 43       .C
-    jsr OSWRCH                                                        ; aef2: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; aef2: 20 ee ff     ..            ; Write character A
     jmp tube_banner_loop                                              ; aef5: 4c e8 ae    L..
 
 ; &aef8 referenced 1 time by &aedb
@@ -8381,7 +8381,7 @@ l0600 = c05ff+1
 ; &af5d referenced 1 time by &0049[3]
 .loop_c003b
     lda tube_data_register_1                                          ; af5d: ad e1 fe    ... :003b[3]
-    jsr OSWRCH                                                        ; af60: 20 ee ff     .. :003e[3]   ; Write character
+    jsr OSWRCH                                                        ; af60: 20 ee ff     .. :003e[3]   ; Write character A
 ; &af63 referenced 1 time by &0039[3]
 .c0041
     bit tube_status_register_2                                        ; af63: 2c e2 fe    ,.. :0041[3]
@@ -8773,7 +8773,7 @@ jump_address_low = c0050+1
 ; &b275 referenced 1 time by &b27e
 .loop_cb275
     lda lb283,x                                                       ; b275: bd 83 b2    ...
-    jsr OSWRCH                                                        ; b278: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; b278: 20 ee ff     ..            ; Write character A
     inx                                                               ; b27b: e8          .
     cpx #&14                                                          ; b27c: e0 14       ..
     bne loop_cb275                                                    ; b27e: d0 f5       ..
@@ -8816,7 +8816,7 @@ jump_address_low = c0050+1
 ; &b2b4 referenced 1 time by &b2bb
 .loop_cb2b4
     lda lb075,y                                                       ; b2b4: b9 75 b0    .u.
-    jsr OSWRCH                                                        ; b2b7: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; b2b7: 20 ee ff     ..            ; Write character A
     iny                                                               ; b2ba: c8          .
     bne loop_cb2b4                                                    ; b2bb: d0 f7       ..
 ; &b2bd referenced 1 time by &b2c6
@@ -8824,7 +8824,7 @@ jump_address_low = c0050+1
     ; print message
     lda lb175,y                                                       ; b2bd: b9 75 b1    .u.
     beq cb280                                                         ; b2c0: f0 be       ..
-    jsr OSWRCH                                                        ; b2c2: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; b2c2: 20 ee ff     ..            ; Write character A
     iny                                                               ; b2c5: c8          .
     bne loop_cb2bd                                                    ; b2c6: d0 f5       ..
 ; &b2c8 referenced 1 time by &b1d2
@@ -11092,7 +11092,7 @@ lb6ce = cb6cd+1
 
 ; &bf78 referenced 1 time by &bf7f
 .loop_cbf78
-    jsr OSWRCH                                                        ; bf78: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; bf78: 20 ee ff     ..            ; Write character A
     inx                                                               ; bf7b: e8          .
 ; &bf7c referenced 3 times by &bf0f, &bf3e, &bf43
 .sub_cbf7c

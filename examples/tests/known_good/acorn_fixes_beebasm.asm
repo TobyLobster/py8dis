@@ -15,9 +15,9 @@ OSWRCH  = &ffee
     lda #&1f                                                          ; 2002: a9 1f       ..
     jsr OSWRCH                                                        ; 2004: 20 ee ff     .. ; Write character 31
     txa                                                               ; 2007: 8a          .
-    jsr OSWRCH                                                        ; 2008: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 2008: 20 ee ff     .. ; Write character A
     inx                                                               ; 200b: e8          .
-    jsr OSWRCH                                                        ; 200c: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 200c: 20 ee ff     .. ; Write character A
     rts                                                               ; 200f: 60          `
 
     ; table of offsets for each character row

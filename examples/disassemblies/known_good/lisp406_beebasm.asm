@@ -2620,7 +2620,7 @@ OSCLI   = &fff7
     sta ARG+1                                      ; 8eae: 85 31       .1
     ldy #2                                         ; 8eb0: a0 02       ..
     lda (ARG),y                                    ; 8eb2: b1 30       .0  ; LS byte of arg
-    jsr OSWRCH                                     ; 8eb4: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                     ; 8eb4: 20 ee ff     .. ; Write character A
     inx                                            ; 8eb7: e8          .
     inx                                            ; 8eb8: e8          .
     cpx TVSEXT                                     ; 8eb9: e4 33       .3
@@ -4084,7 +4084,7 @@ OSCLI   = &fff7
     lda #&16                                       ; 97c9: a9 16       ..  ; Change mode
     jsr OSWRCH                                     ; 97cb: 20 ee ff     .. ; Write character 22
     pla                                            ; 97ce: 68          h
-    jmp OSWRCH                                     ; 97cf: 4c ee ff    L.. ; Write character
+    jmp OSWRCH                                     ; 97cf: 4c ee ff    L.. ; Write character A
 
 
     ; **** USR

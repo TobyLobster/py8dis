@@ -1566,7 +1566,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
 .printstringloop
     iny                                                               ; 1a30: c8          .
     lda (string),y                                                    ; 1a31: b1 70       .p
-    jsr OSWRCH                                                        ; 1a33: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 1a33: 20 ee ff     ..            ; Write character A
     cpy stringlength                                                  ; 1a36: c4 75       .u
     bne printstringloop                                               ; 1a38: d0 f6       ..
     rts                                                               ; 1a3a: 60          `
@@ -3893,7 +3893,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     lda temp4                                                         ; 2867: a5 8b       ..
     clc                                                               ; 2869: 18          .
     adc #'0'                                                          ; 286a: 69 30       i0
-    jsr OSWRCH                                                        ; 286c: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 286c: 20 ee ff     ..            ; Write character A
     ldx temp3                                                         ; 286f: a6 8a       ..
     jsr gethiscoreaddr                                                ; 2871: 20 7c 27     |'
     ldy #0                                                            ; 2874: a0 00       ..
@@ -3911,7 +3911,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     adc #'0'                                                          ; 2886: 69 30       i0
     inc temp4                                                         ; 2888: e6 8b       ..
 .printhighscorechar
-    jsr OSWRCH                                                        ; 288a: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 288a: 20 ee ff     ..            ; Write character A
     iny                                                               ; 288d: c8          .
     cpy #8                                                            ; 288e: c0 08       ..
     bcc hiscoredigitsloop                                             ; 2890: 90 e6       ..
@@ -3919,7 +3919,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     jsr OSWRCH                                                        ; 2894: 20 ee ff     ..            ; Write character 32
 .hiscorenameloop
     lda (hiscoreaddr),y                                               ; 2897: b1 76       .v
-    jsr OSWRCH                                                        ; 2899: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2899: 20 ee ff     ..            ; Write character A
     iny                                                               ; 289c: c8          .
     cpy #&10                                                          ; 289d: c0 10       ..
     bcc hiscorenameloop                                               ; 289f: 90 f6       ..
@@ -3977,7 +3977,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     lda playernum                                                     ; 28f7: a5 5d       .]
     clc                                                               ; 28f9: 18          .
     adc #&31                                                          ; 28fa: 69 31       i1
-    jsr OSWRCH                                                        ; 28fc: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 28fc: 20 ee ff     ..            ; Write character A
     jsr showhiscores                                                  ; 28ff: 20 38 28     8(
     ldx #<string_hiscoreprompt                                        ; 2902: a2 5e       .^
     ldy #>string_hiscoreprompt                                        ; 2904: a0 29       .)
@@ -4080,7 +4080,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     lda playernum                                                     ; 29c2: a5 5d       .]
     clc                                                               ; 29c4: 18          .
     adc #&31                                                          ; 29c5: 69 31       i1
-    jsr OSWRCH                                                        ; 29c7: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 29c7: 20 ee ff     ..            ; Write character A
     lda #&14                                                          ; 29ca: a9 14       ..
     jsr string_howmanyplayers_end                                     ; 29cc: 20 5e 2c     ^,
 ; ----------------------------------------------------------------------------------
@@ -4166,7 +4166,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     lda playernum                                                     ; 2a5c: a5 5d       .]
     clc                                                               ; 2a5e: 18          .
     adc #&31                                                          ; 2a5f: 69 31       i1
-    jsr OSWRCH                                                        ; 2a61: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2a61: 20 ee ff     ..            ; Write character A
     lda #&0a                                                          ; 2a64: a9 0a       ..
     jsr string_howmanyplayers_end                                     ; 2a66: 20 5e 2c     ^,
     lda #osbyte_clear_escape                                          ; 2a69: a9 7c       .|
@@ -4378,7 +4378,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     sta numaliveplayers                                               ; 2bf3: 85 5f       ._
     clc                                                               ; 2bf5: 18          .
     adc #&30                                                          ; 2bf6: 69 30       i0
-    jsr OSWRCH                                                        ; 2bf8: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; 2bf8: 20 ee ff     ..            ; Write character A
     lda #5                                                            ; 2bfb: a9 05       ..
     jsr string_howmanyplayers_end                                     ; 2bfd: 20 5e 2c     ^,
 ; ----------------------------------------------------------------------------------
@@ -5143,7 +5143,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     lda #&27                                                          ; 30ff: a9 27       .'  :09ff[1]
     jsr OSWRCH                                                        ; 3101: 20 ee ff     .. :0a01[1]   ; Write character 39
     pla                                                               ; 3104: 68          h   :0a04[1]
-    jsr OSWRCH                                                        ; 3105: 20 ee ff     .. :0a05[1]   ; Write character
+    jsr OSWRCH                                                        ; 3105: 20 ee ff     .. :0a05[1]   ; Write character A
     lda #&27                                                          ; 3108: a9 27       .'  :0a08[1]
     jsr OSWRCH                                                        ; 310a: 20 ee ff     .. :0a0a[1]   ; Write character 39
     jmp returninkey                                                   ; 310d: 4c af 0a    L.. :0a0d[1]
@@ -5243,7 +5243,7 @@ section pydis, org = &1100, filename = "chuckie_baron"
     pla                                                               ; 31a2: 68          h   :0aa2[1]
     sec                                                               ; 31a3: 38          8   :0aa3[1]
     sbc #&50                                                          ; 31a4: e9 50       .P  :0aa4[1]
-    jsr OSWRCH                                                        ; 31a6: 20 ee ff     .. :0aa6[1]   ; Write character
+    jsr OSWRCH                                                        ; 31a6: 20 ee ff     .. :0aa6[1]   ; Write character A
     jmp returninkey                                                   ; 31a9: 4c af 0a    L.. :0aa9[1]
 
 .printstringandreturninkey

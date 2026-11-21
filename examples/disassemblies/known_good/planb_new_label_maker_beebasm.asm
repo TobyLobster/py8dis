@@ -10204,7 +10204,7 @@ OSBYTE  = &fff4
     jsr increment_print_address                                       ; 3e56: 20 6a 3e     j>
     lda (print_addr_low),y                                            ; 3e59: b1 2f       ./  ; Offset Y=0
     and #&7f                                                          ; 3e5b: 29 7f       ).
-    jsr OSASCI                                                        ; 3e5d: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; 3e5d: 20 e3 ff     .. ; Write character A
     lda (print_addr_low),y                                            ; 3e60: b1 2f       ./
     bpl print_loop                                                    ; 3e62: 10 f2       ..
     jsr increment_print_address                                       ; 3e64: 20 6a 3e     j>
@@ -10237,7 +10237,7 @@ OSBYTE  = &fff4
 .print_digit_loop
     pla                                                               ; 3e83: 68          h
     beq return_4                                                      ; 3e84: f0 06       ..
-    jsr OSWRCH                                                        ; 3e86: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 3e86: 20 ee ff     .. ; Write character A
     jmp print_digit_loop                                              ; 3e89: 4c 83 3e    L.>
 
 .return_4
@@ -10455,7 +10455,7 @@ OSBYTE  = &fff4
     ldy #6                                                            ; 3ff2: a0 06       ..
 .print_score_loop
     lda score_digits_0,y                                              ; 3ff4: b9 28 00    .(.
-    jsr OSWRCH                                                        ; 3ff7: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 3ff7: 20 ee ff     .. ; Write character A
     dey                                                               ; 3ffa: 88          .
     bpl print_score_loop                                              ; 3ffb: 10 f7       ..
     rts                                                               ; 3ffd: 60          `
@@ -10862,12 +10862,12 @@ routine_addr_high = opcode1+2
 .print_room_name_loop
     lda current_room_cache,y                                          ; 42a6: b9 00 04    ...
     bmi print_room_name_final_character                               ; 42a9: 30 06       0.
-    jsr OSWRCH                                                        ; 42ab: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 42ab: 20 ee ff     .. ; Write character A
     iny                                                               ; 42ae: c8          .
     bne print_room_name_loop                                          ; 42af: d0 f5       ..
 .print_room_name_final_character
     and #&7f                                                          ; 42b1: 29 7f       ).
-    jsr OSWRCH                                                        ; 42b3: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 42b3: 20 ee ff     .. ; Write character A
 .print_spaces_to_end_of_line
     lda #&20                                                          ; 42b6: a9 20       .
     jsr OSWRCH                                                        ; 42b8: 20 ee ff     .. ; Write character 32
@@ -11771,7 +11771,7 @@ screen_addr_high = opcode10+2
     lda #&0f                                                          ; 480e: a9 0f       ..
     jsr OSWRCH                                                        ; 4810: 20 ee ff     .. ; Write character 15
     txa                                                               ; 4813: 8a          .
-    jsr OSWRCH                                                        ; 4814: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 4814: 20 ee ff     .. ; Write character A
     jsr print_decimal_number                                          ; 4817: 20 71 3e     q>
     lda #3                                                            ; 481a: a9 03       ..
     jsr check_play_sound_a                                            ; 481c: 20 65 40     e@
@@ -12284,7 +12284,7 @@ screen_addr_high = opcode10+2
     jsr OSWRCH                                                        ; 4b4c: 20 ee ff     .. ; Write character 15
     txa                                                               ; 4b4f: 8a          .
     inx                                                               ; 4b50: e8          .
-    jsr OSWRCH                                                        ; 4b51: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 4b51: 20 ee ff     .. ; Write character A
     lda old_player_y,x                                                ; 4b54: b5 23       .#
     sta temp_counter                                                  ; 4b56: 85 3a       .:
     ldx current_room_cache + 4,y                                      ; 4b58: be 04 04    ...
@@ -13048,7 +13048,7 @@ copy_highscores_dest_addr_high = opcode11+2
     beq input_name_loop                                               ; 537a: f0 d2       ..
     ldy player_x                                                      ; 537c: a4 1a       ..
     sta highscore_table_names,y                                       ; 537e: 99 00 06    ...
-    jsr OSWRCH                                                        ; 5381: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 5381: 20 ee ff     .. ; Write character A
     inc player_x                                                      ; 5384: e6 1a       ..
     inc player_y                                                      ; 5386: e6 1b       ..
     bne input_name_loop                                               ; 5388: d0 c4       ..  ; ALWAYS branch
@@ -13057,7 +13057,7 @@ copy_highscores_dest_addr_high = opcode11+2
     lda player_y                                                      ; 538a: a5 1b       ..
     beq input_name_loop                                               ; 538c: f0 c0       ..  ; if no characters to delete then branch
     txa                                                               ; 538e: 8a          .
-    jsr OSWRCH                                                        ; 538f: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 538f: 20 ee ff     .. ; Write character A
     lda #&20                                                          ; 5392: a9 20       .
     ldy player_x                                                      ; 5394: a4 1a       ..
     sta highscore_table_names - 1,y                                   ; 5396: 99 ff 05    ...
@@ -13115,7 +13115,7 @@ copy_highscores_dest_addr_high = opcode11+2
     ldx #&19                                                          ; 53e5: a2 19       ..
 .write_highscore_name_loop
     lda highscore_table_names,y                                       ; 53e7: b9 00 06    ...
-    jsr OSWRCH                                                        ; 53ea: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 53ea: 20 ee ff     .. ; Write character A
     iny                                                               ; 53ed: c8          .
     dex                                                               ; 53ee: ca          .
     bne write_highscore_name_loop                                     ; 53ef: d0 f6       ..
@@ -13127,7 +13127,7 @@ copy_highscores_dest_addr_high = opcode11+2
     ldx #7                                                            ; 53fa: a2 07       ..
 .write_highscore_loop
     lda highscore_table_scores,y                                      ; 53fc: b9 fa 06    ...
-    jsr OSWRCH                                                        ; 53ff: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 53ff: 20 ee ff     .. ; Write character A
     dey                                                               ; 5402: 88          .
     dex                                                               ; 5403: ca          .
     bne write_highscore_loop                                          ; 5404: d0 f6       ..

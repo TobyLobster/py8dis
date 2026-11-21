@@ -49,12 +49,12 @@ start
     txa                                                               ; 204e: 8a          .   ; A=$13
     jsr OSWRCH                                                        ; 204f: 20 ee ff     .. ; Write character 19
     tya                                                               ; 2052: 98          .
-    jsr OSWRCH                                                        ; 2053: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 2053: 20 ee ff     .. ; Write character A
     ; Position text cursor at (?,3)
     lda #$1f                                                          ; 2056: a9 1f       ..
     jsr OSWRCH                                                        ; 2058: 20 ee ff     .. ; Write character 31
     lda l0070                                                         ; 205b: a5 70       .p
-    jsr OSWRCH                                                        ; 205d: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 205d: 20 ee ff     .. ; Write character A
     lda #3                                                            ; 2060: a9 03       ..
     jsr OSWRCH                                                        ; 2062: 20 ee ff     .. ; Write character 3
     ; PLOT 69,640,512

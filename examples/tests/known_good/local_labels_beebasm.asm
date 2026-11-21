@@ -35,7 +35,7 @@ OSWRCH                  = &ffee
     lda #'A'                                                          ; 2006: a9 41       .A
     clc                                                               ; 2008: 18          .
     adc char_to_print                                                 ; 2009: 65 70       ep
-    jsr OSWRCH                                                        ; 200b: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 200b: 20 ee ff     .. ; Write character A
     inc char_to_print                                                 ; 200e: e6 70       .p
     inc char_to_print                                                 ; 2010: e6 70       .p
     dex                                                               ; 2012: ca          .

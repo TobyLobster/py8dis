@@ -2287,7 +2287,7 @@ l8004 = service_entry+1
     lda la3f0,x                                                       ; 8bbd: bd f0 a3    ...
 ; &8bc0 referenced 1 time by &8bc8
 .loop_c8bc0
-    jsr OSASCI                                                        ; 8bc0: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 8bc0: 20 e3 ff     ..            ; Write character A
     inx                                                               ; 8bc3: e8          .
     dey                                                               ; 8bc4: 88          .
     lda la3f0,x                                                       ; 8bc5: bd f0 a3    ...
@@ -2317,7 +2317,7 @@ l8004 = service_entry+1
 
 ; &8bf0 referenced 1 time by &8be8
 .c8bf0
-    jsr OSASCI                                                        ; 8bf0: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 8bf0: 20 e3 ff     ..            ; Write character A
     jmp c8be0                                                         ; 8bf3: 4c e0 8b    L..
 
 ; &8bf6 referenced 1 time by &8bd9
@@ -2339,13 +2339,13 @@ l8004 = service_entry+1
     inx                                                               ; 8c06: e8          .
     lda la3f0,x                                                       ; 8c07: bd f0 a3    ...
     bmi c8c12                                                         ; 8c0a: 30 06       0.
-    jsr OSASCI                                                        ; 8c0c: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 8c0c: 20 e3 ff     ..            ; Write character A
     jmp loop_c8c06                                                    ; 8c0f: 4c 06 8c    L..
 
 ; &8c12 referenced 1 time by &8c0a
 .c8c12
     and #&7f                                                          ; 8c12: 29 7f       ).
-    jsr OSASCI                                                        ; 8c14: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 8c14: 20 e3 ff     ..            ; Write character A
     iny                                                               ; 8c17: c8          .
     cpy #4                                                            ; 8c18: c0 04       ..
     bne c8c1f                                                         ; 8c1a: d0 03       ..
@@ -2553,7 +2553,7 @@ l8004 = service_entry+1
 .loop_c8d2c
     lda l8d38,x                                                       ; 8d2c: bd 38 8d    .8.
     beq return_8                                                      ; 8d2f: f0 06       ..
-    jsr OSASCI                                                        ; 8d31: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 8d31: 20 e3 ff     ..            ; Write character A
     inx                                                               ; 8d34: e8          .
     bne loop_c8d2c                                                    ; 8d35: d0 f5       ..
 ; &8d37 referenced 2 times by &8d28, &8d2f
@@ -3067,7 +3067,7 @@ l8e54 = c8e52+2
 ; &9140 referenced 1 time by &913c
 .c9140
     adc #&30 ; '0'                                                    ; 9140: 69 30       i0
-    jmp OSASCI                                                        ; 9142: 4c e3 ff    L..            ; Write character
+    jmp OSASCI                                                        ; 9142: 4c e3 ff    L..            ; Write character A
 
 ; &9145 referenced 35 times by &8bb6, &8bf8, &8c9f, &8ff1, &9011, &953a, &adc0, &adca, &add8, &ade3, &adff, &ae14, &ae27, &ae36, &af53, &b0a2, &b0ae, &b0c5, &b0cf, &b0da, &b1aa, &b24c, &b261, &b284, &b291, &b2a0, &b2b0, &b2bf, &b3c4, &b3e4, &b431, &ba86, &ba9f, &baac, &bae0
 .print_inline_top_bit_clear
@@ -3090,7 +3090,7 @@ l8e54 = c8e52+2
     lda l00b9                                                         ; 915a: a5 b9       ..
     pha                                                               ; 915c: 48          H
     lda (l00b8),y                                                     ; 915d: b1 b8       ..
-    jsr OSASCI                                                        ; 915f: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 915f: 20 e3 ff     ..            ; Write character A
     pla                                                               ; 9162: 68          h
     sta l00b9                                                         ; 9163: 85 b9       ..
     pla                                                               ; 9165: 68          h
@@ -4662,7 +4662,7 @@ error_template_minus_1 = c96b3+1
 ; &9a40 referenced 1 time by &9a47
 .loop_c9a40
     lda l0fff,y                                                       ; 9a40: b9 ff 0f    ...
-    jsr OSASCI                                                        ; 9a43: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; 9a43: 20 e3 ff     ..            ; Write character A
     iny                                                               ; 9a46: c8          .
     bne loop_c9a40                                                    ; 9a47: d0 f7       ..
     ldy #5                                                            ; 9a49: a0 05       ..
@@ -7860,7 +7860,7 @@ lad43 = cad41+2
 .loop_cae1c
     lda laeff,y                                                       ; ae1c: b9 ff ae    ...
     bmi cae27                                                         ; ae1f: 30 06       0.
-    jsr OSASCI                                                        ; ae21: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; ae21: 20 e3 ff     ..            ; Write character A
     iny                                                               ; ae24: c8          .
     bne loop_cae1c                                                    ; ae25: d0 f5       ..
 ; &ae27 referenced 1 time by &ae1f
@@ -7912,7 +7912,7 @@ lad43 = cad41+2
 ; &ae84 referenced 2 times by &adfc, &ae8c
 .cae84
     lda l0f05,x                                                       ; ae84: bd 05 0f    ...
-    jsr OSASCI                                                        ; ae87: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; ae87: 20 e3 ff     ..            ; Write character A
     inx                                                               ; ae8a: e8          .
     dey                                                               ; ae8b: 88          .
     bne cae84                                                         ; ae8c: d0 f6       ..
@@ -8151,7 +8151,7 @@ lad43 = cad41+2
 ; &afad referenced 1 time by &afa7
 .cafad
     ldx l00b8                                                         ; afad: a6 b8       ..
-    jsr OSASCI                                                        ; afaf: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; afaf: 20 e3 ff     ..            ; Write character A
     stx l00b8                                                         ; afb2: 86 b8       ..
 ; &afb4 referenced 1 time by &afab
 .return_32
@@ -8642,7 +8642,7 @@ lb13f = cb13e+1
     lda (l009c),y                                                     ; b253: b1 9c       ..
     cmp #&20 ; ' '                                                    ; b255: c9 20       .
     beq cb261                                                         ; b257: f0 08       ..
-    jsr OSASCI                                                        ; b259: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; b259: 20 e3 ff     ..            ; Write character A
     iny                                                               ; b25c: c8          .
     cpy #&1e                                                          ; b25d: c0 1e       ..
     bne loop_cb253                                                    ; b25f: d0 f2       ..
@@ -8881,7 +8881,7 @@ lb13f = cb13e+1
 ; &b3b5 referenced 1 time by &b3c2
 .loop_cb3b5
     lda l0f06,x                                                       ; b3b5: bd 06 0f    ...
-    jsr OSASCI                                                        ; b3b8: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; b3b8: 20 e3 ff     ..            ; Write character A
     sta l0e30,y                                                       ; b3bb: 99 30 0e    .0.
     iny                                                               ; b3be: c8          .
     inx                                                               ; b3bf: e8          .
@@ -8901,7 +8901,7 @@ lb13f = cb13e+1
 ; &b3d9 referenced 1 time by &b3e2
 .loop_cb3d9
     lda l0f05,x                                                       ; b3d9: bd 05 0f    ...
-    jsr OSASCI                                                        ; b3dc: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; b3dc: 20 e3 ff     ..            ; Write character A
     inx                                                               ; b3df: e8          .
     cpx #&3e ; '>'                                                    ; b3e0: e0 3e       .>
     bne loop_cb3d9                                                    ; b3e2: d0 f5       ..
@@ -9825,7 +9825,7 @@ lb487 = cb485+2
     sta l00ad                                                         ; b9c5: 85 ad       ..
 ; &b9c7 referenced 1 time by &b9d8
 .loop_cb9c7
-    jsr OSWRCH                                                        ; b9c7: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; b9c7: 20 ee ff     ..            ; Write character A
     jmp cb9aa                                                         ; b9ca: 4c aa b9    L..
 
 ; &b9cd referenced 2 times by &b9bf, &b9c3
@@ -10010,7 +10010,7 @@ lb487 = cb485+2
 .cbac0
     cmp #&7f                                                          ; bac0: c9 7f       ..
     beq loop_cbabe                                                    ; bac2: f0 fa       ..
-    jsr OSASCI                                                        ; bac4: 20 e3 ff     ..            ; Write character
+    jsr OSASCI                                                        ; bac4: 20 e3 ff     ..            ; Write character A
     iny                                                               ; bac7: c8          .
     cpy #&10                                                          ; bac8: c0 10       ..
     beq cbacf                                                         ; baca: f0 03       ..
@@ -10650,7 +10650,7 @@ lbd94 = cbd93+1
     bpl cbe73                                                         ; be76: 10 fb       ..
     lda tube_data_register_1                                          ; be78: ad e1 fe    ...
     beq cbec0                                                         ; be7b: f0 43       .C
-    jsr OSWRCH                                                        ; be7d: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; be7d: 20 ee ff     ..            ; Write character A
     jmp cbe73                                                         ; be80: 4c 73 be    Ls.
 
 
@@ -10723,7 +10723,7 @@ lbd94 = cbd93+1
 ; &bee8 referenced 1 time by &bef6
 .loop_cbee8
     lda tube_data_register_1                                          ; bee8: ad e1 fe    ...
-    jsr OSWRCH                                                        ; beeb: 20 ee ff     ..            ; Write character
+    jsr OSWRCH                                                        ; beeb: 20 ee ff     ..            ; Write character A
 ; &beee referenced 1 time by &bee6
 .cbeee
     bit tube_status_register_2                                        ; beee: 2c e2 fe    ,..

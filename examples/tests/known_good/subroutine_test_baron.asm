@@ -36,7 +36,7 @@ section pydis, org = &2000, filename = "subroutine_test_baron"
     ldx #0                                                            ; 2010: a2 00       ..
 .print_loop
     lda welcome_message,x                                             ; 2012: bd 1e 20    ..
-    jsr OSWRCH                                                        ; 2015: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 2015: 20 ee ff     .. ; Write character A
     inx                                                               ; 2018: e8          .
     cmp #0                                                            ; 2019: c9 00       ..
     bne print_loop                                                    ; 201b: d0 f5       ..
@@ -65,7 +65,7 @@ section pydis, org = &2000, filename = "subroutine_test_baron"
 .found_digit
     pha                                                               ; 2038: 48          H
     txa                                                               ; 2039: 8a          .
-    jsr OSWRCH                                                        ; 203a: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 203a: 20 ee ff     .. ; Write character A
     pla                                                               ; 203d: 68          h
     dey                                                               ; 203e: 88          .
     bpl loop_next_decimal_digit                                       ; 203f: 10 ea       ..
@@ -101,7 +101,7 @@ section pydis, org = &2000, filename = "subroutine_test_baron"
     cmp #&0a                                                          ; 2051: c9 0a       ..
     adc #'0'                                                          ; 2053: 69 30       i0
     cld                                                               ; 2055: d8          .
-    jmp OSWRCH                                                        ; 2056: 4c ee ff    L.. ; Write character
+    jmp OSWRCH                                                        ; 2056: 4c ee ff    L.. ; Write character A
 
 .pydis_end
 

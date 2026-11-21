@@ -32,7 +32,7 @@ OSWORD  = &fff1
 ; &2002 referenced 1 time by &200b
 .loop_c2002
     lda l205c,y                                                       ; 2002: b9 5c 20    .\  A:-- X:-- Y:0- ------
-    jsr OSWRCH                                                        ; 2005: 20 ee ff     .. A:-- X:-- Y:0- --d--- ; Write character
+    jsr OSWRCH                                                        ; 2005: 20 ee ff     .. A:-- X:-- Y:0- --d--- ; Write character A
     iny                                                               ; 2008: c8          .   A:-- X:-- Y:0- n-d-z-
     cpy #5                                                            ; 2009: c0 05       ..  A:-- X:-- Y:0- --d-??
     bne loop_c2002                                                    ; 200b: d0 f5       ..  A:-- X:-- Y:05 n-d-ZC

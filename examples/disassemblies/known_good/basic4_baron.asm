@@ -3188,7 +3188,7 @@ l8993 = c8992+1
     lda #&1f                                                          ; 92f6: a9 1f       ..
     jsr OSWRCH                                                        ; 92f8: 20 ee ff     .. ; Write character 31
     pla                                                               ; 92fb: 68          h
-    jsr OSWRCH                                                        ; 92fc: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 92fc: 20 ee ff     .. ; Write character A
     jsr sub_c990f                                                     ; 92ff: 20 0f 99     ..
     bra c932d                                                         ; 9302: 80 29       .)
 
@@ -4167,12 +4167,12 @@ l8993 = c8992+1
     lda #&19                                                          ; 9892: a9 19       ..
     jsr OSWRCH                                                        ; 9894: 20 ee ff     .. ; Write character 25
     pla                                                               ; 9897: 68          h
-    jsr OSWRCH                                                        ; 9898: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 9898: 20 ee ff     .. ; Write character A
     jsr sub_cbd46                                                     ; 989b: 20 46 bd     F.
     lda l0037                                                         ; 989e: a5 37       .7
-    jsr OSWRCH                                                        ; 98a0: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98a0: 20 ee ff     .. ; Write character A
     lda l0038                                                         ; 98a3: a5 38       .8
-    jsr OSWRCH                                                        ; 98a5: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98a5: 20 ee ff     .. ; Write character A
     jsr sub_c990f                                                     ; 98a8: 20 0f 99     ..
     lda l002b                                                         ; 98ab: a5 2b       .+
     bra c98bd                                                         ; 98ad: 80 0e       ..
@@ -4209,7 +4209,7 @@ l8993 = c8992+1
 ; &98d7 referenced 1 time by &98fa
 .c98d7
     lda l002b                                                         ; 98d7: a5 2b       .+
-    jsr OSWRCH                                                        ; 98d9: 20 ee ff     .. ; Write character
+    jsr OSWRCH                                                        ; 98d9: 20 ee ff     .. ; Write character A
 ; &98dc referenced 2 times by &98f6, &990a
 .c98dc
     jsr c8f9d                                                         ; 98dc: 20 9d 8f     ..
@@ -11308,7 +11308,7 @@ lbefe = sub_cbefd+1
 
 ; &bf17 referenced 1 time by &bf1d
 .loop_cbf17
-    jsr OSASCI                                                        ; bf17: 20 e3 ff     .. ; Write character
+    jsr OSASCI                                                        ; bf17: 20 e3 ff     .. ; Write character A
 ; &bf1a referenced 1 time by &bf15
 .cbf1a
     jsr sub_c8e66                                                     ; bf1a: 20 66 8e     f.

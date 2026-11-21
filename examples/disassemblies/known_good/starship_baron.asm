@@ -3149,7 +3149,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #8                                                            ; 33a3: a2 08       ..  :22a3[1]
 .loop
     lda energy_string,x                                               ; 33a5: bd 22 22    ."" :22a5[1]
-    jsr OSWRCH                                                        ; 33a8: 20 ee ff     .. :22a8[1]   ; Write character
+    jsr OSWRCH                                                        ; 33a8: 20 ee ff     .. :22a8[1]   ; Write character A
     dex                                                               ; 33ab: ca          .   :22ab[1]
     bpl loop                                                          ; 33ac: 10 f7       ..  :22ac[1]
     ldx #&11                                                          ; 33ae: a2 11       ..  :22ae[1]
@@ -3161,7 +3161,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #&11                                                          ; 33b1: a2 11       ..  :22b1[1]
 .loop1
     lda one_two_three_four_string,x                                   ; 33b3: bd 2b 22    .+" :22b3[1]
-    jsr OSWRCH                                                        ; 33b6: 20 ee ff     .. :22b6[1]   ; Write character
+    jsr OSWRCH                                                        ; 33b6: 20 ee ff     .. :22b6[1]   ; Write character A
     dex                                                               ; 33b9: ca          .   :22b9[1]
     bpl loop1                                                         ; 33ba: 10 f7       ..  :22ba[1]
     rts                                                               ; 33bc: 60          `   :22bc[1]
@@ -3172,7 +3172,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #&0e                                                          ; 33bd: a2 0e       ..  :22bd[1]
 .loop2
     lda shields_string,x                                              ; 33bf: bd 3d 22    .=" :22bf[1]
-    jsr OSWRCH                                                        ; 33c2: 20 ee ff     .. :22c2[1]   ; Write character
+    jsr OSWRCH                                                        ; 33c2: 20 ee ff     .. :22c2[1]   ; Write character A
     dex                                                               ; 33c5: ca          .   :22c5[1]
     bpl loop2                                                         ; 33c6: 10 f7       ..  :22c6[1]
     rts                                                               ; 33c8: 60          `   :22c8[1]
@@ -3183,7 +3183,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #&0e                                                          ; 33c9: a2 0e       ..  :22c9[1]
 .loop3
     lda blank_string,x                                                ; 33cb: bd 4c 22    .L" :22cb[1]
-    jsr OSWRCH                                                        ; 33ce: 20 ee ff     .. :22ce[1]   ; Write character
+    jsr OSWRCH                                                        ; 33ce: 20 ee ff     .. :22ce[1]   ; Write character A
     dex                                                               ; 33d1: ca          .   :22d1[1]
     bpl loop3                                                         ; 33d2: 10 f7       ..  :22d2[1]
     rts                                                               ; 33d4: 60          `   :22d4[1]
@@ -3213,7 +3213,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #&29                                                          ; 33fa: a2 29       .)  :22fa[1]
 .loop_c22fc
     lda screen_border_string,x                                        ; 33fc: bd 5a 21    .Z! :22fc[1]
-    jsr OSWRCH                                                        ; 33ff: 20 ee ff     .. :22ff[1]   ; Write character
+    jsr OSWRCH                                                        ; 33ff: 20 ee ff     .. :22ff[1]   ; Write character A
     dex                                                               ; 3402: ca          .   :2302[1]
     bpl loop_c22fc                                                    ; 3403: 10 f7       ..  :2303[1]
     rts                                                               ; 3405: 60          `   :2305[1]
@@ -3223,7 +3223,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #5                                                            ; 3406: a2 05       ..  :2306[1]
 .loop_c2308
     lda set_foreground_colour_to_white_string,x                       ; 3408: bd 10 22    .." :2308[1]
-    jsr OSWRCH                                                        ; 340b: 20 ee ff     .. :230b[1]   ; Write character
+    jsr OSWRCH                                                        ; 340b: 20 ee ff     .. :230b[1]   ; Write character A
     dex                                                               ; 340e: ca          .   :230e[1]
     bpl loop_c2308                                                    ; 340f: 10 f7       ..  :230f[1]
     rts                                                               ; 3411: 60          `   :2311[1]
@@ -3233,7 +3233,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #5                                                            ; 3412: a2 05       ..  :2312[1]
 .loop_c2314
     lda set_foreground_colour_to_black_string,x                       ; 3414: bd 16 22    .." :2314[1]
-    jsr OSWRCH                                                        ; 3417: 20 ee ff     .. :2317[1]   ; Write character
+    jsr OSWRCH                                                        ; 3417: 20 ee ff     .. :2317[1]   ; Write character A
     dex                                                               ; 341a: ca          .   :231a[1]
     bpl loop_c2314                                                    ; 341b: 10 f7       ..  :231b[1]
     rts                                                               ; 341d: 60          `   :231d[1]
@@ -3243,7 +3243,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #5                                                            ; 341e: a2 05       ..  :231e[1]
 .loop_c2320
     lda set_background_colour_to_black_string,x                       ; 3420: bd 1c 22    .." :2320[1]
-    jsr OSWRCH                                                        ; 3423: 20 ee ff     .. :2323[1]   ; Write character
+    jsr OSWRCH                                                        ; 3423: 20 ee ff     .. :2323[1]   ; Write character A
     dex                                                               ; 3426: ca          .   :2326[1]
     bpl loop_c2320                                                    ; 3427: 10 f7       ..  :2327[1]
     rts                                                               ; 3429: 60          `   :2329[1]
@@ -3253,7 +3253,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #9                                                            ; 342a: a2 09       ..  :232a[1]
 .enable_cursor_loop
     lda enable_cursor_string,x                                        ; 342c: bd 5b 22    .[" :232c[1]
-    jsr OSWRCH                                                        ; 342f: 20 ee ff     .. :232f[1]   ; Write character
+    jsr OSWRCH                                                        ; 342f: 20 ee ff     .. :232f[1]   ; Write character A
     dex                                                               ; 3432: ca          .   :2332[1]
     bpl enable_cursor_loop                                            ; 3433: 10 f7       ..  :2333[1]
     rts                                                               ; 3435: 60          `   :2335[1]
@@ -3265,7 +3265,7 @@ section pydis, org = &1f00, filename = "starship_baron"
 .loop4
 .disable_cursor_loop
     lda disable_cursor_string,x                                       ; 3438: bd 65 22    .e" :2338[1]
-    jsr OSWRCH                                                        ; 343b: 20 ee ff     .. :233b[1]   ; Write character
+    jsr OSWRCH                                                        ; 343b: 20 ee ff     .. :233b[1]   ; Write character A
     dex                                                               ; 343e: ca          .   :233e[1]
     bpl loop4                                                         ; 343f: 10 f7       ..  :233f[1]
     rts                                                               ; 3441: 60          `   :2341[1]
@@ -5036,7 +5036,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     adc #'0'                                                          ; 3f54: 69 30       i0  :2e54[1]
     ldx #'0'                                                          ; 3f56: a2 30       .0  :2e56[1]
 .leading_zero
-    jsr OSWRCH                                                        ; 3f58: 20 ee ff     .. :2e58[1]   ; Write character
+    jsr OSWRCH                                                        ; 3f58: 20 ee ff     .. :2e58[1]   ; Write character A
     dey                                                               ; 3f5b: 88          .   :2e5b[1]
     bpl plot_score_loop                                               ; 3f5c: 10 ec       ..  :2e5c[1]
 .return_1
@@ -6045,7 +6045,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #&0d                                                          ; 46b6: a0 0d       ..  :35b6[1]
 .plot_command_loop
     lda command_string,y                                              ; 46b8: b9 e4 34    ..4 :35b8[1]
-    jsr OSWRCH                                                        ; 46bb: 20 ee ff     .. :35bb[1]   ; Write character
+    jsr OSWRCH                                                        ; 46bb: 20 ee ff     .. :35bb[1]   ; Write character A
     dey                                                               ; 46be: 88          .   :35be[1]
     bpl plot_command_loop                                             ; 46bf: 10 f7       ..  :35bf[1]
     ldy #&73                                                          ; 46c1: a0 73       .s  :35c1[1]
@@ -6063,20 +6063,20 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #5                                                            ; 46d2: a0 05       ..  :35d2[1]
 .plot_command_move_loop
     lda command_move_string,y                                         ; 46d4: b9 de 34    ..4 :35d4[1]
-    jsr OSWRCH                                                        ; 46d7: 20 ee ff     .. :35d7[1]   ; Write character
+    jsr OSWRCH                                                        ; 46d7: 20 ee ff     .. :35d7[1]   ; Write character A
     dey                                                               ; 46da: 88          .   :35da[1]
     bpl plot_command_move_loop                                        ; 46db: 10 f7       ..  :35db[1]
     txa                                                               ; 46dd: 8a          .   :35dd[1]
     beq single_digit_command_number                                   ; 46de: f0 06       ..  :35de[1]
     clc                                                               ; 46e0: 18          .   :35e0[1]
     adc #&30                                                          ; 46e1: 69 30       i0  :35e1[1]
-    jsr OSWRCH                                                        ; 46e3: 20 ee ff     .. :35e3[1]   ; Write character
+    jsr OSWRCH                                                        ; 46e3: 20 ee ff     .. :35e3[1]   ; Write character A
 .single_digit_command_number
     lda command_number                                                ; 46e6: ad b1 34    ..4 :35e6[1]
     and #&0f                                                          ; 46e9: 29 0f       ).  :35e9[1]
     clc                                                               ; 46eb: 18          .   :35eb[1]
     adc #&30                                                          ; 46ec: 69 30       i0  :35ec[1]
-    jsr OSWRCH                                                        ; 46ee: 20 ee ff     .. :35ee[1]   ; Write character
+    jsr OSWRCH                                                        ; 46ee: 20 ee ff     .. :35ee[1]   ; Write character A
     ; Write text at the text cursor
     lda #4                                                            ; 46f1: a9 04       ..  :35f1[1]
     jsr OSWRCH                                                        ; 46f3: 20 ee ff     .. :35f3[1]   ; Write character 4
@@ -6087,7 +6087,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #&1d                                                          ; 46f7: a0 1d       ..  :35f7[1]
 .plot_escape_capsule_launched_loop_loop
     lda escape_capsule_launched_string,y                              ; 46f9: b9 c0 34    ..4 :35f9[1]
-    jsr OSWRCH                                                        ; 46fc: 20 ee ff     .. :35fc[1]   ; Write character
+    jsr OSWRCH                                                        ; 46fc: 20 ee ff     .. :35fc[1]   ; Write character A
     dey                                                               ; 46ff: 88          .   :35ff[1]
     bpl plot_escape_capsule_launched_loop_loop                        ; 4700: 10 f7       ..  :3600[1]
     lda #&c8                                                          ; 4702: a9 c8       ..  :3602[1]
@@ -6567,7 +6567,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #0                                                            ; 4c96: a0 00       ..  :3b96[1]
 .plot_combat_experience_rating_text_loop
     lda combat_experience_rating_string,y                             ; 4c98: b9 12 39    ..9 :3b98[1]
-    jsr OSWRCH                                                        ; 4c9b: 20 ee ff     .. :3b9b[1]   ; Write character
+    jsr OSWRCH                                                        ; 4c9b: 20 ee ff     .. :3b9b[1]   ; Write character A
     iny                                                               ; 4c9e: c8          .   :3b9e[1]
     cmp #&3e                                                          ; 4c9f: c9 3e       .>  :3b9f[1]
     bne plot_combat_experience_rating_text_loop                       ; 4ca1: d0 f5       ..  :3ba1[1]
@@ -6583,20 +6583,20 @@ section pydis, org = &1f00, filename = "starship_baron"
     beq single_digit_command_number1                                  ; 4cb1: f0 06       ..  :3bb1[1]
     clc                                                               ; 4cb3: 18          .   :3bb3[1]
     adc #&30                                                          ; 4cb4: 69 30       i0  :3bb4[1]
-    jsr OSWRCH                                                        ; 4cb6: 20 ee ff     .. :3bb6[1]   ; Write character
+    jsr OSWRCH                                                        ; 4cb6: 20 ee ff     .. :3bb6[1]   ; Write character A
 .single_digit_command_number1
     lda command_number                                                ; 4cb9: ad b1 34    ..4 :3bb9[1]
     and #&0f                                                          ; 4cbc: 29 0f       ).  :3bbc[1]
     clc                                                               ; 4cbe: 18          .   :3bbe[1]
     adc #&30                                                          ; 4cbf: 69 30       i0  :3bbf[1]
-    jsr OSWRCH                                                        ; 4cc1: 20 ee ff     .. :3bc1[1]   ; Write character
+    jsr OSWRCH                                                        ; 4cc1: 20 ee ff     .. :3bc1[1]   ; Write character A
     jsr plot_line_of_underscores                                      ; 4cc4: 20 1b 3d     .= :3bc4[1]
     lda escape_capsule_launched                                       ; 4cc7: ad d8 1c    ... :3bc7[1]
     bne escape_capsule_was_launched                                   ; 4cca: d0 0f       ..  :3bca[1]
     ldy #0                                                            ; 4ccc: a0 00       ..  :3bcc[1]
 .plot_no_before_the_starship_exploded_loop
     lda no_before_the_starship_exploded_string,y                      ; 4cce: b9 97 39    ..9 :3bce[1]
-    jsr OSWRCH                                                        ; 4cd1: 20 ee ff     .. :3bd1[1]   ; Write character
+    jsr OSWRCH                                                        ; 4cd1: 20 ee ff     .. :3bd1[1]   ; Write character A
     iny                                                               ; 4cd4: c8          .   :3bd4[1]
     cmp #&2e                                                          ; 4cd5: c9 2e       ..  :3bd5[1]
     bne plot_no_before_the_starship_exploded_loop                     ; 4cd7: d0 f5       ..  :3bd7[1]
@@ -6608,7 +6608,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #0                                                            ; 4ce0: a0 00       ..  :3be0[1]
 .plot_and_returned_safely_loop
     lda and_returned_safely_text,y                                    ; 4ce2: b9 1f 3a    ..: :3be2[1]
-    jsr OSWRCH                                                        ; 4ce5: 20 ee ff     .. :3be5[1]   ; Write character
+    jsr OSWRCH                                                        ; 4ce5: 20 ee ff     .. :3be5[1]   ; Write character A
     iny                                                               ; 4ce8: c8          .   :3be8[1]
     cmp #&2e                                                          ; 4ce9: c9 2e       ..  :3be9[1]
     bne plot_and_returned_safely_loop                                 ; 4ceb: d0 f5       ..  :3beb[1]
@@ -6618,7 +6618,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #0                                                            ; 4cef: a0 00       ..  :3bef[1]
 .plot_but_collided_loop
     lda but_collided_string,y                                         ; 4cf1: b9 4e 3a    .N: :3bf1[1]
-    jsr OSWRCH                                                        ; 4cf4: 20 ee ff     .. :3bf4[1]   ; Write character
+    jsr OSWRCH                                                        ; 4cf4: 20 ee ff     .. :3bf4[1]   ; Write character A
     iny                                                               ; 4cf7: c8          .   :3bf7[1]
     cmp #&2e                                                          ; 4cf8: c9 2e       ..  :3bf8[1]
     bne plot_but_collided_loop                                        ; 4cfa: d0 f5       ..  :3bfa[1]
@@ -6641,7 +6641,7 @@ section pydis, org = &1f00, filename = "starship_baron"
 .leading_zero1
     clc                                                               ; 4d15: 18          .   :3c15[1]
     adc #&30                                                          ; 4d16: 69 30       i0  :3c16[1]
-    jsr OSWRCH                                                        ; 4d18: 20 ee ff     .. :3c18[1]   ; Write character
+    jsr OSWRCH                                                        ; 4d18: 20 ee ff     .. :3c18[1]   ; Write character A
     dey                                                               ; 4d1b: 88          .   :3c1b[1]
     bpl plot_score_in_debriefing_loop                                 ; 4d1c: 10 e9       ..  :3c1c[1]
     lda score_as_bcd                                                  ; 4d1e: ad 65 2d    .e- :3c1e[1]
@@ -6668,7 +6668,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #0                                                            ; 4d4e: a0 00       ..  :3c4e[1]
 .plot_having_just_gained_loop
     lda having_just_gained_string,y                                   ; 4d50: b9 72 3a    .r: :3c50[1]
-    jsr OSWRCH                                                        ; 4d53: 20 ee ff     .. :3c53[1]   ; Write character
+    jsr OSWRCH                                                        ; 4d53: 20 ee ff     .. :3c53[1]   ; Write character A
     iny                                                               ; 4d56: c8          .   :3c56[1]
     cpy #&19                                                          ; 4d57: c0 19       ..  :3c57[1]
     bne plot_having_just_gained_loop                                  ; 4d59: d0 f5       ..  :3c59[1]
@@ -6693,7 +6693,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #0                                                            ; 4d7f: a0 00       ..  :3c7f[1]
 .plot_after_your_performance_loop
     lda after_your_performance_string,y                               ; 4d81: b9 bd 39    ..9 :3c81[1]
-    jsr OSWRCH                                                        ; 4d84: 20 ee ff     .. :3c84[1]   ; Write character
+    jsr OSWRCH                                                        ; 4d84: 20 ee ff     .. :3c84[1]   ; Write character A
     iny                                                               ; 4d87: c8          .   :3c87[1]
     cpy #&61                                                          ; 4d88: c0 61       .a  :3c88[1]
     bne plot_after_your_performance_loop                              ; 4d8a: d0 f5       ..  :3c8a[1]
@@ -6735,7 +6735,7 @@ section pydis, org = &1f00, filename = "starship_baron"
 .plot_emotion_loop
     inx                                                               ; 4dcb: e8          .   :3ccb[1]
     lda emotions,x                                                    ; 4dcc: bd c6 3a    ..: :3ccc[1]
-    jsr OSWRCH                                                        ; 4dcf: 20 ee ff     .. :3ccf[1]   ; Write character
+    jsr OSWRCH                                                        ; 4dcf: 20 ee ff     .. :3ccf[1]   ; Write character A
     cmp #&22                                                          ; 4dd2: c9 22       ."  :3cd2[1]
     bne plot_emotion_loop                                             ; 4dd4: d0 f5       ..  :3cd4[1]
     lda y_pixels                                                      ; 4dd6: a5 7b       .{  :3cd6[1]
@@ -6751,14 +6751,14 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #4                                                            ; 4deb: a0 04       ..  :3ceb[1]
 .plot_and_or_but_loop
     lda and_but_they_allow_string,y                                   ; 4ded: b9 8c 3a    ..: :3ced[1]
-    jsr OSWRCH                                                        ; 4df0: 20 ee ff     .. :3cf0[1]   ; Write character
+    jsr OSWRCH                                                        ; 4df0: 20 ee ff     .. :3cf0[1]   ; Write character A
     iny                                                               ; 4df3: c8          .   :3cf3[1]
     cmp #&20                                                          ; 4df4: c9 20       .   :3cf4[1]
     bne plot_and_or_but_loop                                          ; 4df6: d0 f5       ..  :3cf6[1]
     ldy #8                                                            ; 4df8: a0 08       ..  :3cf8[1]
 .plot_they_allow_you_loop
     lda and_but_they_allow_string,y                                   ; 4dfa: b9 8c 3a    ..: :3cfa[1]
-    jsr OSWRCH                                                        ; 4dfd: 20 ee ff     .. :3cfd[1]   ; Write character
+    jsr OSWRCH                                                        ; 4dfd: 20 ee ff     .. :3cfd[1]   ; Write character A
     iny                                                               ; 4e00: c8          .   :3d00[1]
     cmp #&2e                                                          ; 4e01: c9 2e       ..  :3d01[1]
     bne plot_they_allow_you_loop                                      ; 4e03: d0 f5       ..  :3d03[1]
@@ -6769,7 +6769,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     sty allowed_another_command                                       ; 4e09: 8c 0a 39    ..9 :3d09[1]
 .plot_and_they_retire_you_loop
     lda and_they_retire_you_string,y                                  ; 4e0c: b9 1b 3b    ..; :3d0c[1]
-    jsr OSWRCH                                                        ; 4e0f: 20 ee ff     .. :3d0f[1]   ; Write character
+    jsr OSWRCH                                                        ; 4e0f: 20 ee ff     .. :3d0f[1]   ; Write character A
     iny                                                               ; 4e12: c8          .   :3d12[1]
     cmp #&2e                                                          ; 4e13: c9 2e       ..  :3d13[1]
     bne plot_and_they_retire_you_loop                                 ; 4e15: d0 f5       ..  :3d15[1]
@@ -6796,9 +6796,9 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda #&1f                                                          ; 4e30: a9 1f       ..  :3d30[1]
     jsr OSWRCH                                                        ; 4e32: 20 ee ff     .. :3d32[1]   ; Write character 31
     txa                                                               ; 4e35: 8a          .   :3d35[1]
-    jsr OSWRCH                                                        ; 4e36: 20 ee ff     .. :3d36[1]   ; Write character
+    jsr OSWRCH                                                        ; 4e36: 20 ee ff     .. :3d36[1]   ; Write character A
     tya                                                               ; 4e39: 98          .   :3d39[1]
-    jsr OSWRCH                                                        ; 4e3a: 20 ee ff     .. :3d3a[1]   ; Write character
+    jsr OSWRCH                                                        ; 4e3a: 20 ee ff     .. :3d3a[1]   ; Write character A
     rts                                                               ; 4e3d: 60          `   :3d3d[1]
 
 .plot_bcd_number_as_two_digits
@@ -6814,7 +6814,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #0                                                            ; 4e48: a2 00       ..  :3d48[1]
     clc                                                               ; 4e4a: 18          .   :3d4a[1]
     adc #&30                                                          ; 4e4b: 69 30       i0  :3d4b[1]
-    jsr OSWRCH                                                        ; 4e4d: 20 ee ff     .. :3d4d[1]   ; Write character
+    jsr OSWRCH                                                        ; 4e4d: 20 ee ff     .. :3d4d[1]   ; Write character A
 .skip_leading_zeroes
     tya                                                               ; 4e50: 98          .   :3d50[1]
     and #&0f                                                          ; 4e51: 29 0f       ).  :3d51[1]
@@ -6825,7 +6825,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldx #0                                                            ; 4e58: a2 00       ..  :3d58[1]
     clc                                                               ; 4e5a: 18          .   :3d5a[1]
     adc #&30                                                          ; 4e5b: 69 30       i0  :3d5b[1]
-    jsr OSWRCH                                                        ; 4e5d: 20 ee ff     .. :3d5d[1]   ; Write character
+    jsr OSWRCH                                                        ; 4e5d: 20 ee ff     .. :3d5d[1]   ; Write character A
 .skip_leading_zeroes_again
     rts                                                               ; 4e60: 60          `   :3d60[1]
 
@@ -6893,7 +6893,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda (temp0_low),y                                                 ; 5120: b1 80       ..  :4020[1]   ; Offset Y=0
     cmp #'~'                                                          ; 5122: c9 7e       .~  :4022[1]
     beq finished_plotting_instructions                                ; 5124: f0 0b       ..  :4024[1]
-    jsr OSWRCH                                                        ; 5126: 20 ee ff     .. :4026[1]   ; Write character
+    jsr OSWRCH                                                        ; 5126: 20 ee ff     .. :4026[1]   ; Write character A
     inc temp0_low                                                     ; 5129: e6 80       ..  :4029[1]
     bne plot_instructions_loop                                        ; 512b: d0 f3       ..  :402b[1]
     inc temp0_high                                                    ; 512d: e6 81       ..  :402d[1]
@@ -6919,7 +6919,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda #0                                                            ; 5152: a9 00       ..  :4052[1]
     jsr OSWRCH                                                        ; 5154: 20 ee ff     .. :4054[1]   ; Write character 0
     tya                                                               ; 5157: 98          .   :4057[1]
-    jsr OSWRCH                                                        ; 5158: 20 ee ff     .. :4058[1]   ; Write character
+    jsr OSWRCH                                                        ; 5158: 20 ee ff     .. :4058[1]   ; Write character A
     ldy #&28                                                          ; 515b: a0 28       .(  :405b[1]
     lda #&5f                                                          ; 515d: a9 5f       ._  :405d[1]
 .plot_line_of_underscores_at_y_loop
@@ -7012,7 +7012,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     adc game_options,x                                                ; 52a9: 7d 70 40    }p@ :41a9[1]
     asl a                                                             ; 52ac: 0a          .   :41ac[1]
     adc #&0b                                                          ; 52ad: 69 0b       i.  :41ad[1]
-    jsr OSWRCH                                                        ; 52af: 20 ee ff     .. :41af[1]   ; Write character
+    jsr OSWRCH                                                        ; 52af: 20 ee ff     .. :41af[1]   ; Write character A
     lda #&2d                                                          ; 52b2: a9 2d       .-  :41b2[1]
     jsr OSWRCH                                                        ; 52b4: 20 ee ff     .. :41b4[1]   ; Write character 45
     dex                                                               ; 52b7: ca          .   :41b7[1]
@@ -7081,7 +7081,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda (temp0_low),y                                                 ; 531d: b1 80       ..  :421d[1]   ; Offset Y=0
     cmp #&7e                                                          ; 531f: c9 7e       .~  :421f[1]
     beq finished_plotting_combat_preparations                         ; 5321: f0 0b       ..  :4221[1]
-    jsr OSWRCH                                                        ; 5323: 20 ee ff     .. :4223[1]   ; Write character
+    jsr OSWRCH                                                        ; 5323: 20 ee ff     .. :4223[1]   ; Write character A
     inc temp0_low                                                     ; 5326: e6 80       ..  :4226[1]
     bne plot_combat_preparations_loop                                 ; 5328: d0 f3       ..  :4228[1]
     inc temp0_high                                                    ; 532a: e6 81       ..  :422a[1]
@@ -7203,7 +7203,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda (temp0_low),y                                                 ; 54ee: b1 80       ..  :43ee[1]   ; Offset Y=0
     cmp #&7e                                                          ; 54f0: c9 7e       .~  :43f0[1]
     beq finished_plotting_starfleet_records                           ; 54f2: f0 0b       ..  :43f2[1]
-    jsr OSWRCH                                                        ; 54f4: 20 ee ff     .. :43f4[1]   ; Write character
+    jsr OSWRCH                                                        ; 54f4: 20 ee ff     .. :43f4[1]   ; Write character A
     inc temp0_low                                                     ; 54f7: e6 80       ..  :43f7[1]
     bne plot_starfleet_records_loop                                   ; 54f9: d0 f3       ..  :43f9[1]
     inc temp0_high                                                    ; 54fb: e6 81       ..  :43fb[1]
@@ -7224,7 +7224,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lsr a                                                             ; 5512: 4a          J   :4412[1]
     clc                                                               ; 5513: 18          .   :4413[1]
     adc #8                                                            ; 5514: 69 08       i.  :4414[1]
-    jsr OSWRCH                                                        ; 5516: 20 ee ff     .. :4416[1]   ; Write character
+    jsr OSWRCH                                                        ; 5516: 20 ee ff     .. :4416[1]   ; Write character A
     lda high_score_table + 3,x                                        ; 5519: bd 38 43    .8C :4419[1]
     beq leave_after_plotting_underscores                              ; 551c: f0 48       .H  :441c[1]
     txa                                                               ; 551e: 8a          .   :441e[1]
@@ -7234,7 +7234,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lsr a                                                             ; 5522: 4a          J   :4422[1]
     clc                                                               ; 5523: 18          .   :4423[1]
     adc #&31                                                          ; 5524: 69 31       i1  :4424[1]
-    jsr OSWRCH                                                        ; 5526: 20 ee ff     .. :4426[1]   ; Write character
+    jsr OSWRCH                                                        ; 5526: 20 ee ff     .. :4426[1]   ; Write character A
     ; Print "   "
     lda #&20                                                          ; 5529: a9 20       .   :4429[1]
     jsr OSWRCH                                                        ; 552b: 20 ee ff     .. :442b[1]   ; Write character 32
@@ -7246,7 +7246,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #&0d                                                          ; 5537: a0 0d       ..  :4437[1]
 .plot_name_loop
     lda high_score_table,x                                            ; 5539: bd 35 43    .5C :4439[1]
-    jsr OSWRCH                                                        ; 553c: 20 ee ff     .. :443c[1]   ; Write character
+    jsr OSWRCH                                                        ; 553c: 20 ee ff     .. :443c[1]   ; Write character A
     inx                                                               ; 553f: e8          .   :443f[1]
     dey                                                               ; 5540: 88          .   :4440[1]
     bne plot_name_loop                                                ; 5541: d0 f6       ..  :4441[1]
@@ -7296,7 +7296,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     clc                                                               ; 558d: 18          .   :448d[1]
     adc #&30                                                          ; 558e: 69 30       i0  :448e[1]
 .leading_zero2
-    jsr OSWRCH                                                        ; 5590: 20 ee ff     .. :4490[1]   ; Write character
+    jsr OSWRCH                                                        ; 5590: 20 ee ff     .. :4490[1]   ; Write character A
     rts                                                               ; 5593: 60          `   :4493[1]
 
 ; ----------------------------------------------------------------------------------
@@ -7373,7 +7373,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda (temp0_low),y                                                 ; 5645: b1 80       ..  :4545[1]   ; Offset Y=0
     cmp #&7e                                                          ; 5647: c9 7e       .~  :4547[1]
     beq finished_plotting_enter_your_name                             ; 5649: f0 0b       ..  :4549[1]
-    jsr OSWRCH                                                        ; 564b: 20 ee ff     .. :454b[1]   ; Write character
+    jsr OSWRCH                                                        ; 564b: 20 ee ff     .. :454b[1]   ; Write character A
     inc temp0_low                                                     ; 564e: e6 80       ..  :454e[1]
     bne plot_enter_your_name_loop                                     ; 5650: d0 f3       ..  :4550[1]
     inc temp0_high                                                    ; 5652: e6 81       ..  :4552[1]
@@ -7437,7 +7437,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     ldy #7                                                            ; 56b8: a0 07       ..  :45b8[1]
 .plot_shields_string_loop
     lda shield_state_strings,x                                        ; 56ba: bd b2 17    ... :45ba[1]
-    jsr OSWRCH                                                        ; 56bd: 20 ee ff     .. :45bd[1]   ; Write character
+    jsr OSWRCH                                                        ; 56bd: 20 ee ff     .. :45bd[1]   ; Write character A
     inx                                                               ; 56c0: e8          .   :45c0[1]
     dey                                                               ; 56c1: 88          .   :45c1[1]
     bne plot_shields_string_loop                                      ; 56c2: d0 f6       ..  :45c2[1]
@@ -7583,7 +7583,7 @@ section pydis, org = &1f00, filename = "starship_baron"
     lda (temp0_low),y                                                 ; 58f7: b1 80       ..  :47f7[1]   ; Offset Y=0
     cmp #&7e                                                          ; 58f9: c9 7e       .~  :47f9[1]
     beq finished_the_frontiers                                        ; 58fb: f0 0b       ..  :47fb[1]
-    jsr OSWRCH                                                        ; 58fd: 20 ee ff     .. :47fd[1]   ; Write character
+    jsr OSWRCH                                                        ; 58fd: 20 ee ff     .. :47fd[1]   ; Write character A
     inc temp0_low                                                     ; 5900: e6 80       ..  :4800[1]
     bne plot_the_frontiers_loop                                       ; 5902: d0 f3       ..  :4802[1]
     inc temp0_high                                                    ; 5904: e6 81       ..  :4804[1]
